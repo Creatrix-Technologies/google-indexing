@@ -137,7 +137,15 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue';
 import StatCard from '../components/StatCard.vue'
+
+import { useGoogleConfigStore } from '../Shared/googleConfig'
+
+
+onMounted(() => {
+  useGoogleConfigStore().check()
+})
 </script>
 
 <style scoped>

@@ -17,7 +17,6 @@
               <th>URL</th>
               <th>Type</th>
               <th>Status</th>
-              <th>Indexable</th>
               <th>Created</th>
               <th>Actions</th>
             </tr>
@@ -33,7 +32,6 @@
               <td>
                 <span class="status-badge" :class="site.activeStatus.toLowerCase()">{{ site.activeStatus === 'Active' ? 'Active' : 'Inactive' }}</span>
               </td>
-              <td>{{ site.isIndexable }}</td>
               <td>{{ formatDate(site.created) }}</td>
               <td class="action-cell">
                 <button class="action-btn" @click="editSite(site)">Edit</button>
@@ -59,8 +57,16 @@
             </div>
   
             <div class="form-group">
-              <label>Full URL *</label>
-              <input v-model="formData.url" type="url" placeholder="e.g., https://example.com" required />
+              <label>Google Console Sites *</label>
+              <select v-model="formData.url" required>
+                <option value="" disabled>
+                {{ isLoadingUrls ? 'Loading URLs...' : 'Select URL' }}
+                </option>
+                <option v-for="url in availableUrls" :key="url" :value="url">
+                {{ url }}
+                </option>
+              </select>
+
             </div>
   
             <div class="form-row">
@@ -116,6 +122,11 @@
     import { ref, onMounted } from 'vue'
     import api from '../api' // your axios instance with token/refresh
     import { useToast } from 'vue-toastification';
+    import { useGoogleConfigStore } from '../Shared/googleConfig'
+
+
+    const googleConfigStore = useGoogleConfigStore()
+
     const toast = useToast();
 
     interface Site {
@@ -200,7 +211,7 @@
     /* ============================
        UI HELPERS
     ============================ */
-    const openAddModal = () => {
+    const openAddModal = async() => {
       isEditing.value = false
       editingId.value = null
       formData.value = {
@@ -211,9 +222,11 @@
         description: '',
       }
       showModal.value = true
+      await fetchAvailableUrls()
+
     }
     
-    const editSite = (site: Site) => {
+    const editSite = async(site: Site) => {
       isEditing.value = true
       editingId.value = site.id
       formData.value = {
@@ -224,30 +237,10 @@
         description: site.description,
       }
       showModal.value = true
+      await fetchAvailableUrls()
+
     }
 
-    
-    
-    // const toggleSiteStatus = async (id: number) => {
-    //   const site = sites.value.find((s) => s.id === id)
-    //   if (!site) return
-    
-    //   site.activeStatus = site.activeStatus === 'Active' ? 'Inactive' : 'Active'
-    
-    //   try {
-    //     await api.post('/site', {
-    //       siteName: site.name,
-    //       url: site.url,
-    //       siteType: site.type,
-    //       description: site.description,
-    //       isActivated: site.activeStatus === 'Active',
-    //       webSiteId: site.id,
-    //     })
-    //   } catch (err) {
-    //     console.error(err)
-    //   }
-    // }
-    
     const closeModal = () => {
       showModal.value = false
     }
@@ -259,8 +252,28 @@
         day: 'numeric',
       })
     }
+
+    const availableUrls = ref<string[]>([])
+    const isLoadingUrls = ref(false)
+
+const fetchAvailableUrls = async () => {
+  try {
+    isLoadingUrls.value = true
+    const res = await api.get('/site/google-sites') 
+    availableUrls.value = res.data.data || []
+  } catch {
+    toast.error('Failed to load google console sites')
+  } finally {
+    isLoadingUrls.value = false
+  }
+}
+
     
-    onMounted(fetchSites)
+// Only fetch once on mount
+onMounted(() => {
+  fetchSites()
+  googleConfigStore.check()
+})
     </script>
     
   

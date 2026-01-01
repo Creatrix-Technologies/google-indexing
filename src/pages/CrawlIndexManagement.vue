@@ -143,7 +143,9 @@ import { useRouter } from 'vue-router'
 import api from '../api'
 import { useToast } from 'vue-toastification'
 import Swal from "sweetalert2";
+import { useGoogleConfigStore } from '../Shared/googleConfig'
 
+const googleConfigStore = useGoogleConfigStore()
 const toast = useToast()
 const router = useRouter()
 
@@ -215,6 +217,7 @@ const fetchStats = async () => {
 onMounted(() => {
   fetchCrawlSites()
   fetchStats()
+  googleConfigStore.check()
 })
 
 /* ================= COMPUTED ================= */

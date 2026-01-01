@@ -2,7 +2,6 @@
   <div class="page-container">
     <!-- Header (Fixed) -->
     <div class="page-header">
-      <h1>Welcome back!</h1>
       <p class="subtitle">
         Configure credentials for Google Search Console and Indexing API
       </p>
@@ -28,7 +27,7 @@
               <span>No credentials uploaded</span>
             </div>
 
-            <div class="actions">
+            <div class="actions" v-if="credentials.serviceAccountEmail">
               <button
                 class="btn danger"
                 @click="removeCredentials"
@@ -123,6 +122,9 @@
 import { ref, reactive, onMounted } from 'vue'
 import api from '../api'
 import { useToast } from 'vue-toastification'
+import { useGoogleConfigStore } from '../Shared/googleConfig'
+
+const googleConfigStore = useGoogleConfigStore()
 
 const toast = useToast()
 const loading = ref(false)
@@ -180,6 +182,8 @@ const uploadKey = async () => {
     })
     toast.success('Key uploaded successfully')
     fetchCredentials()
+
+    await googleConfigStore.check()
   } finally {
     loading.value = false
   }
