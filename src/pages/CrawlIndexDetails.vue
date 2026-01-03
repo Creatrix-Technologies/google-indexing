@@ -9,6 +9,7 @@
       <p class="subtitle">URLs with index details</p>
     </div>
 
+    <!-- SUMMARY -->
     <div class="summary-card">
       <div class="summary-item">
         <span class="label">Total URLs</span>
@@ -27,132 +28,104 @@
     <div class="summary-card">
       <div class="summary-item">
         <span class="label">Indexed</span>
-        <span class="value">0</span>
+        <span class="value success">{{ indexed }}</span>
       </div>
       <div class="summary-item">
         <span class="label">Index Failed</span>
-        <span class="value success">0</span>
+        <span class="value failed">{{ indexedFailed }}</span>
       </div>
       <div class="summary-item">
         <span class="label">Index Queued</span>
-        <span class="value failed">0</span>
+        <span class="value">{{ indexedQueued }}</span>
       </div>
     </div>
 
-    <!-- ================= ADDED: BULK BUTTON ================= -->
+    <!-- BULK BUTTON -->
     <div style="margin-bottom: 15px;">
       <button
         class="index-btn"
-        :disabled="selectedUrls.size === 0"
+        :disabled="selectedIds.size === 0"
         @click="indexSelectedUrls"
       >
-        Index Selected URLs ({{ selectedUrls.size }})
+        Index Selected URLs ({{ selectedIds.size }})
       </button>
     </div>
-    <!-- ====================================================== -->
 
+    <!-- TABLE -->
     <div class="table-card">
       <table class="urls-table">
         <thead>
           <tr>
-            <!-- ===== ADDED ===== -->
             <th>
-              <input
-                type="checkbox"
-                :checked="isAllChecked"
-                @change="toggleSelectAll"
-              />
+              <input type="checkbox" :checked="isAllChecked" @change="toggleSelectAll" />
             </th>
-            <!-- ================ -->
-
             <th>URL</th>
             <th>Status</th>
             <th>Status Code</th>
-            <th>index status</th>
+            <th>Index Status</th>
             <th>Indexed At</th>
             <th>Index Result</th>
             <th>Crawled At</th>
-
-            <!-- ===== ADDED ===== -->
             <th>Action</th>
-            <!-- ================ -->
           </tr>
         </thead>
 
         <tbody>
           <tr
-            v-for="(item, index) in urls"
-            :key="index"
+            v-for="item in urls"
+            :key="item.id"
             :class="item.status.toLowerCase()"
           >
-            <!-- ===== ADDED ===== -->
             <td>
               <input
                 type="checkbox"
-                :checked="isSelected(item.url)"
-                @change="toggleRow(item.url)"
+                :checked="isSelected(item.id)"
+                @change="toggleRow(item.id)"
               />
             </td>
-            <!-- ================ -->
 
             <td class="url-cell">
               <a :href="item.url" target="_blank">{{ item.url }}</a>
             </td>
 
             <td>
-              <span
-                class="status-badge"
-                :class="item.status.toLowerCase()"
-              >
+              <span class="status-badge" :class="item.status.toLowerCase()">
                 {{ item.status }}
               </span>
             </td>
 
             <td class="status-code">{{ item.statusCode }}</td>
-            <td>{{ item.indexStatus || 'N/A' }}</td>
-            <td>{{ item.indexedAt || 'N/A' }}</td>
-            <td>{{ item.result || 'N/A' }}</td>
+            <td>{{ item.indexedStatus }}</td>
+            <td>{{ item.indexedAt }}</td>
+            <td>{{ item.indexedResult }}</td>
             <td>{{ item.crawledAt }}</td>
 
-            <!-- ===== ADDED ===== -->
             <td>
-              <button
-                class="row-index-btn"
-                @click="indexSingleUrl(item.url)"
-              >
+              <button class="row-index-btn" @click="indexSingleUrl(item.id)">
                 Index
               </button>
             </td>
-            <!-- ================ -->
           </tr>
 
           <tr v-if="urls.length === 0">
-            <td colspan="7" style="text-align:center; padding:20px">
+            <td colspan="9" style="text-align:center; padding:20px">
               No crawl data found
             </td>
           </tr>
         </tbody>
       </table>
 
+      <!-- PAGINATION -->
       <div class="pagination">
-        <button
-          class="pagination-btn"
-          :disabled="!pageInfo.hasPreviousPage"
-          @click="previousPage"
-        >
+        <button class="pagination-btn" :disabled="!pageInfo.hasPreviousPage" @click="previousPage">
           Previous
         </button>
 
         <div class="pagination-info">
           Page {{ pageInfo.page }} of {{ totalPages }}
-          ({{ totalUrlCount }} URLs)
         </div>
 
-        <button
-          class="pagination-btn"
-          :disabled="!pageInfo.hasNextPage"
-          @click="nextPage"
-        >
+        <button class="pagination-btn" :disabled="!pageInfo.hasNextPage" @click="nextPage">
           Next
         </button>
       </div>
@@ -161,28 +134,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import api from '../api'
-import Swal from "sweetalert2";
-
-interface CrawlCount {
-  totalCount: number
-  successCount: number
-  failedCount: number,
-  indexedCount: number,
-  indexFailed: number,
-  indexQueued: number
-}
+import { ref, computed, onMounted, watch } from "vue"
+import { useRoute } from "vue-router"
+import api from "../api"
+import Swal from "sweetalert2"
 
 interface CrawledUrl {
+  id: number
   url: string
-  status: 'Success' | 'Failed'
+  status: "Success" | "Failed"
   statusCode: number
   crawledAt: string
-  indexStatus: string,
-  indexedAt:string,
-  result:string
+  indexedStatus: string
+  indexedAt: string
+  indexedResult: string
 }
 
 interface PageInfo {
@@ -193,33 +158,41 @@ interface PageInfo {
   hasPreviousPage: boolean
 }
 
+interface CrawlCount {
+  totalCount: number
+  successCount: number
+  failedCount: number
+  indexed: number
+  indexedFailed: number
+  indexedQueued: number
+  hasDailyQuotaExceed: boolean
+}
+
 const route = useRoute()
 const siteId = Number(route.params.siteId)
 
 const urls = ref<CrawledUrl[]>([])
-
-/* ===== ADDED ===== */
-const selectedUrls = ref<Set<string>>(new Set())
-/* ================= */
-
-const counts = ref<CrawlCount>({
-  totalCount: 0,
-  successCount: 0,
-  failedCount: 0,
-  indexedCount:0,
-  indexFailed:0,
-  indexQueued:0
-})
+const selectedIds = ref<Set<number>>(new Set())
 
 const pageInfo = ref<PageInfo>({
   page: 1,
   pageSize: 10,
   totalCount: 0,
   hasNextPage: false,
-  hasPreviousPage: false,
+  hasPreviousPage: false
 })
 
-/* API CALLS */
+const counts = ref<CrawlCount>({
+  totalCount: 0,
+  successCount: 0,
+  failedCount: 0,
+  indexed: 0,
+  indexedFailed: 0,
+  indexedQueued: 0,
+  hasDailyQuotaExceed: false
+})
+
+/* API */
 const fetchCrawlDetails = async () => {
   const res = await api.get(
     `/crawl/${siteId}/details?PageNo=${pageInfo.value.page}&PageSize=${pageInfo.value.pageSize}`
@@ -233,57 +206,85 @@ const fetchCrawlCounts = async () => {
   counts.value = res.data.data
 }
 
-/* ===== ADDED: SELECTION LOGIC ===== */
-const isSelected = (url: string) => selectedUrls.value.has(url)
+/* SELECTION */
+const isSelected = (id: number) => selectedIds.value.has(id)
 
-const toggleRow = (url: string) => {
-  selectedUrls.value.has(url)
-    ? selectedUrls.value.delete(url)
-    : selectedUrls.value.add(url)
+const toggleRow = (id: number) => {
+  selectedIds.value.has(id)
+    ? selectedIds.value.delete(id)
+    : selectedIds.value.add(id)
 }
 
 const isAllChecked = computed(() =>
   urls.value.length > 0 &&
-  urls.value.every(u => selectedUrls.value.has(u.url))
+  urls.value.every(u => selectedIds.value.has(u.id))
 )
 
 const toggleSelectAll = () => {
   if (isAllChecked.value) {
-    urls.value.forEach(u => selectedUrls.value.delete(u.url))
+    urls.value.forEach(u => selectedIds.value.delete(u.id))
   } else {
-    urls.value.forEach(u => selectedUrls.value.add(u.url))
+    urls.value.forEach(u => selectedIds.value.add(u.id))
   }
 }
 
+/* INDEXING */
 const indexSelectedUrls = async () => {
   const result = await Swal.fire({
-    title: "Are you sure?",
-    text: "Do you want to index this selected urls?",
+    title: "Confirm",
+    text: "Index selected URLs?",
     icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Yes",
-    cancelButtonText: "No",
-  });
+    showCancelButton: true
+  })
 
   if (!result.isConfirmed) return
 
+  await api.post("/crawl/index", {
+    websiteId: siteId,
+    urlId: Array.from(selectedIds.value)
+  })
+
+  Swal.fire("Queued", "URLs sent for indexing", "success")
+  selectedIds.value.clear()
+  fetchCrawlDetails()
+  fetchCrawlCounts()
 }
 
-const indexSingleUrl = async (url: string) => {
+const indexSingleUrl = async (id: number) => {
   const result = await Swal.fire({
-    title: "Are you sure?",
-    text: "Do you want to index this url?",
+    title: "Confirm",
+    text: "Index this URL?",
     icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Yes",
-    cancelButtonText: "No",
-  });
+    showCancelButton: true
+  })
 
   if (!result.isConfirmed) return
 
-  console.log(url);
+  await api.post("/crawl/index", {
+    websiteId: siteId,
+    urlId: [id]
+  })
+
+  Swal.fire("Queued", "URL sent for indexing", "success")
+  fetchCrawlDetails()
+  fetchCrawlCounts()
 }
-/* ================================= */
+
+/* COMPUTED */
+const totalUrlCount = computed(() => counts.value.totalCount)
+const successCount = computed(() => counts.value.successCount)
+const failedCount = computed(() => counts.value.failedCount)
+const indexed = computed(() => counts.value.indexed)
+const indexedFailed = computed(() => counts.value.indexedFailed)
+const indexedQueued = computed(() => counts.value.indexedQueued)
+
+const totalPages = computed(() =>
+  Math.ceil(counts.value.totalCount / pageInfo.value.pageSize)
+)
+
+/* PAGINATION */
+const nextPage = () => pageInfo.value.hasNextPage && pageInfo.value.page++
+const previousPage = () => pageInfo.value.hasPreviousPage && pageInfo.value.page--
 
 onMounted(() => {
   fetchCrawlDetails()
@@ -291,26 +292,6 @@ onMounted(() => {
 })
 
 watch(() => pageInfo.value.page, fetchCrawlDetails)
-
-/* COMPUTED */
-const totalUrlCount = computed(() => counts.value.totalCount)
-const successCount = computed(() => counts.value.successCount)
-const failedCount = computed(() => counts.value.failedCount)
-
-
-
-const totalPages = computed(() =>
-  Math.ceil(counts.value.totalCount / pageInfo.value.pageSize)
-)
-
-/* PAGINATION */
-const nextPage = () => {
-  if (pageInfo.value.hasNextPage) pageInfo.value.page++
-}
-
-const previousPage = () => {
-  if (pageInfo.value.hasPreviousPage) pageInfo.value.page--
-}
 </script>
 
   <style scoped>

@@ -118,7 +118,6 @@
 
             <td class="action-cell">
               <button class="action-btn" @click="startCrawl(site.id)">Crawl</button>
-              <button class="action-btn" @click="startIndex(site.id)">Index</button>
               <button class="action-btn view-details" @click="viewDetails(site.id)">
                 View
               </button>
