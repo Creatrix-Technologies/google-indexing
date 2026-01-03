@@ -102,7 +102,7 @@
 
             <td>
               <button class="row-index-btn" @click="indexSingleUrl(item.id)">
-                Index
+                Queue Index
               </button>
             </td>
           </tr>

@@ -26,7 +26,7 @@
 
       <div class="stat-card">
         <p class="stat-label">Total Crawl Success</p>
-        <p class="stat-value indexed">{{ stats.crawledCount }}</p>
+        <p class="stat-value success">{{ stats.crawledCount }}</p>
       </div>
 
       <div class="stat-card">
@@ -40,17 +40,17 @@
 
       <div class="stat-card">
         <p class="stat-label">Total Index Success</p>
-        <p class="stat-value queued">0</p>
+        <p class="stat-value success">{{ stats.indexedSucceed }}</p>
       </div>
 
       <div class="stat-card">
         <p class="stat-label">Total Index Queued</p>
-        <p class="stat-value indexed">0</p>
+        <p class="stat-value indexed">{{ stats.indexedQueued }}</p>
       </div>
 
       <div class="stat-card">
         <p class="stat-label">Total Index Failed</p>
-        <p class="stat-value failed">0</p>
+        <p class="stat-value failed">{{ stats.indexedFailed }}</p>
       </div>
     </div>
 
@@ -167,7 +167,10 @@ const stats = ref({
   activeSiteCount: 0,
   queuedCount: 0,
   crawledCount: 0,
-  failedCount: 0
+  failedCount: 0,
+  indexedSucceed:0,
+  indexedFailed:0,
+  indexedQueued:0
 })
 
 /* ================= API ================= */
