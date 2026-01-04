@@ -1,7 +1,8 @@
 <script setup lang="ts">
   import { ref, onMounted } from 'vue'
   import { useToast } from 'vue-toastification'
-  import { loadStripe, Stripe, StripeCardElement } from '@stripe/stripe-js'
+  import { loadStripe } from '@stripe/stripe-js'              // runtime value
+  import type { Stripe, StripeCardElement } from '@stripe/stripe-js'  // types only
   import api from '../api'
   import { useSubscriptionStore } from '../Shared/subscription'
 
@@ -37,7 +38,7 @@
       plans.value = res.data.data || []
   
       if (plans.value.length > 0) {
-        selectedPlanId.value = plans.value[0].id // default select first plan
+        selectedPlanId.value = plans.value[0]?.id ?? null
       }
     } catch (err: any) {
       toast.error('Failed to load subscription plans')
@@ -50,7 +51,6 @@
   // Initialize Stripe Elements
   onMounted(async () => {
     await fetchPlans()
-  
     stripe.value = await loadStripe('pk_test_51SlWabPX6zVE3LgcbEMZFl6XbTDp8jMP9pnd9uOxzsXWy7rM9VB34lx0zN4fnPiATJuydmQTZkhXtTscoGWZYNdC002Ihct9os') // replace with your public key
     if (stripe.value && cardElementRef.value) {
       const elements = stripe.value.elements()

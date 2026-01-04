@@ -285,19 +285,7 @@ const queueForCrawl = async () => {
   }
 }
 
-const startIndex = async (id: number) => {
-  const result = await Swal.fire({
-    title: "Are you sure?",
-    text: "Are you sure, you want to index this site?",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Yes",
-    cancelButtonText: "No",
-  });
 
-  console.log(id);
-  if (!result.isConfirmed) return
-}
 
 
 
