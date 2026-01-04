@@ -5,24 +5,73 @@
     class="google-config-bar"
   >
     <span>
-      ⚠️ Google configuration is missing or invalid, which may result in missing or incomplete data. Please update your Google configuration to access all features.
+      ⚠️ Google configuration is missing or invalid, which may result in missing
+      or incomplete data. Please update your Google configuration to access all
+      features.
     </span>
     <router-link to="/settings/google-configuration" class="config-link">
       Update Now
     </router-link>
   </div>
 
+  <!-- Header -->
   <header class="header">
     <div class="header-left"></div>
 
     <div class="header-right">
       <div class="profile-actions">
+        <!-- Subscription Status Icon -->
+        <span
+          v-if="!subscriptionStore.isChecking"
+          class="subscription-wrapper"
+          :title="
+            subscriptionStore.isValid
+              ? 'Subscription Active'
+              : 'Subscription Expired'
+          "
+        >
+          <!-- ACTIVE -->
+          <svg
+            v-if="subscriptionStore.isValid"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            class="subscription-icon valid"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M12 2l7 4v6c0 5-3.5 9.74-7 10-3.5-.26-7-5-7-10V6l7-4zm3.53 7.47a.75.75 0 00-1.06-1.06L11 11.88 9.53 10.4a.75.75 0 10-1.06 1.06l2 2a.75.75 0 001.06 0l4-4z"
+              clip-rule="evenodd"
+            />
+          </svg>
+
+          <!-- INACTIVE -->
+          <svg
+            v-else
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            class="subscription-icon invalid"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M12 2l7 4v6c0 5-3.5 9.74-7 10-3.5-.26-7-5-7-10V6l7-4zm3 7.5a.75.75 0 00-1.06-1.06L12 10.38l-1.94-1.94a.75.75 0 10-1.06 1.06L10.94 11.5l-1.94 1.94a.75.75 0 101.06 1.06L12 12.62l1.94 1.94a.75.75 0 101.06-1.06L13.06 11.5l1.94-1.94z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </span>
+
+        <!-- User Avatar -->
         <span class="user-avatar" :title="authStore.userEmail">
           {{ authStore.userName.charAt(0).toUpperCase() }}
         </span>
-        {{ authStore.userName }}
 
-        <!-- Logout Icon -->
+        <!-- User Name -->
+        <span class="user-name">
+          {{ authStore.userName }}
+        </span>
+
+        <!-- Logout -->
         <button class="logout-btn" @click="handleLogout" title="Logout">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -48,13 +97,15 @@
 import { onMounted } from 'vue'
 import { logout, useAuthStore } from '../Store/auth'
 import { useGoogleConfigStore } from '../Shared/googleConfig'
+import { useSubscriptionStore } from '../Shared/subscription'
 
 const authStore = useAuthStore()
 const googleConfigStore = useGoogleConfigStore()
+const subscriptionStore = useSubscriptionStore()
 
-// Check Google configuration when header mounts
 onMounted(() => {
   googleConfigStore.check()
+  subscriptionStore.checkSubscription()
 })
 
 const handleLogout = () => {
@@ -112,9 +163,35 @@ const handleLogout = () => {
 .profile-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
+/* Subscription Wrapper (Large Icon) */
+.subscription-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f9fafb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Subscription Icon (Large SVG) */
+.subscription-icon {
+  width: 26px;
+  height: 26px;
+}
+
+.subscription-icon.valid {
+  color: #22c55e;
+}
+
+.subscription-icon.invalid {
+  color: #ef4444;
+}
+
+/* User Avatar */
 .user-avatar {
   width: 32px;
   height: 32px;
@@ -128,28 +205,24 @@ const handleLogout = () => {
   font-size: 12px;
 }
 
+/* User Name */
 .user-name {
   font-size: 14px;
   font-weight: 500;
   color: #333;
 }
 
+/* Logout */
 .logout-btn {
   background: none;
   border: none;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
 }
 
 .icon-logout {
   width: 18px;
   height: 18px;
   stroke: #333;
-  stroke-width: 2;
-  display: block;
 }
 
 @media (max-width: 768px) {

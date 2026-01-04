@@ -141,10 +141,14 @@ import { onMounted } from 'vue';
 import StatCard from '../components/StatCard.vue'
 
 import { useGoogleConfigStore } from '../Shared/googleConfig'
+import { useSubscriptionStore } from '../Shared/subscription'
 
+const subscriptionStore = useSubscriptionStore()
 
 onMounted(() => {
   useGoogleConfigStore().check()
+  subscriptionStore.checkSubscription()
+
 })
 </script>
 

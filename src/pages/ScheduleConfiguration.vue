@@ -61,6 +61,10 @@
 import { ref, onMounted } from 'vue'
 import api from '../api' // adjust this import to your project
 import { useToast } from 'vue-toastification'
+import { useSubscriptionStore } from '../Shared/subscription'
+
+const subscriptionStore = useSubscriptionStore()
+
 const toast = useToast()
 
 // Reactive fields
@@ -125,6 +129,7 @@ const saveConfig = async () => {
 // Load schedule when component mounts
 onMounted(() => {
   loadConfig()
+  subscriptionStore.checkSubscription()
 })
 
 const goToHangfire = () => {

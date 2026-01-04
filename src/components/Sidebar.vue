@@ -23,6 +23,11 @@
         <span v-if="!collapsed" class="menu-label">Crawl & Index</span>
       </router-link>
 
+      <router-link to="/subscriptions" class="menu-item" active-class="active">
+        <span class="menu-icon">💳</span>
+        <span v-if="!collapsed" class="menu-label">Subscriptions</span>
+      </router-link>
+      
       <!-- Settings submenu -->
       <div v-if="!collapsed" class="menu-group">
         <div class="menu-item" @click="toggleSettings">
@@ -40,6 +45,7 @@
           </router-link>
         </div>
       </div>
+
     </nav>
   </aside>
 </template>

@@ -123,9 +123,11 @@
     import api from '../api' // your axios instance with token/refresh
     import { useToast } from 'vue-toastification';
     import { useGoogleConfigStore } from '../Shared/googleConfig'
+    import { useSubscriptionStore } from '../Shared/subscription'
 
 
     const googleConfigStore = useGoogleConfigStore()
+    const subscriptionStore = useSubscriptionStore()
 
     const toast = useToast();
 
@@ -273,6 +275,7 @@ const fetchAvailableUrls = async () => {
 onMounted(() => {
   fetchSites()
   googleConfigStore.check()
+  subscriptionStore.checkSubscription()
 })
     </script>
     

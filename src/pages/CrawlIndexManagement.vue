@@ -143,8 +143,12 @@ import api from '../api'
 import { useToast } from 'vue-toastification'
 import Swal from "sweetalert2";
 import { useGoogleConfigStore } from '../Shared/googleConfig'
+import { useSubscriptionStore } from '../Shared/subscription'
 
 const googleConfigStore = useGoogleConfigStore()
+
+const subscriptionStore = useSubscriptionStore()
+
 const toast = useToast()
 const router = useRouter()
 
@@ -220,6 +224,7 @@ onMounted(() => {
   fetchCrawlSites()
   fetchStats()
   googleConfigStore.check()
+  subscriptionStore.checkSubscription()
 })
 
 /* ================= COMPUTED ================= */

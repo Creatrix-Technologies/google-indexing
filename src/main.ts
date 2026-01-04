@@ -28,6 +28,8 @@ import api from './api'; // Axios instance with withCredentials: true
 import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 
+//subscriptions
+import Subscriptions from "./Subscriptions/stripe.vue";
 
 const routes = [
   { path: "/", redirect: "/dashboard" },
@@ -57,6 +59,7 @@ const routes = [
           }
         ]
       },
+      { path: "subscriptions", component: Subscriptions, meta: { requiresAuth: true } },
 
       { path: "crawl-index-management", component: CrawlIndexManagement, meta: { requiresAuth: true } },
       { path: "crawl-index-details/:siteId",name: 'CrawlIndexDetails', component: CrawlIndexDetails, meta: { requiresAuth: true } },

@@ -123,8 +123,10 @@ import { ref, reactive, onMounted } from 'vue'
 import api from '../api'
 import { useToast } from 'vue-toastification'
 import { useGoogleConfigStore } from '../Shared/googleConfig'
+import { useSubscriptionStore } from '../Shared/subscription'
 
 const googleConfigStore = useGoogleConfigStore()
+const subscriptionStore = useSubscriptionStore()
 
 const toast = useToast()
 const loading = ref(false)
@@ -223,7 +225,11 @@ const updateCredentials = async () => {
   }
 }
 
-onMounted(fetchCredentials)
+onMounted(() => {
+  fetchCredentials()
+  subscriptionStore.checkSubscription()
+})
+
 </script>
 
 <style scoped>
