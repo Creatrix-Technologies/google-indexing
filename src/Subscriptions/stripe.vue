@@ -51,7 +51,10 @@
   // Initialize Stripe Elements
   onMounted(async () => {
     await fetchPlans()
-    stripe.value = await loadStripe('pk_test_51SlWabPX6zVE3LgcbEMZFl6XbTDp8jMP9pnd9uOxzsXWy7rM9VB34lx0zN4fnPiATJuydmQTZkhXtTscoGWZYNdC002Ihct9os') // replace with your public key
+    const publicKyey=import.meta.env.VITE_STRIPE_PUBLIC
+    console.log(publicKyey)
+    alert()
+    stripe.value = await loadStripe(publicKyey) // replace with your public key
     if (stripe.value && cardElementRef.value) {
       const elements = stripe.value.elements()
       card.value = elements.create('card', {
