@@ -52,8 +52,6 @@
   onMounted(async () => {
     await fetchPlans()
     const publicKyey=import.meta.env.VITE_STRIPE_PUBLIC
-    console.log(publicKyey)
-    alert()
     stripe.value = await loadStripe(publicKyey) // replace with your public key
     if (stripe.value && cardElementRef.value) {
       const elements = stripe.value.elements()
