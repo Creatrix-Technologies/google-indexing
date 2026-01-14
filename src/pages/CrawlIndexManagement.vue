@@ -197,7 +197,7 @@ const fetchCrawlSites = async () => {
       url: item.url,
       type: item.siteType,
       status: 'Active',
-      crawlStatus: item.crawlStatus || 'Queue',
+      crawlStatus: item.crawlStatus,
       isIndexable: item.isIndexable ? 'Yes' : 'No',
       crawlDate: item.crawlCompletedDate
         ? new Date(item.crawlCompletedDate)
