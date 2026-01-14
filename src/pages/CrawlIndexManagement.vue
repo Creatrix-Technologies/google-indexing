@@ -109,7 +109,7 @@
 
             <td>
               <span class="status-badge" :class="getStatusClass(site.crawlStatus)">
-                {{ site.crawlStatus || 'Queue' }}
+                {{ site.crawlStatus }}
               </span>
             </td>
 
