@@ -314,10 +314,29 @@ const startCrawl = async (id: number) => {
   }
 }
 
-/* ================= UTIL ================= */
-const viewDetails = (id: number) => {
-  router.push({ name: 'CrawlIndexDetails', params: { siteId: id } })
+/* ================= UTIL ================= */const viewDetails = (siteId: number) => {
+  // Get menu from localStorage
+  const menuData = localStorage.getItem("menu");
+  if (!menuData) {
+    console.error("No menu found in localStorage");
+    return;
+  }
+
+  // Parse JSON
+  const parsedMenu = JSON.parse(menuData); // parsedMenu should have { menus: [...] }
+  const menuList = parsedMenu.menus || [];
+
+  // Find the menu item by component
+  const menu = menuList.find((m: any) => m.component === 'CrawlIndexDetails');
+  if (!menu) {
+    console.error('Menu item for CrawlIndexDetails not found!');
+    return;
+  }
+
+  // Navigate using router name + params
+  router.push({ name: menu.component, params: { siteId } });
 }
+
 
 const getStatusClass = (status?: string) =>
   `status-${(status || 'queue').toLowerCase()}`

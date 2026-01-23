@@ -134,7 +134,7 @@
         >
           <h2 class="plan-name">{{ plan.name }}</h2>
           <p class="plan-description">{{ plan.description }}</p>
-          <p class="plan-price">${{ (plan.amount / 100).toFixed(2) }}</p>
+          <p class="plan-price">${{ plan.amount }}</p>
         </div>
       </div>
   

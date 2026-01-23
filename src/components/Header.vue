@@ -1,18 +1,4 @@
 <template>
-  <!-- Google Config Warning -->
-  <div
-    v-if="!googleConfigStore.isValid && !googleConfigStore.isChecking"
-    class="google-config-bar"
-  >
-    <span>
-      ⚠️ Google configuration is missing or invalid, which may result in missing
-      or incomplete data. Please update your Google configuration to access all
-      features.
-    </span>
-    <router-link to="/settings/google-configuration" class="config-link">
-      Update Now
-    </router-link>
-  </div>
 
   <!-- Header -->
   <header class="header">
@@ -20,46 +6,44 @@
 
     <div class="header-right">
       <div class="profile-actions">
-        <!-- Subscription Status Icon -->
-        <span
-          v-if="!subscriptionStore.isChecking"
-          class="subscription-wrapper"
-          :title="
-            subscriptionStore.isValid
-              ? 'Subscription Active'
-              : 'Subscription Expired'
-          "
-        >
-          <!-- ACTIVE -->
-          <svg
-            v-if="subscriptionStore.isValid"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            class="subscription-icon valid"
-            fill="currentColor"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M12 2l7 4v6c0 5-3.5 9.74-7 10-3.5-.26-7-5-7-10V6l7-4zm3.53 7.47a.75.75 0 00-1.06-1.06L11 11.88 9.53 10.4a.75.75 0 10-1.06 1.06l2 2a.75.75 0 001.06 0l4-4z"
-              clip-rule="evenodd"
-            />
-          </svg>
+       <!-- Subscription Status Icon -->
+<span
+  v-if="!subscriptionStore.isChecking"
+  class="subscription-wrapper"
+  :title="subscriptionStore.isValid
+    ? `Subscription Active (Expire Date: ${formatDate(subscriptionStore.expiresAt)})`
+    : 'Subscription Expired'"
+>
+  <!-- ACTIVE -->
+  <svg
+    v-if="subscriptionStore.isValid"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    class="subscription-icon valid"
+    fill="currentColor"
+  >
+    <path
+      fill-rule="evenodd"
+      d="M12 2l7 4v6c0 5-3.5 9.74-7 10-3.5-.26-7-5-7-10V6l7-4zm3.53 7.47a.75.75 0 00-1.06-1.06L11 11.88 9.53 10.4a.75.75 0 10-1.06 1.06l2 2a.75.75 0 001.06 0l4-4z"
+      clip-rule="evenodd"
+    />
+  </svg>
 
-          <!-- INACTIVE -->
-          <svg
-            v-else
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            class="subscription-icon invalid"
-            fill="currentColor"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M12 2l7 4v6c0 5-3.5 9.74-7 10-3.5-.26-7-5-7-10V6l7-4zm3 7.5a.75.75 0 00-1.06-1.06L12 10.38l-1.94-1.94a.75.75 0 10-1.06 1.06L10.94 11.5l-1.94 1.94a.75.75 0 101.06 1.06L12 12.62l1.94 1.94a.75.75 0 101.06-1.06L13.06 11.5l1.94-1.94z"
-              clip-rule="evenodd"
-            />
-          </svg>
-        </span>
+  <!-- INACTIVE -->
+  <svg
+    v-else
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    class="subscription-icon invalid"
+    fill="currentColor"
+  >
+    <path
+      fill-rule="evenodd"
+      d="M12 2l7 4v6c0 5-3.5 9.74-7 10-3.5-.26-7-5-7-10V6l7-4zm3 7.5a.75.75 0 00-1.06-1.06L12 10.38l-1.94-1.94a.75.75 0 10-1.06 1.06L10.94 11.5l-1.94 1.94a.75.75 0 101.06 1.06L12 12.62l1.94 1.94a.75.75 0 101.06-1.06L13.06 11.5l1.94-1.94z"
+      clip-rule="evenodd"
+    />
+  </svg>
+</span>
 
         <!-- User Avatar -->
         <span class="user-avatar" :title="authStore.userEmail">
@@ -91,6 +75,22 @@
       </div>
     </div>
   </header>
+
+    <!-- Google Config Warning -->
+    <div
+    v-if="!googleConfigStore.isValid && !googleConfigStore.isChecking"
+    class="google-config-bar"
+  >
+    <span>
+      ⚠️ Google configuration is missing or invalid, which may result in missing
+      or incomplete data. Please update your Google configuration to access all
+      features.
+    </span>
+    <router-link to="/settings/google-configuration" class="config-link">
+      Connect Now
+    </router-link>
+  </div>
+
 </template>
 
 <script setup lang="ts">
@@ -111,6 +111,13 @@ onMounted(() => {
 const handleLogout = () => {
   logout()
 }
+
+const formatDate = (dateStr: string | null) => {
+  if (!dateStr) return '-'
+  const date = new Date(dateStr)
+  return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
 </script>
 
 <style scoped>

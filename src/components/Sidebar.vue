@@ -8,50 +8,59 @@
 
     <!-- Menu -->
     <nav class="menu">
-      <router-link to="/dashboard" class="menu-item" active-class="active">
-        <span class="menu-icon">🏠</span>
-        <span v-if="!collapsed" class="menu-label">Dashboard</span>
-      </router-link>
+      <template v-for="menu in menus" :key="menu.id">
+        <!-- Only show menu if showInMenu is true -->
+        <div v-if="menu.showInMenu">
+          
+          <!-- Menu with children -->
+          <div
+            v-if="menu.children && menu.children.length > 0 && !collapsed"
+            class="menu-group"
+          >
+            <div class="menu-item" @click="toggleSubmenu(menu.id)">
+              <span class="menu-icon">
+                <i :class="menu.icon"></i>
+              </span>
+              <span class="menu-label">{{ menu.title }}</span>
+              <span class="arrow" :class="{ open: openMenus.includes(menu.id) }">▾</span>
+            </div>
+            <div v-if="openMenus.includes(menu.id)" class="submenu">
+              <router-link
+                v-for="child in menu.children"
+                :key="child.id"
+                :to="child.path"
+                class="submenu-item"
+                active-class="active-sub"
+              >
+                <span class="menu-icon" style="margin-right:10px;">
+                  <i :class="child.icon"></i>
+                </span>
+                <span class="menu-label">{{ child.title }}</span>
+              </router-link>
+            </div>
+          </div>
 
-      <router-link to="/sites" class="menu-item" active-class="active">
-        <span class="menu-icon">🌐</span>
-        <span v-if="!collapsed" class="menu-label">Site Management</span>
-      </router-link>
-
-      <router-link to="/crawl-index-management" class="menu-item" active-class="active">
-        <span class="menu-icon">🕷️</span>
-        <span v-if="!collapsed" class="menu-label">Crawl & Index</span>
-      </router-link>
-
-      <router-link to="/subscriptions" class="menu-item" active-class="active">
-        <span class="menu-icon">💳</span>
-        <span v-if="!collapsed" class="menu-label">Subscriptions</span>
-      </router-link>
-      
-      <!-- Settings submenu -->
-      <div v-if="!collapsed" class="menu-group">
-        <div class="menu-item" @click="toggleSettings">
-          <span class="menu-icon">⚙️</span>
-          <span class="menu-label">Settings</span>
-          <span class="arrow" :class="{ open: settingsOpen }">▾</span>
-        </div>
-        <div v-if="settingsOpen" class="submenu">
-          <router-link to="/settings/google-configuration" class="submenu-item" active-class="active-sub">
-            <span class="menu-icon" style="margin-right: 10px;">🛠️</span>
-            <span class="menu-label">Google</span>          </router-link>
-          <router-link to="/settings/schedule-configuration" class="submenu-item" active-class="active-sub">
-            <span class="menu-icon"style="margin-right: 10px;">🕒</span>
-            <span class="menu-label">Schedule</span>   
+          <!-- Menu without children -->
+          <router-link
+            v-else
+            :to="menu.path"
+            class="menu-item"
+            active-class="active"
+          >
+            <span class="menu-icon">
+              <i :class="menu.icon"></i>
+            </span>
+            <span v-if="!collapsed" class="menu-label">{{ menu.title }}</span>
           </router-link>
-        </div>
-      </div>
 
+        </div>
+      </template>
     </nav>
   </aside>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 
 const props = defineProps({
   collapsed: Boolean,
@@ -60,11 +69,26 @@ const props = defineProps({
 
 const emit = defineEmits(["update:collapsed"]);
 
-const settingsOpen = ref(false);
+const menus = ref<any[]>([]);
+const openMenus = ref<number[]>([]);
 
-const toggleSettings = () => {
-  settingsOpen.value = !settingsOpen.value;
+// Toggle submenu open/close
+const toggleSubmenu = (id: number) => {
+  if (openMenus.value.includes(id)) {
+    openMenus.value = openMenus.value.filter(mid => mid !== id);
+  } else {
+    openMenus.value.push(id);
+  }
 };
+
+// Load menu from localStorage (or API later)
+onMounted(() => {
+  const menuData = localStorage.getItem("menu");
+  if (menuData) {
+    const parsed = JSON.parse(menuData);
+    menus.value = parsed.menus || [];
+  }
+});
 </script>
 
 <style scoped>

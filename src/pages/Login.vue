@@ -96,7 +96,7 @@ const handleLogin = async () => {
 
   const success = await apiLogin(payload, router);
   if (success) {
-    router.push("/");
+    window.location.href = "/dashboard";
   } else {
     errorMessage.value = "Login failed. Please check your credentials.";
   }

@@ -3,6 +3,9 @@ import { useToast } from 'vue-toastification';
 import api from '../api';
 const toast = useToast();
 
+import { useMenuStore } from '../Store/menu';
+
+
 import { defineStore } from 'pinia';
 
 export const useAuthStore = defineStore('auth', {
@@ -51,6 +54,7 @@ interface RegisterPayload {
 // Login function — router passed from component
 export async function login(payload: LoginPayload, router: any): Promise<boolean> {
   try {
+    console.log(router)
     const response = await api.post('/login', payload, { withCredentials: true });
 
     // ✅ CORRECT PATH
@@ -61,9 +65,7 @@ export async function login(payload: LoginPayload, router: any): Promise<boolean
       name: userData.name,
       email: userData.email,
     });
-
     toast.success('Welcome! Login successful!');
-    await router.push('/dashboard');
     return true;
 
   } catch (err) {
@@ -105,6 +107,10 @@ export async function logout(): Promise<void> {
 
   const authStore = useAuthStore();
   authStore.clearUser();
+
+  const menuStore = useMenuStore();
+  menuStore.clearMenus();
+  
   // Hard redirect
   window.location.href = '/login';
 }
@@ -146,7 +152,7 @@ export async function loginWithGoogle(code: string, router: any): Promise<boolea
     });
 
     toast.success('Welcome! Login successful!');
-    await router.push('/dashboard');
+    location.href="/dashboard";
     return true;
   } catch (err) {
     console.error(err);

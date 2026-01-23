@@ -3,67 +3,43 @@ import { createRouter, createWebHistory } from "vue-router";
 import App from "./App.vue";
 import "./style.css";
 
-// Google
-import GoogleCallback from './pages/GoogleCallback.vue';
-
 // Notifications
 import Toast, { POSITION } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
 
-// Import pages
-import Dashboard from "./pages/Dashboard.vue";
-import SiteManagement from "./pages/SiteManagement.vue";
-import Settings from "./pages/Settings.vue";
-import CrawlIndexManagement from "./pages/CrawlIndexManagement.vue";
-import CrawlIndexDetails from "./pages/CrawlIndexDetails.vue";
-
+// Pages
 import Login from "./pages/Login.vue";
+import GoogleCallback from './pages/GoogleCallback.vue';
 
 // Layouts
 import DefaultLayout from "./layout/DefaultLayout.vue";
 import AuthLayout from "./layout/AuthLayout.vue";
 
-// Axios instance
-import api from './api'; // Axios instance with withCredentials: true
+// Axios
+import api from './api';
+
+// Pinia
 import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 
-//subscriptions
-import Subscriptions from "./Subscriptions/stripe.vue";
+// Stores
+import { useAuthStore } from './Store/auth';
+import { useMenuStore } from './Store/menu';
+
+// Dynamic routes
+import { buildRoutes } from './Router/dynamicRoutes';
+
+/* ---------------- ROUTES ---------------- */
 
 const routes = [
-  { path: "/", redirect: "/dashboard" },
+  // { path: "/", redirect: "/dashboard" },
 
   {
     path: "/",
+    redirect: "/dashboard",
     component: DefaultLayout,
-    children: [
-      { path: "dashboard", component: Dashboard, meta: { requiresAuth: true } },
-      { path: "sites", component: SiteManagement, meta: { requiresAuth: true } },
-      {
-        path: "settings",
-        component: Settings,
-        meta: { requiresAuth: true },
-        children: [
-          {
-            path: "google-configuration",
-            name: "GoogleConfiguration",
-            component: () => import("./pages/GoogleConfiguration.vue"),
-            meta: { requiresAuth: true }
-          },
-          {
-            path: "schedule-configuration",
-            name: "ScheduleConfiguration",
-            component: () => import("./pages/ScheduleConfiguration.vue"),
-            meta: { requiresAuth: true }
-          }
-        ]
-      },
-      { path: "subscriptions", component: Subscriptions, meta: { requiresAuth: true } },
-
-      { path: "crawl-index-management", component: CrawlIndexManagement, meta: { requiresAuth: true } },
-      { path: "crawl-index-details/:siteId",name: 'CrawlIndexDetails', component: CrawlIndexDetails, meta: { requiresAuth: true } },
-    ],
+    name: "DefaultLayout",
+    children: [] // 🔥 filled dynamically
   },
 
   {
@@ -81,61 +57,65 @@ const routes = [
   }
 ];
 
-
 const router = createRouter({
   history: createWebHistory(),
   routes,
 });
 
-// ------------------------------------------------------
-//  GLOBAL AUTH GUARD (using server session/cookies)
-// ------------------------------------------------------
+/* ---------------- AUTH GUARD ---------------- */
+
 router.beforeEach(async (to, _, next) => {
   const isPublic = to.meta.public === true;
   const requiresAuth = to.meta.requiresAuth === true;
 
-  // ----- PUBLIC ROUTES -----
   if (isPublic) return next();
 
-  // ----- PROTECTED ROUTES -----
   if (requiresAuth) {
     try {
-      await api.get('/auth-check'); // backend checks HttpOnly cookie
+      await api.get('/auth-check');
       return next();
     } catch {
       return next({ path: "/login", query: { redirect: to.fullPath } });
     }
   }
 
-  // ----- LOGIN PAGE -----
-  if (to.path === "/login") {
-    try {
-      await api.get('/auth-check');
-      return next("/dashboard"); // already logged in
-    } catch {
-      return next(); // allow login
-    }
-  }
-
   next();
 });
+
+/* ---------------- APP INIT ---------------- */
 
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
 
 const app = createApp(App);
+app.use(pinia);
+app.use(Toast, { position: POSITION.BOTTOM_RIGHT, timeout: 3000 });
 
-app.use(pinia);     // ✅ THIS IS REQUIRED
+const initApp = async () => {
+  const authStore = useAuthStore();
+  const menuStore = useMenuStore();
+
+  if (authStore.isLoggedIn) {
+    try {
+      await api.get('/auth-check');
+
+      if (!menuStore.loaded) {
+        await menuStore.fetchMenus();
+      }
+
+      const dynamicRoutes = buildRoutes(menuStore.menus);
+      dynamicRoutes.forEach(r => router.addRoute("DefaultLayout", r));
+
+    } catch {
+      authStore.clearUser();
+      menuStore.clearMenus();
+      router.push('/login');
+    }
+  }
+};
+
+
+await initApp();
 
 app.use(router);
-
-// Add toastification
-app.use(Toast, {
-  position: POSITION.BOTTOM_RIGHT,
-  timeout: 3000,
-  closeOnClick: true,
-  pauseOnHover: true,
-  draggable: true,
-});
-
 app.mount("#app");

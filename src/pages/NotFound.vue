@@ -2,7 +2,10 @@
   <div class="error-page">
     <h1>404 - Page Not Found</h1>
     <p>The page you are looking for does not exist or the URL is incorrect.</p>
-    <router-link to="/dashboard" class="btn">Go to Dashboard</router-link>
+    <div class="button-group">
+    <router-link to="/login" class="btn">Login</router-link>
+    <router-link to="/dashboard" class="btn">Home</router-link>
+  </div>
   </div>
 </template>
 
@@ -42,5 +45,36 @@
 
 .error-page .btn:hover {
   background-color: #3f5ae0;
+}
+
+.btn {
+  display: inline-block;
+  padding: 12px 24px;
+  margin: 0 10px;         /* space between buttons */
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+/* Primary button - Login */
+.btn:first-of-type {
+  background-color: #4c6fff;
+  color: #fff;
+}
+
+.btn:first-of-type:hover {
+  background-color: #3f5ae0;
+}
+
+/* Secondary button - Home */
+.btn:last-of-type {
+  background-color: #e5e7eb;
+  color: #1f2937;
+}
+
+.btn:last-of-type:hover {
+  background-color: #d1d5db;
 }
 </style>
