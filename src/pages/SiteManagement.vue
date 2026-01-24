@@ -1,284 +1,296 @@
 <template>
-    <div class="page-container">
-      <div class="page-header">
-        <div>
-          <h1>Site Management</h1>
-          <p class="subtitle">Manage and configure your sites</p>
-        </div>
-        <button class="btn-primary" @click="openAddModal">+ Add Site</button>
+  <div class="page-container">
+    <div class="page-header">
+      <div>
+        <h1>Site Management</h1>
+        <p class="subtitle">Manage and configure your sites</p>
       </div>
-  
-      <!-- Site List Table -->
-      <div class="table-card">
-        <table class="sites-table">
-          <thead>
-            <tr>
-              <th>Site Name</th>
-              <th>URL</th>
-              <th>Type</th>
-              <th>Status</th>
-              <th>Created</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="site in sites" :key="site.id">
-              <td class="site-name-cell">
-                <div class="site-icon">{{ site.name.charAt(0).toUpperCase() }}</div>
-                <span>{{ site.name }}</span>
-              </td>
-              <td>{{ site.url }}</td>
-              <td>{{ site.type }}</td>
-              <td>
-                <span class="status-badge" :class="site.activeStatus.toLowerCase()">{{ site.activeStatus === 'Active' ? 'Active' : 'Inactive' }}</span>
-              </td>
-              <td>{{ formatDate(site.created) }}</td>
-              <td class="action-cell">
-                <button class="action-btn" @click="editSite(site)">Edit</button>
-                <!-- <button class="action-btn delete" @click="toggleSiteStatus(site.id)">{{ site.activeStatus === 'Active' ? 'Deactivate' : 'Activate' }}</button> -->
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-  
-      <!-- Add/Edit Site Modal -->
-      <div v-if="showModal" class="modal-overlay" @click="closeModal">
-        <div class="modal-content" @click.stop>
-          <div class="modal-header">
-            <h2>{{ isEditing ? 'Edit Site' : 'Add New Site' }}</h2>
-            <button class="close-btn" @click="closeModal">&times;</button>
-          </div>
-  
-          <form @submit.prevent="saveSite">
-            <div class="form-group">
-              <label>Site Name *</label>
-              <input v-model="formData.name" type="text" placeholder="Enter site name" required />
-            </div>
-  
-            <div class="form-group">
-              <label>Google Console Sites *</label>
-              <select v-model="formData.url" required>
-                <option value="" disabled>
-                {{ isLoadingUrls ? 'Loading URLs...' : 'Select URL' }}
-                </option>
-                <option v-for="url in availableUrls" :key="url" :value="url">
-                {{ url }}
-                </option>
-              </select>
+      <button class="btn-primary" @click="openAddModal">+ Add Site</button>
+    </div>
 
-            </div>
-  
-            <div class="form-row">
-              <div class="form-group">
-                <label>Site Type *</label>
-                <select v-model="formData.type" required>
-                  <option value="">Select Type</option>
-                  <option value="E-commerce">E-commerce</option>
-                  <option value="Blog">Blog</option>
-                  <option value="Portfolio">Portfolio</option>
-                  <option value="Corporate">Corporate</option>
-                  <option value="SaaS">SaaS</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-              <!-- Replaced status dropdown with toggle switch for Active/Inactive -->
-              <div class="form-group">
-                <label>Status</label>
-                <div class="toggle-container">
-                  <input
-                    v-model="formData.activeStatus"
-                    type="checkbox"
-                    id="status-toggle"
-                    :true-value="'Active'"
-                    :false-value="'Inactive'"
-                    class="toggle-input"
-                  />
-                  <label for="status-toggle" class="toggle-label">
-                    <span class="toggle-switch"></span>
-                    <span class="toggle-text">{{ formData.activeStatus === 'Active' ? 'Active' : 'Inactive' }}</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-  
-            <div class="form-group">
-              <label>Description</label>
-              <textarea v-model="formData.description" placeholder="Enter site description" rows="4"></textarea>
-            </div>
-  
-            <div class="modal-footer">
-              <button type="button" class="btn-secondary" @click="closeModal">Cancel</button>
-              <button type="submit" class="btn-primary">{{ isEditing ? 'Update Site' : 'Add Site' }}</button>
-            </div>
-          </form>
+    <!-- Site List Table -->
+    <div class="table-card">
+      <table class="sites-table">
+        <thead>
+          <tr>
+            <th>Site Name</th>
+            <th>URL</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Robots.txt</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr v-for="site in sites" :key="site.id">
+            <td class="site-name-cell">
+              <div class="site-icon">{{ site.name.charAt(0).toUpperCase() }}</div>
+              <span>{{ site.name }}</span>
+            </td>
+
+            <td>{{ site.url }}</td>
+            <td>{{ site.type }}</td>
+
+            <td>
+              <span
+                class="status-badge"
+                :class="site.activeStatus.toLowerCase()"
+              >
+                {{ site.activeStatus }}
+              </span>
+            </td>
+
+            <td>
+              <span
+                class="status-badge"
+                :class="site.ignoreRobotTxt ? 'success' : 'inactive'"
+              >
+                {{ site.ignoreRobotTxt ? 'Ignored' : 'Followed' }}
+              </span>
+            </td>
+
+            <td>{{ formatDate(site.created) }}</td>
+
+            <td class="action-cell">
+              <button class="action-btn" @click="editSite(site)">Edit</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div v-if="showModal" class="modal-overlay" @click="closeModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h2>{{ isEditing ? 'Edit Site' : 'Add New Site' }}</h2>
+          <button class="close-btn" @click="closeModal">&times;</button>
         </div>
+
+        <form @submit.prevent="saveSite">
+          <div class="form-group">
+            <label>Site Name *</label>
+            <input v-model="formData.name" required />
+          </div>
+
+          <div class="form-group">
+            <label>Google Console Sites *</label>
+            <select v-model="formData.url" required>
+              <option value="" disabled>
+                {{ isLoadingUrls ? 'Loading URLs...' : 'Select URL' }}
+              </option>
+              <option v-for="url in availableUrls" :key="url" :value="url">
+                {{ url }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Site Type *</label>
+              <select v-model="formData.type" required>
+                <option value="">Select Type</option>
+                <option>E-commerce</option>
+                <option>Blog</option>
+                <option>Portfolio</option>
+                <option>Corporate</option>
+                <option>SaaS</option>
+                <option>Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Status</label>
+              <div class="toggle-container">
+                <input
+                  v-model="formData.activeStatus"
+                  type="checkbox"
+                  id="status-toggle"
+                  :true-value="'Active'"
+                  :false-value="'Inactive'"
+                  class="toggle-input"
+                />
+                <label for="status-toggle" class="toggle-label">
+                  <span class="toggle-switch"></span>
+                  <span class="toggle-text">
+                    {{ formData.activeStatus }}
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ignore Robots.txt -->
+          <div class="form-group">
+            <label>Ignore robots.txt</label>
+            <div class="toggle-container">
+              <input
+                v-model="formData.ignoreRobotTxt"
+                type="checkbox"
+                id="robots-toggle"
+                class="toggle-input"
+              />
+              <label for="robots-toggle" class="toggle-label">
+                <span class="toggle-switch"></span>
+                <span class="toggle-text">
+                  {{ formData.ignoreRobotTxt ? 'Yes (Ignore)' : 'No (Follow)' }}
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Description</label>
+            <textarea v-model="formData.description" rows="3" />
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" @click="closeModal">
+              Cancel
+            </button>
+            <button type="submit" class="btn-primary">
+              {{ isEditing ? 'Update Site' : 'Add Site' }}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
-  </template>
-  
+  </div>
+</template>
 
-  <script setup lang="ts">
-    import { ref, onMounted } from 'vue'
-    import api from '../api' // your axios instance with token/refresh
-    import { useToast } from 'vue-toastification';
-    import { useGoogleConfigStore } from '../Shared/googleConfig'
-    import { useSubscriptionStore } from '../Shared/subscription'
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import api from '../api'
+import { useToast } from 'vue-toastification'
+import { useGoogleConfigStore } from '../Shared/googleConfig'
+import { useSubscriptionStore } from '../Shared/subscription'
 
+const toast = useToast()
+const googleConfigStore = useGoogleConfigStore()
+const subscriptionStore = useSubscriptionStore()
 
-    const googleConfigStore = useGoogleConfigStore()
-    const subscriptionStore = useSubscriptionStore()
+interface Site {
+  id: number
+  name: string
+  url: string
+  type: string
+  activeStatus: 'Active' | 'Inactive'
+  description: string
+  created: Date
+  ignoreRobotTxt: boolean
+}
 
-    const toast = useToast();
+interface FormData {
+  name: string
+  url: string
+  type: string
+  activeStatus: 'Active' | 'Inactive'
+  description: string
+  ignoreRobotTxt: boolean
+}
 
-    interface Site {
-      id: number
-      name: string
-      url: string
-      type: string
-      activeStatus: 'Active' | 'Inactive'
-      description: string
-      created: Date,
-      isIndexable:'Yes' | 'No'
-    }
-    
-    interface FormData {
-      name: string
-      url: string
-      type: string
-      activeStatus: 'Active' | 'Inactive'
-      description: string
-    }
-    
-    const sites = ref<Site[]>([])
-    const showModal = ref(false)
-    const isEditing = ref(false)
-    const editingId = ref<number | null>(null)
-    
-    const formData = ref<FormData>({
-      name: '',
-      url: '',
-      type: '',
-      activeStatus: 'Active',
-      description: ''
-    })
-    
-    /* ============================
-       GET SITES
-    ============================ */
-    const fetchSites = async () => {
+const sites = ref<Site[]>([])
+const showModal = ref(false)
+const isEditing = ref(false)
+const editingId = ref<number | null>(null)
+
+const formData = ref<FormData>({
+  name: '',
+  url: '',
+  type: '',
+  activeStatus: 'Active',
+  description: '',
+  ignoreRobotTxt: false
+})
+
+const fetchSites = async () => {
+  const res = await api.get('/site?PageNo=1&PageSize=10')
+  sites.value = (res.data.data || []).map((i: any) => ({
+    id: i.webSiteId,
+    name: i.siteName,
+    url: i.url,
+    type: i.siteType,
+    activeStatus: i.activeStatus ? 'Active' : 'Inactive',
+    description: i.description || '',
+    created: new Date(i.createdDate),
+    ignoreRobotTxt: i.ignoreRobotTxt ?? false
+  }))
+}
+
+const saveSite = async () => {
   try {
-    const res = await api.get('/site?PageNo=1&PageSize=10')
-    const items = res.data?.data || []
+    await api.post('/site', {
+      siteName: formData.value.name,
+      url: formData.value.url,
+      siteType: formData.value.type,
+      description: formData.value.description,
+      isActivated: formData.value.activeStatus === 'Active',
+      ignoreRobotTxt: formData.value.ignoreRobotTxt,
+      webSiteId: editingId.value
+    })
 
-    sites.value = items.map((item: any) => ({
-      id: item.webSiteId,
-      name: item.siteName,
-      url: item.url,
-      type: item.siteType,
-      activeStatus: item.activeStatus ? 'Active' : 'Inactive', // fix here
-      description: item.description || '',
-      created: new Date(item.createdDate ?? new Date()),
-      isIndexable: item.isIndexable ? 'Yes' : 'No',
-    }))
-  } catch (err) {
-    console.error('Failed to load sites', err)
+    toast.success('Site saved successfully')
+    fetchSites()
+    closeModal()
+  } catch {
+    toast.error('Failed to save site')
   }
 }
 
-    
-    /* ============================
-       ADD / UPDATE SITE
-    ============================ */
-    const saveSite = async () => {
-      const payload = {
-        siteName: formData.value.name,
-        url: formData.value.url,
-        siteType: formData.value.type,
-        description: formData.value.description,
-        isActivated: formData.value.activeStatus === 'Active',
-        webSiteId: editingId.value,
-      }
-    
-      try {
-        await api.post('/site', payload)
-        await fetchSites()
-        closeModal()
-        toast.success('Site updated successfully!');
-      } catch (err) {
-        toast.error('Failed to save site!');
-      }
-    }
-    
-    /* ============================
-       UI HELPERS
-    ============================ */
-    const openAddModal = async() => {
-      isEditing.value = false
-      editingId.value = null
-      formData.value = {
-        name: '',
-        url: '',
-        type: '',
-        activeStatus: 'Active',
-        description: '',
-      }
-      showModal.value = true
-      await fetchAvailableUrls()
+const openAddModal = async () => {
+  isEditing.value = false
+  editingId.value = null
+  formData.value = {
+    name: '',
+    url: '',
+    type: '',
+    activeStatus: 'Active',
+    description: '',
+    ignoreRobotTxt: false
+  }
+  showModal.value = true
+  fetchAvailableUrls()
+}
 
-    }
-    
-    const editSite = async(site: Site) => {
-      isEditing.value = true
-      editingId.value = site.id
-      formData.value = {
-        name: site.name,
-        url: site.url,
-        type: site.type,
-        activeStatus: site.activeStatus,
-        description: site.description,
-      }
-      showModal.value = true
-      await fetchAvailableUrls()
+const editSite = async (site: Site) => {
+  isEditing.value = true
+  editingId.value = site.id
+  formData.value = { ...site }
+  showModal.value = true
+  fetchAvailableUrls()
+}
 
-    }
+const closeModal = () => (showModal.value = false)
 
-    const closeModal = () => {
-      showModal.value = false
-    }
-    
-    const formatDate = (date: Date) => {
-      return new Date(date).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      })
-    }
+const formatDate = (date: Date) =>
+  new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  })
 
-    const availableUrls = ref<string[]>([])
-    const isLoadingUrls = ref(false)
+const availableUrls = ref<string[]>([])
+const isLoadingUrls = ref(false)
 
 const fetchAvailableUrls = async () => {
   try {
     isLoadingUrls.value = true
-    const res = await api.get('/site/google-sites') 
+    const res = await api.get('/site/google-sites')
     availableUrls.value = res.data.data || []
-  } catch {
-    toast.error('Failed to load google console sites')
   } finally {
     isLoadingUrls.value = false
   }
 }
 
-    
-// Only fetch once on mount
 onMounted(() => {
   fetchSites()
   googleConfigStore.check()
   subscriptionStore.checkSubscription()
 })
-    </script>
-    
+</script>
+
   
     <style scoped>
       .page-container {

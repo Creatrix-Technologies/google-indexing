@@ -60,8 +60,8 @@
               <input type="checkbox" :checked="isAllChecked" @change="toggleSelectAll" />
             </th>
             <th>URL</th>
-            <th>Status</th>
             <th>Status Code</th>
+            <th>Already Indexed</th>
             <th>Index Status</th>
             <th>Indexed At</th>
             <th>Index Result</th>
@@ -94,7 +94,8 @@
               </span>
             </td>
 
-            <td class="status-code">{{ item.statusCode }}</td>
+            <td>{{ item.isAlreadyIndexed?'Yes':'No' }}</td>
+
             <td>{{ item.indexedStatus }}</td>
             <td>{{ item.indexedAt }}</td>
             <td>{{ item.indexedResult }}</td>
@@ -147,7 +148,8 @@ interface CrawledUrl {
   crawledAt: string
   indexedStatus: string
   indexedAt: string
-  indexedResult: string
+  indexedResult: string,
+  isAlreadyIndexed: boolean
 }
 
 interface PageInfo {
@@ -252,23 +254,54 @@ const indexSelectedUrls = async () => {
 
 const indexSingleUrl = async (id: number) => {
   const result = await Swal.fire({
-    title: "Confirm",
-    text: "Index this URL?",
-    icon: "warning",
-    showCancelButton: true
+    title: "Index URL",
+    text: "Choose indexing method",
+    icon: "question",
+    showCancelButton: true,
+    showDenyButton: true,
+    confirmButtonText: "⚡ Index Instantly",
+    denyButtonText: "⏳ Add to Queue",
+    cancelButtonText: "Cancel",
+    confirmButtonColor: "#22c55e",
+    denyButtonColor: "#3b82f6"
   })
 
-  if (!result.isConfirmed) return
+  if (result.isDismissed) return
 
-  await api.post("/crawl/index", {
-    websiteId: siteId,
-    urlId: [id]
-  })
+  try {
+    // ⚡ Instant indexing
+    if (result.isConfirmed) {
+      await api.post("/crawl/index-direct", {
+        websiteId: siteId,
+        urlId: id 
+      })
 
-  Swal.fire("Queued", "URL sent for indexing", "success")
-  fetchCrawlDetails()
-  fetchCrawlCounts()
+      Swal.fire("Indexed", "URL indexed instantly", "success")
+    }
+
+    // ⏳ Queue indexing
+    if (result.isDenied) {
+      await api.post("/crawl/index", {
+        websiteId: siteId,
+        urlId: [id]
+      })
+
+      Swal.fire("Queued", "URL added to indexing queue", "success")
+    }
+
+    fetchCrawlDetails()
+    fetchCrawlCounts()
+  } catch (err: any) {
+    console.log(err)
+    const msg =
+      err?.response?.data?.error?.description ||
+      "You are not authorized to perform instant indexing."
+
+    Swal.fire("Failed", msg, "error")
+  }
 }
+
+
 
 /* COMPUTED */
 const totalUrlCount = computed(() => counts.value.totalCount)
