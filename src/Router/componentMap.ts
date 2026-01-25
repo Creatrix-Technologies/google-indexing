@@ -8,5 +8,6 @@ export const componentMap: Record<string, any> = {
     ScheduleConfiguration: () => import('../pages/ScheduleConfiguration.vue'),
     Users: () => import('../pages/Users.vue'),
     stripe: () => import('../Subscriptions/stripe.vue'),
+    plans: () => import('../Subscriptions/plans.vue'),
   };
   
