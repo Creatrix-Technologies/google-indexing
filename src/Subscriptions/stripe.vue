@@ -7,6 +7,10 @@ import type { Stripe } from '@stripe/stripe-js'
 import Swal from "sweetalert2"
 import Loading from "vue-loading-overlay"
 import 'vue-loading-overlay/dist/css/index.css'
+import { useSubscriptionStore } from '../Shared/subscription'
+
+const subscriptionStore = useSubscriptionStore()
+
 const toast = useToast()
 
 
@@ -70,20 +74,28 @@ const confirmSubscription = async () => {
     )
     const clientSecret = res.data.data.clientSecret
 
-    console.log(res)
     if (!clientSecret) throw new Error('Failed to create subscription')
 
-    const result = await stripe.confirmCardPayment(clientSecret, {
-      payment_method: { card },
-    })
+    const result = await stripe.confirmCardPayment(clientSecret, {payment_method: { card },})
 
-    if (result.error) {
-      toast.error(result.error.message || 'Payment failed')
-    } else if (result.paymentIntent?.status === 'succeeded') {
-      toast.success(`Subscribed to ${subscribingPlan.value.name}!`)
-      closeModal()
-      fetchPlans()
-    }
+if (result.paymentIntent) {
+  if (result.paymentIntent.status === 'succeeded') {
+    toast.success(`Subscribed to ${subscribingPlan.value.name}!`)
+    closeModal()
+    setTimeout(() => {
+      fetchPlans();
+      subscriptionStore.checkSubscription();
+    }, 2000); // 2000ms = 2 seconds delay
+  } else if (result.paymentIntent.status === 'requires_payment_method') {
+    toast.error('Payment failed, please try another method')
+  } else {
+    console.log('PaymentIntent status:', result.paymentIntent.status)
+  }
+} else if (result.error) {
+  toast.error(result.error.message || 'Payment failed')
+}
+
+////////
   } catch (err: any) {
     console.error(err)
     toast.error(err.response?.data?.error?.description || err.message || 'Subscription failed')
@@ -112,7 +124,7 @@ const cancelSubscription = async () => {
       toast.success('Subscription canceled.');
       fetchPlans();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to cancel subscription.');
+      toast.error(err.response?.data?.error?.description || 'Failed to cancel subscription.');
     }
   }
 };
