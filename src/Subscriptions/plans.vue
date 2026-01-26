@@ -5,6 +5,7 @@ import api from '../api'
 
 const toast = useToast()
 
+// Plan interface
 interface Plan {
   id: number
   name: string
@@ -12,9 +13,18 @@ interface Plan {
   amount: number
   currency: string
   isActive: boolean
+  durationId?: number
 }
 
+// Duration interface
+interface Duration {
+  id: number
+  name: string
+}
+
+// Refs
 const plans = ref<Plan[]>([])
+const durations = ref<Duration[]>([])
 const isLoading = ref(false)
 
 const form = ref({
@@ -22,13 +32,13 @@ const form = ref({
   name: '',
   description: '',
   amount: 0,
-  durationInDays: 30,
+  durationId: 3, // default MONTH
   isActive: true
 })
 
 const isEditing = ref(false)
 
-/* ---------------- FETCH ---------------- */
+/* ---------------- FETCH PLANS ---------------- */
 const fetchPlans = async () => {
   try {
     isLoading.value = true
@@ -41,6 +51,16 @@ const fetchPlans = async () => {
   }
 }
 
+/* ---------------- FETCH DURATIONS ---------------- */
+const fetchDurations = async () => {
+  try {
+    const res = await api.get('/durations')
+    durations.value = res.data.data || []
+  } catch {
+    toast.error('Failed to load durations')
+  }
+}
+
 /* ---------------- EDIT ---------------- */
 const editPlan = (plan: Plan) => {
   isEditing.value = true
@@ -49,7 +69,7 @@ const editPlan = (plan: Plan) => {
     name: plan.name,
     description: plan.description,
     amount: plan.amount,
-    durationInDays: plan.name.toLowerCase().includes('year') ? 365 : 30,
+    durationId: plan.durationId || 3, // default MONTH
     isActive: plan.isActive
   }
 }
@@ -62,7 +82,7 @@ const resetForm = () => {
     name: '',
     description: '',
     amount: 0,
-    durationInDays: 30,
+    durationId: 3,
     isActive: true
   }
 }
@@ -79,7 +99,11 @@ const savePlan = async () => {
   }
 }
 
-onMounted(fetchPlans)
+// On mounted
+onMounted(() => {
+  fetchPlans()
+  fetchDurations()
+})
 </script>
 
 <template>
@@ -138,9 +162,14 @@ onMounted(fetchPlans)
         <input id="amount" v-model.number="form.amount" type="number" placeholder="Enter amount" />
       </div>
 
+      <!-- DURATION SELECT -->
       <div class="form-row">
-        <label for="duration">Duration (days)</label>
-        <input id="duration" v-model.number="form.durationInDays" type="number" placeholder="Enter duration" />
+        <label for="duration">Plan</label>
+        <select id="duration" v-model="form.durationId">
+          <option v-for="d in durations" :key="d.id" :value="d.id">
+            {{ d.name }}
+          </option>
+        </select>
       </div>
 
       <div class="form-row checkbox-row">
@@ -296,7 +325,7 @@ onMounted(fetchPlans)
   font-weight: 500;
 }
 
-input {
+input, select {
   padding: 12px;
   border-radius: 8px;
   border: 1px solid #d1d5db;
@@ -304,7 +333,6 @@ input {
   font-size: 14px;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-
 
 /* Checkbox styling */
 .checkbox-row {

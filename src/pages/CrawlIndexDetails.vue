@@ -1,4 +1,6 @@
 <template>
+  <Loading :active.sync="isLoading" :is-full-page="true" />
+
   <div class="page-container">
     <div class="page-header">
       <router-link to="/crawl-index-management" class="back-link">
@@ -47,7 +49,7 @@
         :disabled="selectedIds.size === 0"
         @click="indexSelectedUrls"
       >
-        Index Selected URLs ({{ selectedIds.size }})
+        Queue Selected URLs ({{ selectedIds.size }})
       </button>
     </div>
 
@@ -61,11 +63,12 @@
             </th>
             <th>URL</th>
             <th>Status Code</th>
-            <th>Already Indexed</th>
-            <th>Index Status</th>
-            <th>Indexed At</th>
-            <th>Index Result</th>
-            <th>Crawled At</th>
+            <th>Indexing State</th>
+            <th>Coverage State</th>
+            <th>Queue Status</th>
+            <th>Result</th>
+            <th>API Type</th>
+            <th>Index Updated At</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -74,7 +77,7 @@
           <tr
             v-for="item in urls"
             :key="item.id"
-            :class="item.status.toLowerCase()"
+            :class="item.statusCode===200?'success':'failed'"
           >
             <td>
               <input
@@ -89,23 +92,27 @@
             </td>
 
             <td>
-              <span class="status-badge" :class="item.status.toLowerCase()">
-                {{ item.status }}
+              <span class="status-badge" :class="item.statusCode===200?'success':'failed'">
+                {{ item.statusCode }}
               </span>
             </td>
 
-            <td>{{ item.isAlreadyIndexed?'Yes':'No' }}</td>
-
-            <td>{{ item.indexedStatus }}</td>
+            <td>{{ item.indexingState.replace(/_/g, ' ')}}</td>
+            <td>{{ item.coverageState}}</td>
+            <td>{{ item.indexedStatus}}</td>
+            <td>{{ item.indexedResult}}</td>
+            <td>{{ item.type }}</td>
             <td>{{ item.indexedAt }}</td>
-            <td>{{ item.indexedResult }}</td>
-            <td>{{ item.crawledAt }}</td>
 
-            <td>
-              <button class="row-index-btn" @click="indexSingleUrl(item.id)">
-                Queue Index
+            <td class="action-cell">
+              <button title="Instant Index" class="row-index-btn" @click="indexSingleUrl(item.id)">
+                Index
+              </button>
+              <button title="Queue Index" class="row-index-btn failed" @click="removeIndexSingleUrl(item.id)">
+                Remove
               </button>
             </td>
+
           </tr>
 
           <tr v-if="urls.length === 0">
@@ -139,17 +146,20 @@ import { ref, computed, onMounted, watch } from "vue"
 import { useRoute } from "vue-router"
 import api from "../api"
 import Swal from "sweetalert2"
+import Loading from "vue-loading-overlay"
+import 'vue-loading-overlay/dist/css/index.css'
 
 interface CrawledUrl {
   id: number
   url: string
-  status: "Success" | "Failed"
+  coverageState: string,
+  indexingState:string,
   statusCode: number
   crawledAt: string
-  indexedStatus: string
   indexedAt: string
   indexedResult: string,
-  isAlreadyIndexed: boolean
+  indexedStatus: string,
+  type:string
 }
 
 interface PageInfo {
@@ -164,7 +174,7 @@ interface CrawlCount {
   totalCount: number
   successCount: number
   failedCount: number
-  indexed: number
+  indexedSucceed: number
   indexedFailed: number
   indexedQueued: number
   hasDailyQuotaExceed: boolean
@@ -175,6 +185,9 @@ const siteId = Number(route.params.siteId)
 
 const urls = ref<CrawledUrl[]>([])
 const selectedIds = ref<Set<number>>(new Set())
+
+const isLoading = ref(false)
+
 
 const pageInfo = ref<PageInfo>({
   page: 1,
@@ -188,7 +201,7 @@ const counts = ref<CrawlCount>({
   totalCount: 0,
   successCount: 0,
   failedCount: 0,
-  indexed: 0,
+  indexedSucceed: 0,
   indexedFailed: 0,
   indexedQueued: 0,
   hasDailyQuotaExceed: false
@@ -233,24 +246,46 @@ const toggleSelectAll = () => {
 /* INDEXING */
 const indexSelectedUrls = async () => {
   const result = await Swal.fire({
-    title: "Confirm",
-    text: "Index selected URLs?",
+    title: "Queue Selected URLs",
+    text: "What do you want to do with the selected URLs?",
     icon: "warning",
-    showCancelButton: true
+    showCancelButton: true,
+    showDenyButton: true,
+    confirmButtonText: "📥 Index",
+    denyButtonText: "🗑️ Remove Index",
+    confirmButtonColor: "#22c55e",
+    denyButtonColor: "#ef4444",
+    cancelButtonText: "Cancel"
   })
 
-  if (!result.isConfirmed) return
+  if (result.isDismissed) return
+
+  const type =
+    result.isConfirmed ? "URL_UPDATED" :
+    result.isDenied ? "URL_DELETED" :
+    null
+
+  if (!type) return
 
   await api.post("/crawl/index", {
     websiteId: siteId,
-    urlId: Array.from(selectedIds.value)
+    urlId: Array.from(selectedIds.value),
+    type
   })
 
-  Swal.fire("Queued", "URLs sent for indexing", "success")
+  Swal.fire(
+    "Queued",
+    type === "URL_UPDATED"
+      ? "URLs queued for indexing"
+      : "URLs queued for removal",
+    "success"
+  )
+
   selectedIds.value.clear()
   fetchCrawlDetails()
   fetchCrawlCounts()
 }
+
 
 const indexSingleUrl = async (id: number) => {
   const result = await Swal.fire({
@@ -259,7 +294,7 @@ const indexSingleUrl = async (id: number) => {
     icon: "question",
     showCancelButton: true,
     showDenyButton: true,
-    confirmButtonText: "⚡ Index Instantly",
+    confirmButtonText: "⚡ Index",
     denyButtonText: "⏳ Add to Queue",
     cancelButtonText: "Cancel",
     confirmButtonColor: "#22c55e",
@@ -269,24 +304,27 @@ const indexSingleUrl = async (id: number) => {
   if (result.isDismissed) return
 
   try {
+    isLoading.value = true // start loader
     // ⚡ Instant indexing
     if (result.isConfirmed) {
       await api.post("/crawl/index-direct", {
         websiteId: siteId,
-        urlId: id 
+        urlId: id,
+        type:"URL_UPDATED"
       })
 
-      Swal.fire("Indexed", "URL indexed instantly", "success")
+      Swal.fire("Indexed", "URL Indexed Instantly", "success")
     }
 
     // ⏳ Queue indexing
     if (result.isDenied) {
       await api.post("/crawl/index", {
         websiteId: siteId,
-        urlId: [id]
+        urlId: [id],
+        type:"URL_UPDATED"
       })
 
-      Swal.fire("Queued", "URL added to indexing queue", "success")
+      Swal.fire("Queued", "Queued For Indexing", "success")
     }
 
     fetchCrawlDetails()
@@ -299,15 +337,72 @@ const indexSingleUrl = async (id: number) => {
 
     Swal.fire("Failed", msg, "error")
   }
+  finally {
+    isLoading.value = false // stop loader
+  }
 }
 
+const removeIndexSingleUrl = async (id: number) => {
+  const result = await Swal.fire({
+    title: "Remove Index URL",
+    text: "Choose indexing remove method",
+    icon: "question",
+    showCancelButton: true,
+    showDenyButton: true,
+    confirmButtonText: "⚡ Remove",
+    denyButtonText: "⏳ Queue to Remove",
+    cancelButtonText: "Cancel",
+    confirmButtonColor: "#ef4444", // red
+    denyButtonColor: "#dc2626"    // darker red
+  })
 
+  if (result.isDismissed) return
+
+  try {
+    isLoading.value = true; // start loader
+
+    // ⚡ Instant indexing
+    if (result.isConfirmed) {
+      await api.post("/crawl/index-direct", {
+        websiteId: siteId,
+        urlId: id,
+        type: "URL_DELETED"
+      })
+
+      Swal.fire("Indexed", "URL Removed Instantly", "success")
+    }
+
+    // ⏳ Queue indexing
+    if (result.isDenied) {
+      await api.post("/crawl/index", {
+        websiteId: siteId,
+        urlId: [id],
+        type: "URL_DELETED"
+      })
+
+      Swal.fire("Queued", "Queued For Removal", "success")
+    }
+
+    fetchCrawlDetails()
+    fetchCrawlCounts()
+  } catch (err: any) {
+    console.log(err)
+    const msg =
+      err?.response?.data?.error?.description ||
+      "You are not authorized to perform instant indexing."
+
+    Swal.fire("Failed", msg, "error")
+  }
+  finally {
+    isLoading.value = false // stop loader
+  }
+}
 
 /* COMPUTED */
 const totalUrlCount = computed(() => counts.value.totalCount)
 const successCount = computed(() => counts.value.successCount)
 const failedCount = computed(() => counts.value.failedCount)
-const indexed = computed(() => counts.value.indexed)
+const indexed = computed(() => counts.value.indexedSucceed)
 const indexedFailed = computed(() => counts.value.indexedFailed)
 const indexedQueued = computed(() => counts.value.indexedQueued)
 
@@ -557,6 +652,14 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   color: white;
   border: none;
   cursor: pointer;
-}
+} 
+
+.action-cell {
+    display: flex;
+    gap: 8px;
+  }
+  .row-index-btn.failed {
+    background :red;
+  }
   </style>
   

@@ -117,8 +117,9 @@
             <td>{{ formatCrawlDate(site.crawlDate) }}</td>
 
             <td class="action-cell">
-              <button class="action-btn" @click="startCrawl(site.id)">Crawl</button>
-              <button class="action-btn view-details" @click="viewDetails(site.id)">
+              <button v-if="site.crawlStatus!='In Progress'" class="action-btn" @click="startCrawl(site.id)">Crawl</button>
+
+              <button v-if="site.crawlStatus==='Success'" class="action-btn view-details" @click="viewDetails(site.id)">
                 View
               </button>
             </td>
@@ -158,7 +159,7 @@ interface Site {
   url: string
   type: string
   status: 'Active' | 'Inactive'
-  crawlStatus?: 'Success' | 'Failed' | 'Queue'
+  crawlStatus?: 'Success' | 'Failed' | 'Queue' | 'In Progress'
   crawlDate?: Date
   isIndexable: 'Yes' | 'No'
 }

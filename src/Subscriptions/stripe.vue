@@ -1,186 +1,311 @@
 <script setup lang="ts">
-  import { ref, onMounted } from 'vue'
-  import { useToast } from 'vue-toastification'
-  import { loadStripe } from '@stripe/stripe-js'              // runtime value
-  import type { Stripe, StripeCardElement } from '@stripe/stripe-js'  // types only
-  import api from '../api'
-  import { useSubscriptionStore } from '../Shared/subscription'
+import { ref, onMounted } from 'vue'
+import { useToast } from 'vue-toastification'
+import api from '../api'
+import { loadStripe } from '@stripe/stripe-js'
+import type { Stripe } from '@stripe/stripe-js'
+import Swal from "sweetalert2"
+import Loading from "vue-loading-overlay"
+import 'vue-loading-overlay/dist/css/index.css'
+const toast = useToast()
 
-  const subscriptionStore = useSubscriptionStore()
 
-  // Toasts
-  const toast = useToast()
-  const loading = ref(false)
-  const selectedPlanId = ref<number | null>(null)
-  const clientSecret = ref<string>('')
-  
-  // Dynamic plans
-  interface Plan {
-    id: number
-    name: string
-    amount: number
-    currency: string
-    description: string
+interface Plan {
+  id: number
+  name: string
+  description: string
+  amount: number
+  currency: string
+  isActive: boolean
+  durationId: number
+  duration: string
+  isCurrentPlan: boolean
+}
+
+const plans = ref<Plan[]>([])
+const isLoading = ref(false)
+const subscribingPlan = ref<Plan | null>(null)
+const publicKey = import.meta.env.VITE_STRIPE_PUBLIC
+const stripePromise = loadStripe(publicKey)
+const cardElementRef = ref<HTMLDivElement | null>(null)
+
+let stripe: Stripe | null = null
+let card: any = null
+
+/* ---------------- FETCH PLANS ---------------- */
+const fetchPlans = async () => {
+  try {
+    const res = await api.get('/payments/stripe-subscription-plans')
+    plans.value = res.data.data || []
+  } catch {
+    toast.error('Failed to load plans')
+  } 
+}
+
+/* ---------------- START SUBSCRIBE ---------------- */
+const startSubscribe = async (plan: Plan) => {
+  subscribingPlan.value = { ...plan }
+  stripe = await stripePromise
+  if (!stripe || !cardElementRef.value) return
+
+  if (card) {
+    card.unmount()
+    card = null
   }
-  const plans = ref<Plan[]>([])
-  const isLoadingPlans = ref(true)
-  
-  // Stripe refs
-  const stripe = ref<Stripe | null>(null)
-  const card = ref<StripeCardElement | null>(null)
-  const cardElementRef = ref<HTMLDivElement | null>(null)
-  
-  // Fetch plans from API
-  const fetchPlans = async () => {
-    try {
-      isLoadingPlans.value = true
-      const res = await api.get('/payments/stripe-subscription-plans') // your API endpoint
-      plans.value = res.data.data || []
-  
-      if (plans.value.length > 0) {
-        selectedPlanId.value = plans.value[0]?.id ?? null
-      }
-    } catch (err: any) {
-      toast.error('Failed to load subscription plans')
-      console.error(err)
-    } finally {
-      isLoadingPlans.value = false
-    }
-  }
-  
-  // Initialize Stripe Elements
-  onMounted(async () => {
-    await fetchPlans()
-    const publicKyey=import.meta.env.VITE_STRIPE_PUBLIC
-    stripe.value = await loadStripe(publicKyey) // replace with your public key
-    if (stripe.value && cardElementRef.value) {
-      const elements = stripe.value.elements()
-      card.value = elements.create('card', {
-        style: {
-          base: {
-            fontSize: '16px',
-            color: '#32325d',
-            fontFamily: 'Arial, sans-serif',
-            '::placeholder': { color: '#a0aec0' },
-            padding: '12px'
-          },
-          invalid: { color: '#fa755a', iconColor: '#fa755a' }
-        }
-      })
-      card.value.mount(cardElementRef.value)
-    }
 
-    subscriptionStore.checkSubscription()
-  })
-  
-  // Payment function
-  const pay = async () => {
-    if (!stripe.value || !card.value || selectedPlanId.value === null) return
-    loading.value = true
-  
-    try {
-      const res = await api.get(`/payments/stripe-intent?plan=${selectedPlanId.value}`)
-      clientSecret.value = res.data.clientSecret
+  cardElementRef.value.innerHTML = ''
+  const elements = stripe.elements()
+  card = elements.create('card', { hidePostalCode: true })
+  card.mount(cardElementRef.value)
+}
 
-    if (!res.data.isSuccess || !res.data.data) {
-      const backendMessage = res.data.error?.description || res.data.message || 'Payment failed';
-      toast.error(backendMessage);
-      return; // stop further processing
-          }
+/* ---------------- CONFIRM PAYMENT ---------------- */
+const confirmSubscription = async () => {
+  if (!stripe || !card || !subscribingPlan.value) return
+  try {
+    isLoading.value = true // start loader
 
-    // Extract the client secret from data
-    clientSecret.value = res.data.data
+    const res = await api.get(
+      `/payments/stripe-user-subscription?plan=${subscribingPlan.value.id}`
+    )
+    const clientSecret = res.data.data.clientSecret
 
-    const result = await stripe.value.confirmCardPayment(clientSecret.value, {
-      payment_method: { card: card.value }
+    console.log(res)
+    if (!clientSecret) throw new Error('Failed to create subscription')
+
+    const result = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: { card },
     })
-      if (result.error) {
-        toast.error(result.error.message || 'Payment failed')
-      } else if (result.paymentIntent?.status === 'succeeded') {
-        toast.success('Payment successful! Subscription activated.')
-        subscriptionStore.isValid = true   // mark subscription as active
-        subscriptionStore.isChecking = false // mark checking complete
-      }
+
+    if (result.error) {
+      toast.error(result.error.message || 'Payment failed')
+    } else if (result.paymentIntent?.status === 'succeeded') {
+      toast.success(`Subscribed to ${subscribingPlan.value.name}!`)
+      closeModal()
+      fetchPlans()
+    }
+  } catch (err: any) {
+    console.error(err)
+    toast.error(err.response?.data?.error?.description || err.message || 'Subscription failed')
+  }finally {
+    isLoading.value = false // stop loader
+  }
+}
+
+/* ---------------- CANCEL SUBSCRIPTION ---------------- */
+const cancelSubscription = async () => {
+  // Show confirmation popup
+  const result = await Swal.fire({
+    title: 'Cancel Subscription?',
+    text: 'Are you sure you want to cancel your subscription? This action cannot be undone.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, cancel it',
+    cancelButtonText: 'No, keep it',
+    reverseButtons: true
+  });
+
+  // If user confirmed
+  if (result.isConfirmed) {
+    try {
+      await api.get('/payments/cancel-subscription');
+      toast.success('Subscription canceled.');
+      fetchPlans();
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.description || 'Payment processing error')
-    } finally {
-      loading.value = false
+      toast.error(err.response?.data?.message || 'Failed to cancel subscription.');
     }
   }
-  </script>
-  
-  <template>
-    <div class="page-container">
-      <!-- Header -->
-      <div class="page-header">
-        <div>
-          <h1>Subscriptions</h1>
-          <p class="subtitle">Select a plan and pay securely</p>
-        </div>
-        <span class="menu-icon">💳</span>
-      </div>
-  
-      <!-- Loading / Plans -->
-      <div v-if="isLoadingPlans" class="text-center py-6 text-gray-500">
-        Loading plans...
-      </div>
-  
-      <div v-else class="plans-grid">
-        <div
-          v-for="plan in plans"
-          :key="plan.id"
-          :class="['plan-card', selectedPlanId === plan.id ? 'selected' : '']"
-          @click="selectedPlanId = plan.id"
-        >
-          <h2 class="plan-name">{{ plan.name }}</h2>
-          <p class="plan-description">{{ plan.description }}</p>
-          <p class="plan-price">${{ plan.amount }}</p>
-        </div>
-      </div>
-  
-      <!-- Stripe Card Input -->
-      <div class="card-input-container mt-6">
-        <label>Card Details</label>
-        <div ref="cardElementRef" class="card-element"></div>
-      </div>
-  
-      <!-- Pay Button -->
-      <button class="btn-primary w-full mt-4" :disabled="loading || !selectedPlanId" @click="pay">
-        {{ loading ? 'Processing...' : 'Pay Now' }}
-      </button>
-    </div>
-  </template>
-  
-  <style scoped>
-  /* Container & Header */
-  .page-container { flex: 1; padding: 30px; min-height: 100vh; background: #f9f9f9; }
-  .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; gap: 10px; }
-  .page-header h1 { font-size: 32px; font-weight: 700; margin: 0 0 5px 0; color: #333; }
-  .subtitle { font-size: 14px; color: #999; margin: 0; }
-  .menu-icon { font-size: 28px; color: #22c55e; }
-  
-  /* Buttons */
-  .btn-primary { background: #22c55e; color: #fff; border-radius: 8px; font-weight: 600; padding: 12px; cursor: pointer; transition: all 0.3s; }
-  .btn-primary:hover { background: #16a34a; }
-  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-  
-  /* Plan Cards */
-  .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; margin-bottom: 20px; }
-  .plan-card { background: #fff; border-radius: 12px; border: 2px solid transparent; padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
-  .plan-card.selected { border-color: #22c55e; box-shadow: 0 4px 12px rgba(34,197,94,0.2); }
-  .plan-name { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
-  .plan-description { font-size: 13px; color: #666; margin-bottom: 12px; }
-  .plan-price { font-size: 20px; font-weight: 700; color: #22c55e; }
-  
-  /* Stripe Card Input */
-  .card-input-container { margin-bottom: 20px; }
-  .card-input-container label { display: block; font-weight: 600; margin-bottom: 8px; }
-  .card-element { background: #f9f9f9; padding: 12px; border-radius: 8px; border: 1px solid #e8e8e8; }
-  
-  /* Responsive */
-  @media (max-width: 768px) {
-    .page-header { flex-direction: column; align-items: flex-start; }
-    .plans-grid { grid-template-columns: 1fr; }
+};
+
+
+/* ---------------- CLOSE MODAL ---------------- */
+const closeModal = () => {
+  if (card) {
+    card.unmount()
+    card = null
   }
-  </style>
-  
+  subscribingPlan.value = null
+}
+
+onMounted(fetchPlans)
+</script>
+
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <h1>Subscription Plans</h1>
+      <p class="subtitle">Choose a plan and subscribe</p>
+    </div>
+    <Loading :active.sync="isLoading" :is-full-page="true" />
+
+    <div v-if="isLoading" class="loading">Loading plans...</div>
+
+    <div v-else class="plans-grid">
+      <div
+        v-for="plan in plans"
+        :key="plan.id"
+        class="plan-card"
+        :class="{ inactive: !plan.isActive, featured: plan.duration === 'YEAR' }"
+      >
+        <div class="plan-header">
+          <h3>{{ plan.name }}</h3>
+          <span class="badge" v-if="plan.duration === 'YEAR'">Best Value</span>
+        </div>
+        <p class="description">{{ plan.description }}</p>
+        <div class="amount">
+          ${{ plan.amount.toFixed(2) }} / {{ plan.duration.toLowerCase() }}
+        </div>
+
+        <div class="actions">
+          <!-- SUBSCRIBE BUTTON -->
+          <button
+            v-if="!plan.isCurrentPlan && plan.isActive"
+            class="subscribe"
+            @click="startSubscribe(plan)"
+          >
+            Subscribe
+          </button>
+
+          <!-- INACTIVE BUTTON -->
+          <button
+            v-else-if="!plan.isActive"
+            class="status inactive"
+            disabled
+          >
+            Inactive
+          </button>
+
+          <!-- CANCEL BUTTON ONLY FOR CURRENT PLAN -->
+          <button
+            v-if="plan.isCurrentPlan"
+            class="cancel-sub current-plan"
+            @click="cancelSubscription"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card Input Modal -->
+    <div v-if="subscribingPlan" class="modal">
+      <div class="modal-content">
+        <h3>Enter Card Details for {{ subscribingPlan.name }}</h3>
+        <div ref="cardElementRef" class="card-element"></div>
+        <div class="modal-actions">
+          <button class="confirm" @click="confirmSubscription">Confirm Payment</button>
+          <button class="cancel" @click="closeModal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+/* Page Layout */
+.page-container { padding: 30px; background: #f0f2f5; min-height: 100vh; font-family: 'Segoe UI', sans-serif; }
+.page-header h1 { margin: 0; font-size: 28px; }
+.subtitle { font-size: 14px; color: #6b7280; margin-top: 4px; }
+
+/* Grid */
+.plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
+
+/* Plan Card */
+.plan-card {
+  background: #fff; padding: 25px; border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08); border: 2px solid transparent; transition: all 0.3s;
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+.plan-card.featured { border-color: #3b82f6; box-shadow: 0 8px 25px rgba(59,130,246,0.2); }
+.plan-card.inactive { opacity: 0.6; border-color: #e5e7eb; }
+
+.plan-header { display: flex; justify-content: space-between; align-items: center; }
+.badge { background: #3b82f6; color: #fff; font-size: 12px; padding: 2px 8px; border-radius: 8px; font-weight: 600; }
+
+.description { font-size: 14px; color: #4b5563; margin: 12px 0; flex-grow: 1; }
+.amount { font-size: 18px; font-weight: 700; margin-bottom: 15px; }
+
+/* Buttons */
+.actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start; 
+}
+button.subscribe, .modal-actions .confirm {
+  background: #3b82f6; 
+  color: #fff; 
+  border: none; 
+  padding: 8px 14px;
+  border-radius: 12px;
+  cursor: pointer; 
+  font-weight: 600; 
+  font-size: 14px;
+  transition: all 0.2s;
+}
+button.subscribe:hover, .modal-actions .confirm:hover { background: #2563eb; }
+
+button.cancel-sub {
+  background: #fbbf24; /* Highlighted color */
+  color: #1f2937; 
+  border: none; 
+  padding: 8px 14px;
+  border-radius: 12px;
+  cursor: pointer; 
+  font-weight: 600; 
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+button.subscribe, .modal-actions .cancel {
+  background: #f59e0b; 
+  color: #fff; 
+  border: none; 
+  padding: 8px 14px;
+  border-radius: 12px;
+  cursor: pointer; 
+  font-weight: 600; 
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+button.cancel-sub:hover { background: #f59e0b; }
+
+.status.inactive {
+  background: #fef2f2; 
+  color: #b91c1c; 
+  padding: 6px 10px;
+  border-radius: 10px; 
+  font-weight: 600; 
+  font-size: 13px;
+}
+
+/* Loading */
+.loading { font-weight: 600; color: #374151; padding: 20px; }
+
+/* Modal */
+.modal { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); display:flex; justify-content:center; align-items:center; z-index:100; }
+.modal-content {
+  background: #fff; 
+  padding: 30px; 
+  border-radius: 20px; 
+  width: 500px; 
+  max-width: 95%; 
+  height: 190px; 
+  display: flex; 
+  flex-direction: column; 
+  justify-content: space-between;
+  box-shadow: 0 10px 35px rgba(0,0,0,0.25); 
+}
+.card-element { 
+  padding: 16px; 
+  border: 1px solid #e5e7eb; 
+  border-radius: 12px; 
+  margin-bottom: 20px; 
+  flex-grow: 1; 
+}
+.modal-actions { 
+  display: flex; 
+  justify-content: flex-end; 
+  gap: 12px; 
+}
+</style>
