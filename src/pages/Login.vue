@@ -74,8 +74,11 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
+import api from '../api';
 import { useRouter } from "vue-router";
 import { login as apiLogin, redirectToGoogleLogin } from "../Store/auth";
+import { useMenuStore } from '../Store/menu';
+import { buildRoutes } from '../Router/dynamicRoutes';
 import RegisterModal from "../pages/Register.vue";
 
 const router = useRouter();
@@ -96,8 +99,26 @@ const handleLogin = async () => {
 
   const success = await apiLogin(payload, router);
   if (success) {
-    window.location.href = "/dashboard";
-  } else {
+    const menuStore = useMenuStore();
+
+// ✅ verify session
+await api.get("/auth-check");
+
+// ✅ load menus
+if (!menuStore.loaded) {
+  await menuStore.fetchMenus();
+}
+
+// ✅ register dynamic routes
+const dynamicRoutes = buildRoutes(menuStore.menus);
+dynamicRoutes.forEach(route => {
+  if (!router.hasRoute(route.name!)) {
+    router.addRoute("DefaultLayout", route);
+  }
+});
+
+// ✅ now navigation is safe
+router.push("/dashboard");  } else {
     errorMessage.value = "Login failed. Please check your credentials.";
   }
 };
