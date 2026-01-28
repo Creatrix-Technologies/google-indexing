@@ -62,22 +62,33 @@ const router = createRouter({
   routes,
 });
 
+
+const PUBLIC_PATHS = [
+  "/login",
+  "/google-callback",
+  "/register",
+  "/forgot-password",
+];
+
 /* ---------------- AUTH GUARD ---------------- */
 
 router.beforeEach(async (to, _, next) => {
-  const isPublic = to.meta.public === true;
-  const requiresAuth = to.meta.requiresAuth === true;
 
-  if (isPublic) return next();
+  const isPublicPath = PUBLIC_PATHS.includes(to.path);
 
-  if (requiresAuth) {
+  // const isPublic = to.meta.public === true;
+  // const requiresAuth = to.meta.requiresAuth === true;
+
+  if (isPublicPath) {
+    return next();
+  }
+
     try {
       await api.get('/auth-check');
       return next();
     } catch {
       return next({ path: "/login", query: { redirect: to.fullPath } });
     }
-  }
 
   next();
 });
