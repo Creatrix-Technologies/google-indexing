@@ -101,6 +101,9 @@ const handleLogin = async () => {
   if (success) {
     const menuStore = useMenuStore();
 
+// ✅ verify session
+await api.get("/auth-check");
+
 // ✅ load menus
 if (!menuStore.loaded) {
   await menuStore.fetchMenus();
