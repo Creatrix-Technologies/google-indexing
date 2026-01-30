@@ -64,7 +64,8 @@ const router = createRouter({
 
 
 const PUBLIC_PATHS = [
-  "/login"
+  "/login",
+  "/google3a5c5b76faa59277.html",
 ];
 
 /* ---------------- AUTH GUARD ---------------- */
