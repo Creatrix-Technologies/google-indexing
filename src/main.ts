@@ -64,16 +64,13 @@ const router = createRouter({
 
 
 const PUBLIC_PATHS = [
-  "/login",
-  "/sitemap.xml",
+  "/login"
 ];
 
 /* ---------------- AUTH GUARD ---------------- */
 
 router.beforeEach(async (to, _, next) => {
-
   const isPublicPath = PUBLIC_PATHS.includes(to.path);
-
   // const isPublic = to.meta.public === true;
   // const requiresAuth = to.meta.requiresAuth === true;
 
