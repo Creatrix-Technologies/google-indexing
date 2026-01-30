@@ -64,7 +64,8 @@ const router = createRouter({
 
 
 const PUBLIC_PATHS = [
-  "/login"
+  "/login",
+  "/sitemap.xml",
 ];
 
 /* ---------------- AUTH GUARD ---------------- */
