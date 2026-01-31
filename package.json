@@ -11,6 +11,8 @@
   "dependencies": {
     "@stripe/stripe-js": "^8.6.0",
     "axios": "^1.13.2",
+    "highcharts": "^12.5.0",
+    "highcharts-vue": "^2.0.1",
     "pinia": "^3.0.4",
     "pinia-plugin-persistedstate": "^4.7.1",
     "sweetalert2": "^11.26.17",

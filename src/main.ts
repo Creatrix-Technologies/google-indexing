@@ -29,6 +29,8 @@ import { useMenuStore } from './Store/menu';
 // Dynamic routes
 import { buildRoutes } from './Router/dynamicRoutes';
 
+import HighchartsVue from 'highcharts-vue'
+
 /* ---------------- ROUTES ---------------- */
 
 const routes = [
@@ -95,6 +97,7 @@ pinia.use(piniaPluginPersistedstate);
 
 const app = createApp(App);
 app.use(pinia);
+app.use(HighchartsVue);
 app.use(Toast, { position: POSITION.BOTTOM_RIGHT, timeout: 3000 });
 
 const initApp = async () => {
