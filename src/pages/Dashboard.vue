@@ -3,45 +3,23 @@
     <!-- Page Header -->
     <div class="page-header">
       <h1>Dashboard</h1>
-      <p class="subtitle">Welcome to your new CRM dashboard</p>
+      <p class="subtitle">{{ greeting }}</p>
     </div>
 
-    <!-- Stat Cards (unchanged) -->
+    <!-- Stat Cards -->
     <div class="stats-grid">
       <StatCard
-        label="Total Indexed Sites"
-        value="20"
-        meta="+12% from last month"
-        iconType="users"
-        iconBg="linear-gradient(135deg, #22c55e 0%, #16a34a 100%)"
-      />
-
-      <StatCard
-        label="Total Successful Crawls"
-        value="44,525"
-        meta="+12% from last month"
-        iconType="users"
-        iconBg="linear-gradient(135deg, #22c55e 0%, #16a34a 100%)"
-      />
-
-      <StatCard
-        label="Active Sites"
-        value="45"
-        meta="+23% from last month"
-        iconType="trending"
-        iconBg="linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
-      />
-
-      <StatCard
-        label="In Active Sites"
-        value="10"
+        v-for="card in cards"
+        :key="card.title"
+        :label="card.title"
+        :value="card.value"
         meta=""
-        iconType="default"
-        iconBg="linear-gradient(135deg, #ef4444 0%, #dc2626 100%)"
+        iconType="users"
+        :iconBg="getCardColor(card.title)"
       />
     </div>
 
-    <!-- Highcharts Chart -->
+    <!-- Charts -->
     <div class="charts-container">
       <div class="chart-card">
         <div class="card-header">
@@ -60,12 +38,46 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue"
+import { ref, onMounted,computed } from "vue"
+import api from "../api"
+import { useToast } from "vue-toastification"
 import StatCard from "../components/StatCard.vue"
 import { useGoogleConfigStore } from "../Shared/googleConfig"
 import { useSubscriptionStore } from "../Shared/subscription"
 
+
+const greeting = computed(() => {
+  const hour = new Date().getHours()
+
+  if (hour < 12) return "Good Morning ☀️"
+  if (hour < 17) return "Good Afternoon 🌤️"
+  return "Good Evening 🌙"
+})
+
+
+const toast = useToast()
 const subscriptionStore = useSubscriptionStore()
+
+/* =======================
+   Types
+======================= */
+interface DashboardCard {
+  title: string
+  value: number
+  order: number
+}
+
+interface DashboardChart {
+  date: string
+  successIndex: number
+  failedIndex: number
+}
+
+/* =======================
+   State
+======================= */
+const cards = ref<DashboardCard[]>([])
+const charts = ref<DashboardChart[]>([])
 
 const chartOptions = ref<any>({
   chart: { type: "area", height: 320 },
@@ -76,44 +88,53 @@ const chartOptions = ref<any>({
   series: []
 })
 
-onMounted(() => {
-  // Check config and subscription (your existing logic)
-  useGoogleConfigStore().check()
-  subscriptionStore.checkSubscription()
+/* =======================
+   API Call
+======================= */
+const fetchDashboard = async () => {
+  try {
+    const res = await api.get("/dashboard")
 
-  // Example JSON data (replace with API response later)
-  const jsonData = [
-    { date: "2025-01-01", failedindexcount: 10, successindexcount: 120 },
-    { date: "2025-02-01", failedindexcount: 5, successindexcount: 150 },
-    { date: "2025-03-01", failedindexcount: 8, successindexcount: 170 },
-    { date: "2025-04-01", failedindexcount: 3, successindexcount: 200 },
-    { date: "2025-05-01", failedindexcount: 12, successindexcount: 180 },
-    { date: "2025-06-01", failedindexcount: 7, successindexcount: 210 },
-    { date: "2025-07-01", failedindexcount: 9, successindexcount: 220 },
-    { date: "2025-08-01", failedindexcount: 4, successindexcount: 240 },
-    { date: "2025-09-01", failedindexcount: 6, successindexcount: 260 },
-    { date: "2025-10-01", failedindexcount: 11, successindexcount: 230 },
-    { date: "2025-11-01", failedindexcount: 2, successindexcount: 280 },
-    { date: "2025-12-01", failedindexcount: 5, successindexcount: 300 },
-    { date: "2026-01-01", failedindexcount: 3, successindexcount: 320 }
-  ]
+    if (res.data?.isSuccess) {
+      cards.value = res.data.data.cards.sort(
+        (a: any, b: any) => a.order - b.order
+      )
 
-  // ✅ Step 1: Sort by date
-  const sorted = jsonData.sort(
-    (a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      charts.value = res.data.data.charts || []
+      buildChart()
+    } else {
+      toast.error("Failed to load dashboard")
+    }
+  } catch (err) {
+    console.error("Dashboard API error", err)
+    toast.error("Error loading dashboard")
+  }
+}
+
+/* =======================
+   Chart Builder
+======================= */
+const buildChart = () => {
+  if (!charts.value.length) return
+
+  // sort by date
+  const sorted = [...charts.value].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
   )
 
-  // ✅ Step 2: Take last 12 months
-  const last12Months = sorted.slice(-12)
+  // take last 12 months
+  const last12 = sorted.slice(-12)
 
-  // ✅ Step 3: Map categories & series
-  const categories = last12Months.map(x =>
-    new Date(x.date).toLocaleDateString("en-US", { month: "short", year: "2-digit" })
+  const categories = last12.map(x =>
+    new Date(x.date).toLocaleDateString("en-US", {
+      month: "short",
+      year: "2-digit"
+    })
   )
-  const success = last12Months.map(x => Number(x.successindexcount) || 0)
-  const failed = last12Months.map(x => Number(x.failedindexcount) || 0)
 
-  // ✅ Step 4: Update chart
+  const success = last12.map(x => x.successIndex || 0)
+  const failed = last12.map(x => x.failedIndex || 0)
+
   chartOptions.value = {
     chart: { type: "area", height: 320 },
     title: { text: "" },
@@ -121,10 +142,48 @@ onMounted(() => {
     yAxis: { title: { text: "Index Count" } },
     tooltip: { shared: true },
     series: [
-      { name: "Success Index", data: success, color: "#22c55e", fillOpacity: 0.15 },
-      { name: "Failed Index", data: failed, color: "#ef4444", fillOpacity: 0.15 }
+      {
+        name: "Success Index",
+        data: success,
+        color: "#22c55e",
+        fillOpacity: 0.15
+      },
+      {
+        name: "Failed Index",
+        data: failed,
+        color: "#ef4444",
+        fillOpacity: 0.15
+      }
     ]
   }
+}
+
+/* =======================
+   Helpers
+======================= */
+const getCardColor = (title: string) => {
+  if (title=="Active Sites")
+    return "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)"
+
+  if (title=="Total Failed Indexed")
+    return "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)"
+
+  if (title=="In Active Sites")
+    return "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)"
+
+  if (title.includes("Crawled"))
+    return "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)"
+
+  return "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
+}
+
+/* =======================
+   Lifecycle
+======================= */
+onMounted(() => {
+  useGoogleConfigStore().check()
+  subscriptionStore.checkSubscription()
+  fetchDashboard()
 })
 </script>
 
