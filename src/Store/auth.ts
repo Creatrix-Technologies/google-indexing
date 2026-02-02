@@ -88,9 +88,13 @@ export async function register(payload: RegisterPayload): Promise<boolean> {
     return true;
 
   } catch (err: any) {
+    let msg="";
     // Optional server error message
-    console.log(err.response.data.error);
-    const msg = err.response.data.error.description;// 'Registration failed.';
+    if(err?.response?.data?.error?.validationErrors){
+      msg= err.response.data.error.validationErrors[0];
+    }else{
+       msg= err.response.data.error.description;// 'Registration failed.';
+    }
     toast.error(msg);
 
     return false;

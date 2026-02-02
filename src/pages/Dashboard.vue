@@ -8,55 +8,52 @@
 
     <!-- Stat Cards -->
     <div class="stats-grid">
-      <StatCard
-        v-for="card in cards"
-        :key="card.title"
-        :label="card.title"
-        :value="card.value"
-        meta=""
-        iconType="users"
-        :iconBg="getCardColor(card.title)"
-      />
+      <template v-if="cards.length">
+        <StatCard
+          v-for="card in cards"
+          :key="card.title"
+          :label="card.title"
+          :value="card.value"
+          meta=""
+          iconType="users"
+          :iconBg="getCardColor(card.title)"
+        />
+      </template>
+      <p v-else class="empty-message">No dashboard cards available</p>
     </div>
 
     <!-- Charts -->
     <div class="charts-container">
-      <div class="chart-card">
+      <div class="chart-card" v-if="charts.length">
         <div class="card-header">
           <h3>Index Success vs Failed (Last 12 Months)</h3>
         </div>
 
         <div class="chart-content">
-          <highcharts
-            :constructor-type="'chart'"
-            :options="chartOptions"
-          />
+          <highcharts :constructor-type="'chart'" :options="chartOptions" />
         </div>
       </div>
+      <p v-else class="empty-message">No chart data available</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted,computed } from "vue"
+import { ref, onMounted, computed } from "vue"
 import api from "../api"
-import { useToast } from "vue-toastification"
 import StatCard from "../components/StatCard.vue"
 import { useGoogleConfigStore } from "../Shared/googleConfig"
 import { useSubscriptionStore } from "../Shared/subscription"
 
-
+/* =======================
+   Greeting
+======================= */
 const greeting = computed(() => {
   const hour = new Date().getHours()
-
   if (hour < 12) return "Good Morning ☀️"
   if (hour < 17) return "Good Afternoon 🌤️"
   return "Good Evening 🌙"
 })
-
-
-const toast = useToast()
-const subscriptionStore = useSubscriptionStore()
 
 /* =======================
    Types
@@ -99,15 +96,17 @@ const fetchDashboard = async () => {
       cards.value = res.data.data.cards.sort(
         (a: any, b: any) => a.order - b.order
       )
-
       charts.value = res.data.data.charts || []
       buildChart()
     } else {
-      toast.error("Failed to load dashboard")
+      // Handle no data (Result.NotFound) or other errors
+      cards.value = []
+      charts.value = []
     }
   } catch (err) {
     console.error("Dashboard API error", err)
-    toast.error("Error loading dashboard")
+    cards.value = []
+    charts.value = []
   }
 }
 
@@ -162,13 +161,13 @@ const buildChart = () => {
    Helpers
 ======================= */
 const getCardColor = (title: string) => {
-  if (title=="Active Sites")
+  if (title == "Active Sites")
     return "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)"
 
-  if (title=="Total Failed Indexed")
+  if (title == "Total Failed Indexed")
     return "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)"
 
-  if (title=="In Active Sites")
+  if (title == "In Active Sites")
     return "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)"
 
   if (title.includes("Crawled"))
@@ -182,7 +181,7 @@ const getCardColor = (title: string) => {
 ======================= */
 onMounted(() => {
   useGoogleConfigStore().check()
-  subscriptionStore.checkSubscription()
+  useSubscriptionStore().checkSubscription()
   fetchDashboard()
 })
 </script>
@@ -234,5 +233,12 @@ onMounted(() => {
 .chart-content {
   width: 100%;
   height: 350px;
+}
+
+.empty-message {
+  text-align: center;
+  color: #666;
+  font-size: 16px;
+  padding: 30px 0;
 }
 </style>

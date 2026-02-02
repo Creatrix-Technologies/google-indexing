@@ -26,6 +26,7 @@
             id="password"
             :type="showPassword ? 'text' : 'password'"
             placeholder="Enter password"
+             @keyup.enter="handleLogin"
           />
 
           <button
