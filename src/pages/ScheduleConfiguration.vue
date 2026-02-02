@@ -23,7 +23,7 @@
         </thead>
 
         <tbody>
-          <tr v-for="item in schedules" :key="item.id">
+          <tr v-for="item in schedules" :key="item.websiteId">
             <td class="site-name-cell">
               <div class="site-icon">{{ item.url.charAt(0).toUpperCase() }}</div>
               <span>{{ item.url }}</span>
@@ -194,11 +194,13 @@ const closeModal = () => (showModal.value = false)
 const formatTime = (time: string | null) => {
   if (!time) return '-'
   const [h, m] = time.split(':')
-  const hour = parseInt(h)
+  if (!h || !m) return '-'
+  const hour = parseInt(h, 10)
   const ampm = hour >= 12 ? 'PM' : 'AM'
   const hour12 = hour % 12 || 12
   return `${hour12}:${m} ${ampm}`
 }
+
 
 const formatFrequency = (val: number) => {
   if(!val) return '-'
