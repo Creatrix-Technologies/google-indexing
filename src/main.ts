@@ -66,7 +66,8 @@ const router = createRouter({
 
 
 const PUBLIC_PATHS = [
-  "/login"
+  "/login",
+  "/google-callback"
 ];
 
 /* ---------------- AUTH GUARD ---------------- */
