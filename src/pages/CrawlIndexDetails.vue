@@ -267,19 +267,25 @@ const indexSelectedUrls = async () => {
 
   if (!type) return
 
-  await api.post("/crawl/index", {
+  const resQueue = await api.post("/crawl/index", {
     websiteId: siteId,
     urlId: Array.from(selectedIds.value),
     type
   })
 
-  Swal.fire(
+  if(resQueue?.data.isSuccess){
+    Swal.fire(
     "Queued",
     type === "URL_UPDATED"
       ? "URLs queued for indexing"
       : "URLs queued for removal",
     "success"
   )
+      }
+      else{
+        Swal.fire("Failed", resQueue?.data?.meta, "error")
+      }
+
 
   selectedIds.value.clear()
   fetchCrawlDetails()
@@ -307,24 +313,38 @@ const indexSingleUrl = async (id: number) => {
     isLoading.value = true // start loader
     // ⚡ Instant indexing
     if (result.isConfirmed) {
-      await api.post("/crawl/index-direct", {
+      var directRes=await api.post("/crawl/index-direct", {
         websiteId: siteId,
         urlId: id,
         type:"URL_UPDATED"
       })
 
-      Swal.fire("Indexed", "URL Indexed Instantly", "success")
+      if(directRes?.data.isSuccess){
+        Swal.fire("Indexed", "URL Indexed Instantly", "success")
+
+      }
+      else{
+        Swal.fire("Failed", directRes?.data?.meta, "error")
+      }
+
     }
 
     // ⏳ Queue indexing
     if (result.isDenied) {
-      await api.post("/crawl/index", {
+      const directResQueue=await api.post("/crawl/index", {
         websiteId: siteId,
         urlId: [id],
         type:"URL_UPDATED"
       })
 
-      Swal.fire("Queued", "Queued For Indexing", "success")
+      if(directResQueue?.data.isSuccess){
+        Swal.fire("Queued", "Queued For Indexing", "success")
+
+      }
+      else{
+        Swal.fire("Failed", directResQueue?.data?.meta, "error")
+      }
+
     }
 
     fetchCrawlDetails()
@@ -363,24 +383,34 @@ const removeIndexSingleUrl = async (id: number) => {
 
     // ⚡ Instant indexing
     if (result.isConfirmed) {
-      await api.post("/crawl/index-direct", {
+      const directRes=await api.post("/crawl/index-direct", {
         websiteId: siteId,
         urlId: id,
         type: "URL_DELETED"
       })
 
-      Swal.fire("Indexed", "URL Removed Instantly", "success")
+      if(directRes?.data.isSuccess){
+        Swal.fire("Indexed", "URL Removed Instantly", "success")
+      }
+      else{
+        Swal.fire("Failed", directRes?.data?.meta, "error")
+      }
+
     }
 
     // ⏳ Queue indexing
     if (result.isDenied) {
-      await api.post("/crawl/index", {
+     const directResQueue= await api.post("/crawl/index", {
         websiteId: siteId,
         urlId: [id],
         type: "URL_DELETED"
       })
-
-      Swal.fire("Queued", "Queued For Removal", "success")
+      if(directResQueue?.data.isSuccess){
+        Swal.fire("Queued", "Queued For Removal", "success")
+      }
+      else{
+        Swal.fire("Failed", directResQueue?.data?.meta, "error")
+      }
     }
 
     fetchCrawlDetails()
