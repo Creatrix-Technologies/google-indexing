@@ -2,13 +2,29 @@
   <Loading :active.sync="isLoading" :is-full-page="true" />
 
   <div class="page-container">
+    <!-- PAGE HEADER -->
     <div class="page-header">
       <router-link to="/crawl-index-management" class="back-link">
-        ← Back to Crawl & Index
+        ← Crawl & Index Management
       </router-link>
 
-      <h1>Crawl & Index Details</h1>
-      <p class="subtitle">URLs with index details</p>
+      <!-- <p class="subtitle">URLs with index details</p> -->
+
+      <!-- SITE INFO -->
+      <div v-if="siteInfo" class="site-info">
+        <h2 class="site-type-chip">{{ siteInfo.type }}</h2>
+        <h2 class="site-name">{{ siteInfo.name }}</h2>
+        - 
+        <a :href="siteInfo.url" target="_blank" class="site-url">{{ siteInfo.url }}</a>
+      </div>
+    </div>
+
+    <!-- SCHEDULE ALERT -->
+    <div
+      v-if="siteInfo && siteInfo.scheduleMessage && siteInfo.scheduleMessage.trim() !== ''"
+      class="schedule-alert-orange"
+    >
+      ⏰ {{ siteInfo.scheduleMessage }} 
     </div>
 
     <!-- SUMMARY -->
@@ -112,11 +128,10 @@
                 Remove
               </button>
             </td>
-
           </tr>
 
           <tr v-if="urls.length === 0">
-            <td colspan="9" style="text-align:center; padding:20px">
+            <td colspan="10" style="text-align:center; padding:20px">
               No crawl data found
             </td>
           </tr>
@@ -178,6 +193,14 @@ interface CrawlCount {
   indexedFailed: number
   indexedQueued: number
   hasDailyQuotaExceed: boolean
+  site: SiteInfo
+}
+
+interface SiteInfo {
+  type: string
+  name: string
+  url: string
+  scheduleMessage: string
 }
 
 const route = useRoute()
@@ -185,9 +208,8 @@ const siteId = Number(route.params.siteId)
 
 const urls = ref<CrawledUrl[]>([])
 const selectedIds = ref<Set<number>>(new Set())
-
+const siteInfo = ref<SiteInfo | null>(null)
 const isLoading = ref(false)
-
 
 const pageInfo = ref<PageInfo>({
   page: 1,
@@ -204,7 +226,8 @@ const counts = ref<CrawlCount>({
   indexedSucceed: 0,
   indexedFailed: 0,
   indexedQueued: 0,
-  hasDailyQuotaExceed: false
+  hasDailyQuotaExceed: false,
+  site: { type:'', name:'', url:'', scheduleMessage:'' }
 })
 
 /* API */
@@ -219,6 +242,7 @@ const fetchCrawlDetails = async () => {
 const fetchCrawlCounts = async () => {
   const res = await api.get(`/crawl/${siteId}/details-count`)
   counts.value = res.data.data
+  siteInfo.value = res.data.data.site
 }
 
 /* SELECTION */
@@ -286,12 +310,10 @@ const indexSelectedUrls = async () => {
         Swal.fire("Failed", resQueue?.data?.meta, "error")
       }
 
-
   selectedIds.value.clear()
   fetchCrawlDetails()
   fetchCrawlCounts()
 }
-
 
 const indexSingleUrl = async (id: number) => {
   const result = await Swal.fire({
@@ -310,56 +332,41 @@ const indexSingleUrl = async (id: number) => {
   if (result.isDismissed) return
 
   try {
-    isLoading.value = true // start loader
-    // ⚡ Instant indexing
+    isLoading.value = true
     if (result.isConfirmed) {
-      var directRes=await api.post("/crawl/index-direct", {
+      const directRes = await api.post("/crawl/index-direct", {
         websiteId: siteId,
         urlId: id,
         type:"URL_UPDATED"
       })
-
       if(directRes?.data.isSuccess){
         Swal.fire("Indexed", "URL Indexed Instantly", "success")
-
       }
       else{
         Swal.fire("Failed", directRes?.data?.meta, "error")
       }
-
     }
-
-    // ⏳ Queue indexing
     if (result.isDenied) {
       const directResQueue=await api.post("/crawl/index", {
         websiteId: siteId,
         urlId: [id],
         type:"URL_UPDATED"
       })
-
       if(directResQueue?.data.isSuccess){
         Swal.fire("Queued", "Queued For Indexing", "success")
-
       }
       else{
         Swal.fire("Failed", directResQueue?.data?.meta, "error")
       }
-
     }
-
     fetchCrawlDetails()
     fetchCrawlCounts()
   } catch (err: any) {
     console.log(err)
-    const msg =
-      err?.response?.data?.error?.description ||
-      "You are not authorized to perform instant indexing."
-
+    const msg = err?.response?.data?.error?.description || "You are not authorized to perform instant indexing."
     Swal.fire("Failed", msg, "error")
   }
-  finally {
-    isLoading.value = false // stop loader
-  }
+  finally { isLoading.value = false }
 }
 
 const removeIndexSingleUrl = async (id: number) => {
@@ -372,35 +379,29 @@ const removeIndexSingleUrl = async (id: number) => {
     confirmButtonText: "⚡ Remove",
     denyButtonText: "⏳ Queue to Remove",
     cancelButtonText: "Cancel",
-    confirmButtonColor: "#ef4444", // red
-    denyButtonColor: "#dc2626"    // darker red
+    confirmButtonColor: "#ef4444",
+    denyButtonColor: "#dc2626"
   })
 
   if (result.isDismissed) return
 
   try {
-    isLoading.value = true; // start loader
-
-    // ⚡ Instant indexing
+    isLoading.value = true
     if (result.isConfirmed) {
       const directRes=await api.post("/crawl/index-direct", {
         websiteId: siteId,
         urlId: id,
         type: "URL_DELETED"
       })
-
       if(directRes?.data.isSuccess){
         Swal.fire("Indexed", "URL Removed Instantly", "success")
       }
       else{
         Swal.fire("Failed", directRes?.data?.meta, "error")
       }
-
     }
-
-    // ⏳ Queue indexing
     if (result.isDenied) {
-     const directResQueue= await api.post("/crawl/index", {
+      const directResQueue= await api.post("/crawl/index", {
         websiteId: siteId,
         urlId: [id],
         type: "URL_DELETED"
@@ -412,20 +413,14 @@ const removeIndexSingleUrl = async (id: number) => {
         Swal.fire("Failed", directResQueue?.data?.meta, "error")
       }
     }
-
     fetchCrawlDetails()
     fetchCrawlCounts()
   } catch (err: any) {
     console.log(err)
-    const msg =
-      err?.response?.data?.error?.description ||
-      "You are not authorized to perform instant indexing."
-
+    const msg = err?.response?.data?.error?.description || "You are not authorized to perform instant indexing."
     Swal.fire("Failed", msg, "error")
   }
-  finally {
-    isLoading.value = false // stop loader
-  }
+  finally { isLoading.value = false }
 }
 
 /* COMPUTED */
@@ -435,10 +430,7 @@ const failedCount = computed(() => counts.value.failedCount)
 const indexed = computed(() => counts.value.indexedSucceed)
 const indexedFailed = computed(() => counts.value.indexedFailed)
 const indexedQueued = computed(() => counts.value.indexedQueued)
-
-const totalPages = computed(() =>
-  Math.ceil(counts.value.totalCount / pageInfo.value.pageSize)
-)
+const totalPages = computed(() => Math.ceil(counts.value.totalCount / pageInfo.value.pageSize))
 
 /* PAGINATION */
 const nextPage = () => pageInfo.value.hasNextPage && pageInfo.value.page++
@@ -451,7 +443,6 @@ onMounted(() => {
 
 watch(() => pageInfo.value.page, fetchCrawlDetails)
 </script>
-
   <style scoped>
   .page-container {
     flex: 1;
@@ -691,5 +682,54 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   .row-index-btn.failed {
     background :red;
   }
+
+/* SITE INFO */
+.site-info {
+  margin-top: 6px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.site-type-chip {
+  background: #22c55e; /* green background */
+  color: white;         /* white text */
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.site-name {
+  color: black;
+  font-weight: 600;
+}
+
+.site-url {
+  color: black;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.site-url:hover {
+  text-decoration: underline;
+}
+
+/* SCHEDULE ALERT ORANGE */
+.schedule-alert-orange {
+  background: #fff7ed; /* subtle light orange background */
+  border: 1px solid #f97316; /* orange border */
+  color: #f97316; /* orange text */
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
   </style>
   

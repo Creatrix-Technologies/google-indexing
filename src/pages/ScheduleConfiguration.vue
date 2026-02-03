@@ -176,18 +176,39 @@ const openEdit = (item: Schedule) => {
 }
 
 const saveSchedule = async () => {
-  await api.post('/schedule/update', {
-    websiteId: editingId.value,
-    frequency: Number(formData.value.frequency),
-    startTime: formData.value.startTime,
-    endTime:formData.value.endTime,
-    maxUrls:formData.value.maxUrls
-  })
+  try {
+    await api.post('/schedule/update', {
+      websiteId: editingId.value,
+      frequency: Number(formData.value.frequency),
+      startTime: formData.value.startTime,
+      endTime: formData.value.endTime,
+      maxUrls: formData.value.maxUrls
+    })
 
-  toast.success('Schedule updated')
-  showModal.value = false
-  fetchSchedules()
+    toast.success('Schedule updated')
+    showModal.value = false
+    fetchSchedules()
+
+  } catch (err: any) {
+    const apiError = err?.response?.data?.error
+
+    if (
+      apiError?.code === 'Validation.Error' &&
+      Array.isArray(apiError.validationErrors) &&
+      apiError.validationErrors.length > 0
+    ) {
+      // 👇 Validation error → show first message
+      toast.error(apiError.validationErrors[0])
+    } else if (apiError?.description) {
+      // 👇 Other API error → show description
+      toast.error(apiError.description)
+    } else {
+      // 👇 Fallback
+      toast.error('Something went wrong')
+    }
+  }
 }
+
 
 const closeModal = () => (showModal.value = false)
 
