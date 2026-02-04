@@ -4,16 +4,15 @@ import { useToast } from 'vue-toastification'
 import api from '../api'
 import { loadStripe } from '@stripe/stripe-js'
 import type { Stripe } from '@stripe/stripe-js'
-import Swal from "sweetalert2"
-import Loading from "vue-loading-overlay"
+import Swal from 'sweetalert2'
+import Loading from 'vue-loading-overlay'
 import 'vue-loading-overlay/dist/css/index.css'
 import { useSubscriptionStore } from '../Shared/subscription'
 
 const subscriptionStore = useSubscriptionStore()
-
 const toast = useToast()
 
-
+/* ---------------- TYPES ---------------- */
 interface Plan {
   id: number
   name: string
@@ -26,9 +25,19 @@ interface Plan {
   isCurrentPlan: boolean
 }
 
+interface Payment {
+  date: string
+  amount: string
+  status: string
+  plan: string
+}
+
+/* ---------------- STATE ---------------- */
 const plans = ref<Plan[]>([])
+const paymentHistory = ref<Payment[]>([])
 const isLoading = ref(false)
 const subscribingPlan = ref<Plan | null>(null)
+
 const publicKey = import.meta.env.VITE_STRIPE_PUBLIC
 const stripePromise = loadStripe(publicKey)
 const cardElementRef = ref<HTMLDivElement | null>(null)
@@ -43,7 +52,17 @@ const fetchPlans = async () => {
     plans.value = res.data.data || []
   } catch {
     toast.error('Failed to load plans')
-  } 
+  }
+}
+
+/* ---------------- FETCH SUBSCRIPTION LOGS ---------------- */
+const fetchSubscriptionLogs = async () => {
+  try {
+    const res = await api.get('/payments/subscription-logs')
+    paymentHistory.value = res.data.data || []
+  } catch {
+    console.log('Failed to load payment history')
+  }
 }
 
 /* ---------------- START SUBSCRIBE ---------------- */
@@ -66,69 +85,70 @@ const startSubscribe = async (plan: Plan) => {
 /* ---------------- CONFIRM PAYMENT ---------------- */
 const confirmSubscription = async () => {
   if (!stripe || !card || !subscribingPlan.value) return
+
   try {
-    isLoading.value = true // start loader
+    isLoading.value = true
 
     const res = await api.get(
       `/payments/stripe-user-subscription?plan=${subscribingPlan.value.id}`
     )
-    const clientSecret = res.data.data.clientSecret
 
+    const clientSecret = res.data.data.clientSecret
     if (!clientSecret) throw new Error('Failed to create subscription')
 
-    const result = await stripe.confirmCardPayment(clientSecret, {payment_method: { card },})
+    const result = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: { card }
+    })
 
-if (result.paymentIntent) {
-  if (result.paymentIntent.status === 'succeeded') {
-    toast.success(`Subscribed to ${subscribingPlan.value.name}!`)
-    closeModal()
-    setTimeout(() => {
-      fetchPlans();
-      subscriptionStore.checkSubscription();
-    }, 2000); // 2000ms = 2 seconds delay
-  } else if (result.paymentIntent.status === 'requires_payment_method') {
-    toast.error('Payment failed, please try another method')
-  } else {
-    console.log('PaymentIntent status:', result.paymentIntent.status)
-  }
-} else if (result.error) {
-  toast.error(result.error.message || 'Payment failed')
-}
+    if (result.paymentIntent?.status === 'succeeded') {
+      toast.success(`Subscribed to ${subscribingPlan.value.name}!`)
+      closeModal()
 
-////////
+      setTimeout(() => {
+        fetchPlans()
+        fetchSubscriptionLogs()
+        subscriptionStore.checkSubscription()
+      }, 2000)
+    } else if (result.error) {
+      toast.error(result.error.message || 'Payment failed')
+    }
   } catch (err: any) {
-    console.error(err)
-    toast.error(err.response?.data?.error?.description || err.message || 'Subscription failed')
-  }finally {
-    isLoading.value = false // stop loader
+    toast.error(
+      err.response?.data?.error?.description ||
+        err.message ||
+        'Subscription failed'
+    )
+  } finally {
+    isLoading.value = false
   }
 }
 
 /* ---------------- CANCEL SUBSCRIPTION ---------------- */
 const cancelSubscription = async () => {
-  // Show confirmation popup
   const result = await Swal.fire({
     title: 'Cancel Subscription?',
-    text: 'Are you sure you want to cancel your subscription? This action cannot be undone.',
+    text: 'Are you sure you want to cancel your subscription?',
     icon: 'warning',
     showCancelButton: true,
     confirmButtonText: 'Yes, cancel it',
     cancelButtonText: 'No, keep it',
     reverseButtons: true
-  });
+  })
 
-  // If user confirmed
   if (result.isConfirmed) {
     try {
-      await api.get('/payments/cancel-subscription');
-      toast.success('Subscription canceled.');
-      fetchPlans();
+      await api.get('/payments/cancel-subscription')
+      toast.success('Subscription canceled')
+      fetchPlans()
+      fetchSubscriptionLogs()
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.description || 'Failed to cancel subscription.');
+      toast.error(
+        err.response?.data?.error?.description ||
+          'Failed to cancel subscription'
+      )
     }
   }
-};
-
+}
 
 /* ---------------- CLOSE MODAL ---------------- */
 const closeModal = () => {
@@ -139,7 +159,11 @@ const closeModal = () => {
   subscribingPlan.value = null
 }
 
-onMounted(fetchPlans)
+/* ---------------- INIT ---------------- */
+onMounted(() => {
+  fetchPlans()
+  fetchSubscriptionLogs()
+})
 </script>
 
 <template>
@@ -148,11 +172,10 @@ onMounted(fetchPlans)
       <h1>Subscription Plans</h1>
       <p class="subtitle">Choose a plan and subscribe</p>
     </div>
+
     <Loading :active.sync="isLoading" :is-full-page="true" />
 
-    <div v-if="isLoading" class="loading">Loading plans...</div>
-
-    <div v-else class="plans-grid">
+    <div class="plans-grid">
       <div
         v-for="plan in plans"
         :key="plan.id"
@@ -163,13 +186,14 @@ onMounted(fetchPlans)
           <h3>{{ plan.name }}</h3>
           <span class="badge" v-if="plan.duration === 'YEAR'">Best Value</span>
         </div>
-        <p class="description">{{ plan.description }}</p>
+
+        <div class="description" v-html="plan.description"></div>
+
         <div class="amount">
           ${{ plan.amount.toFixed(2) }} / {{ plan.duration.toLowerCase() }}
         </div>
 
         <div class="actions">
-          <!-- SUBSCRIBE BUTTON -->
           <button
             v-if="!plan.isCurrentPlan && plan.isActive"
             class="subscribe"
@@ -178,146 +202,215 @@ onMounted(fetchPlans)
             Subscribe
           </button>
 
-          <!-- INACTIVE BUTTON -->
-          <button
-            v-else-if="!plan.isActive"
-            class="status inactive"
-            disabled
-          >
-            Inactive
-          </button>
-
-          <!-- CANCEL BUTTON ONLY FOR CURRENT PLAN -->
           <button
             v-if="plan.isCurrentPlan"
-            class="cancel-sub current-plan"
+            class="cancel-sub"
             @click="cancelSubscription"
           >
             Cancel
+          </button>
+
+          <button v-if="!plan.isActive" class="status inactive" disabled>
+            Inactive
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Card Input Modal -->
+    <!-- CARD MODAL -->
     <div v-if="subscribingPlan" class="modal">
       <div class="modal-content">
         <h3>Enter Card Details for {{ subscribingPlan.name }}</h3>
         <div ref="cardElementRef" class="card-element"></div>
+
         <div class="modal-actions">
-          <button class="confirm" @click="confirmSubscription">Confirm Payment</button>
+          <button class="confirm" @click="confirmSubscription">
+            Confirm Payment
+          </button>
           <button class="cancel" @click="closeModal">Cancel</button>
         </div>
       </div>
+    </div>
+
+    <!-- PAYMENT HISTORY -->
+    <div class="payment-history" v-if="paymentHistory.length">
+
+      <h2>Payment History</h2>
+
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Plan</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr v-for="(payment, index) in paymentHistory" :key="index">
+            <td>{{ payment.date }}</td>
+            <td>{{ payment.amount }}</td>
+            <td>
+              <span
+                class="status"
+                :class="{
+                  success: payment.status === 'Paid',
+                  failed: payment.status === 'Failed',
+                  pending: payment.status === '-' || payment.status === 'Pending'
+                }"
+              >
+                {{ payment.status || 'Pending' }}
+              </span>
+            </td>
+            <td>{{ payment.plan }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </template>
 
 <style scoped>
-/* Page Layout */
 .page-container { padding: 30px; background: #f0f2f5; min-height: 100vh; font-family: 'Segoe UI', sans-serif; }
 .page-header h1 { margin: 0; font-size: 28px; }
 .subtitle { font-size: 14px; color: #6b7280; margin-top: 4px; }
 
-/* Grid */
 .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
 
-/* Plan Card */
 .plan-card {
-  background: #fff; padding: 25px; border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.08); border: 2px solid transparent; transition: all 0.3s;
-  display: flex; flex-direction: column; justify-content: space-between;
-}
-.plan-card.featured { border-color: #3b82f6; box-shadow: 0 8px 25px rgba(59,130,246,0.2); }
-.plan-card.inactive { opacity: 0.6; border-color: #e5e7eb; }
-
-.plan-header { display: flex; justify-content: space-between; align-items: center; }
-.badge { background: #3b82f6; color: #fff; font-size: 12px; padding: 2px 8px; border-radius: 8px; font-weight: 600; }
-
-.description { font-size: 14px; color: #4b5563; margin: 12px 0; flex-grow: 1; }
-.amount { font-size: 18px; font-weight: 700; margin-bottom: 15px; }
-
-/* Buttons */
-.actions {
+  background: #0f766e;
+  padding: 22px;
+  border-radius: 16px;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.15);
+  color: white;
   display: flex;
-  gap: 10px;
-  justify-content: flex-start; 
+  flex-direction: column;
+  gap: 14px;
 }
-button.subscribe, .modal-actions .confirm {
-  background: #3b82f6; 
-  color: #fff; 
-  border: none; 
-  padding: 8px 14px;
+
+.plan-card.inactive { opacity: 0.6; }
+.plan-card.featured { border: 2px solid rgba(255,255,255,0.4); }
+
+.badge {
+  background: rgba(255,255,255,0.25);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.amount { font-size: 20px; font-weight: 700; }
+
+.actions { display: flex; gap: 10px; }
+
+button {
   border-radius: 12px;
-  cursor: pointer; 
-  font-weight: 600; 
-  font-size: 14px;
-  transition: all 0.2s;
-}
-button.subscribe:hover, .modal-actions .confirm:hover { background: #2563eb; }
-
-button.cancel-sub {
-  background: #fbbf24; /* Highlighted color */
-  color: #1f2937; 
-  border: none; 
   padding: 8px 14px;
-  border-radius: 12px;
-  cursor: pointer; 
-  font-weight: 600; 
-  font-size: 14px;
-  transition: all 0.2s;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
 }
 
-button.subscribe, .modal-actions .cancel {
-  background: #f59e0b; 
-  color: #fff; 
-  border: none; 
-  padding: 8px 14px;
-  border-radius: 12px;
-  cursor: pointer; 
-  font-weight: 600; 
-  font-size: 14px;
-  transition: all 0.2s;
+.subscribe { background: #3b82f6; color: white; }
+.cancel-sub { background: #f59e0b; color: white; }
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-button.cancel-sub:hover { background: #f59e0b; }
-
-.status.inactive {
-  background: #fef2f2; 
-  color: #b91c1c; 
-  padding: 6px 10px;
-  border-radius: 10px; 
-  font-weight: 600; 
-  font-size: 13px;
-}
-
-/* Loading */
-.loading { font-weight: 600; color: #374151; padding: 20px; }
-
-/* Modal */
-.modal { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); display:flex; justify-content:center; align-items:center; z-index:100; }
 .modal-content {
-  background: #fff; 
-  padding: 30px; 
-  border-radius: 20px; 
-  width: 500px; 
-  max-width: 95%; 
-  height: 190px; 
-  display: flex; 
-  flex-direction: column; 
-  justify-content: space-between;
-  box-shadow: 0 10px 35px rgba(0,0,0,0.25); 
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  width: 480px;
 }
-.card-element { 
-  padding: 16px; 
-  border: 1px solid #e5e7eb; 
-  border-radius: 12px; 
-  margin-bottom: 20px; 
-  flex-grow: 1; 
+
+.card-element {
+  border: 1px solid #e5e7eb;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 20px;
 }
-.modal-actions { 
-  display: flex; 
-  justify-content: flex-end; 
-  gap: 12px; 
+.payment-history {
+  margin-top: 40px;
+  background: white;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
 }
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  text-align: center;
+}
+
+.history-table thead tr {
+  background: linear-gradient(135deg, #10b981, #0f766e);
+}
+
+.history-table th {
+  padding: 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: white;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.history-table th:last-child {
+  border-right: none;
+}
+
+.history-table td {
+  padding: 14px;
+  font-size: 14px;
+  color: #374151;
+  border-top: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
+  vertical-align: middle;
+}
+
+.history-table td:last-child {
+  border-right: none;
+}
+
+.history-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+/* Status pill alignment */
+.status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+}
+
+.status.success { background: #10b981; }
+.status.failed { background: #ef4444; }
+.status.pending { background: #f59e0b; }
+
+.payment-history h2 {
+  margin-bottom: 16px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+}
+
+
+
 </style>

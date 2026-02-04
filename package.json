@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@stripe/stripe-js": "^8.6.0",
+    "@vueup/vue-quill": "^1.2.0",
     "axios": "^1.13.2",
     "highcharts": "^12.5.0",
     "highcharts-vue": "^2.0.1",

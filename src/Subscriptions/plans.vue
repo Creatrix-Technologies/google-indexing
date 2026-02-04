@@ -2,10 +2,11 @@
 import { ref, onMounted } from 'vue'
 import { useToast } from 'vue-toastification'
 import api from '../api'
+import { QuillEditor } from '@vueup/vue-quill'
+import '@vueup/vue-quill/dist/vue-quill.snow.css'
 
 const toast = useToast()
 
-// Plan interface
 interface Plan {
   id: number
   name: string
@@ -16,29 +17,54 @@ interface Plan {
   durationId?: number
 }
 
-// Duration interface
 interface Duration {
   id: number
   name: string
 }
 
-// Refs
 const plans = ref<Plan[]>([])
 const durations = ref<Duration[]>([])
 const isLoading = ref(false)
+const showModal = ref(false)
+const isEditing = ref(false)
 
 const form = ref({
   planId: 0,
   name: '',
   description: '',
   amount: 0,
-  durationId: 3, // default MONTH
+  durationId: 3,
   isActive: true
 })
 
-const isEditing = ref(false)
+const errors = ref({
+  name: '',
+  amount: '',
+  durationId: ''
+})
 
-/* ---------------- FETCH PLANS ---------------- */
+const validateForm = () => {
+  errors.value = { name: '', amount: '', durationId: '' }
+  let valid = true
+
+  if (!form.value.name.trim()) {
+    errors.value.name = 'Plan name is required'
+    valid = false
+  }
+
+  if (!form.value.amount || form.value.amount <= 0) {
+    errors.value.amount = 'Amount must be greater than 0'
+    valid = false
+  }
+
+  if (!form.value.durationId) {
+    errors.value.durationId = 'Duration is required'
+    valid = false
+  }
+
+  return valid
+}
+
 const fetchPlans = async () => {
   try {
     isLoading.value = true
@@ -51,7 +77,6 @@ const fetchPlans = async () => {
   }
 }
 
-/* ---------------- FETCH DURATIONS ---------------- */
 const fetchDurations = async () => {
   try {
     const res = await api.get('/durations')
@@ -61,22 +86,9 @@ const fetchDurations = async () => {
   }
 }
 
-/* ---------------- EDIT ---------------- */
-const editPlan = (plan: Plan) => {
-  isEditing.value = true
-  form.value = {
-    planId: plan.id,
-    name: plan.name,
-    description: plan.description,
-    amount: plan.amount,
-    durationId: plan.durationId || 3, // default MONTH
-    isActive: plan.isActive
-  }
-}
-
-/* ---------------- RESET ---------------- */
-const resetForm = () => {
+const addPlan = () => {
   isEditing.value = false
+  showModal.value = true
   form.value = {
     planId: 0,
     name: '',
@@ -85,21 +97,36 @@ const resetForm = () => {
     durationId: 3,
     isActive: true
   }
+  errors.value = { name: '', amount: '', durationId: '' }
 }
 
-/* ---------------- SAVE ---------------- */
+const editPlan = (plan: Plan) => {
+  isEditing.value = true
+  showModal.value = true
+  form.value = {
+    planId: plan.id,
+    name: plan.name,
+    description: plan.description,
+    amount: plan.amount,
+    durationId: plan.durationId || 3,
+    isActive: plan.isActive
+  }
+  errors.value = { name: '', amount: '', durationId: '' }
+}
+
 const savePlan = async () => {
+  if (!validateForm()) return
+
   try {
     await api.post('/payments/update-plans', form.value)
     toast.success(form.value.planId === 0 ? 'Plan created' : 'Plan updated')
-    resetForm()
+    showModal.value = false
     fetchPlans()
   } catch (err: any) {
     toast.error(err.response?.data?.message || 'Failed to save plan.')
   }
 }
 
-// On mounted
 onMounted(() => {
   fetchPlans()
   fetchDurations()
@@ -108,19 +135,17 @@ onMounted(() => {
 
 <template>
   <div class="page-container">
+
     <!-- HEADER -->
     <div class="page-header">
       <div>
         <h1>Subscription Plans</h1>
-        <p class="subtitle">Manage your Subscription plans</p>
+        <p class="subtitle">Manage your plans</p>
       </div>
 
-      <button class="add-btn" @click="resetForm">
-        ➕ Add New Plan
-      </button>
+      <button class="add-btn" @click="addPlan">➕ Add New Plan</button>
     </div>
 
-    <!-- LOADER -->
     <div v-if="isLoading" class="loading">Loading plans...</div>
 
     <!-- PLANS GRID -->
@@ -130,7 +155,7 @@ onMounted(() => {
         :key="p.id"
         class="plan-card"
         @click="editPlan(p)"
-        :class="{ active: form.planId === p.id, inactive: !p.isActive }"
+        :class="{ inactive: !p.isActive }"
       >
         <div class="card-header">
           <h3>{{ p.name }}</h3>
@@ -138,48 +163,62 @@ onMounted(() => {
             {{ p.isActive ? 'Active' : 'Inactive' }}
           </span>
         </div>
-        <p class="description">{{ p.description }}</p>
+
+        <div class="description" v-html="p.description"></div>
         <div class="amount">${{ p.amount }}</div>
       </div>
     </div>
 
-    <!-- FORM -->
-    <div class="form-box">
-      <h3>{{ isEditing ? 'Edit Plan' : 'Add New Plan' }}</h3>
+    <!-- MODAL -->
+    <div v-if="showModal" class="modal-backdrop">
+      <div class="modal-box">
 
-      <div class="form-row">
-        <label for="name">Plan Name</label>
-        <input id="name" v-model="form.name" placeholder="Enter plan name" />
-      </div>
+        <h3>{{ isEditing ? 'Edit Plan' : 'Add New Plan' }}</h3>
 
-      <div class="form-row">
-        <label for="description">Description</label>
-        <input id="description" v-model="form.description" placeholder="Enter plan description" />
-      </div>
+        <div class="form-row">
+          <label>Plan Name</label>
+          <input v-model="form.name" placeholder="Enter plan name" />
+          <span class="error" v-if="errors.name">{{ errors.name }}</span>
+        </div>
 
-      <div class="form-row">
-        <label for="amount">Amount ($)</label>
-        <input id="amount" v-model.number="form.amount" type="number" placeholder="Enter amount" />
-      </div>
+        <div class="form-row">
+          <label>Description</label>
+          <div class="editor">
+            <QuillEditor
+              theme="snow"
+              v-model:content="form.description"
+              contentType="html"
+            />
+          </div>
+        </div>
 
-      <!-- DURATION SELECT -->
-      <div class="form-row">
-        <label for="duration">Plan</label>
-        <select id="duration" v-model="form.durationId">
-          <option v-for="d in durations" :key="d.id" :value="d.id">
-            {{ d.name }}
-          </option>
-        </select>
-      </div>
+        <div class="form-row">
+          <label>Amount ($)</label>
+          <input type="number" v-model.number="form.amount" />
+          <span class="error" v-if="errors.amount">{{ errors.amount }}</span>
+        </div>
 
-      <div class="form-row checkbox-row">
-        <input type="checkbox" id="isActive" v-model="form.isActive" />
-        <label for="isActive">Active</label>
-      </div>
+        <div class="form-row">
+          <label>Duration</label>
+          <select v-model="form.durationId">
+            <option disabled value="">Select duration</option>
+            <option v-for="d in durations" :key="d.id" :value="d.id">
+              {{ d.name }}
+            </option>
+          </select>
+          <span class="error" v-if="errors.durationId">{{ errors.durationId }}</span>
+        </div>
 
-      <div class="actions">
-        <button class="save" @click="savePlan">Save</button>
-        <button v-if="isEditing" @click="resetForm" class="cancel">Cancel</button>
+        <div class="form-row checkbox-row">
+          <input type="checkbox" v-model="form.isActive" />
+          <label>Active</label>
+        </div>
+
+        <div class="actions">
+          <button class="save" @click="savePlan">Save</button>
+          <button class="cancel" @click="showModal = false">Cancel</button>
+        </div>
+
       </div>
     </div>
   </div>
@@ -187,10 +226,10 @@ onMounted(() => {
 
 <style scoped>
 .page-container {
-  padding: 30px;
-  background: #f0f2f5;
+  padding: 32px;
+  background: linear-gradient(135deg, #f8fafc, #eef2ff);
   min-height: 100vh;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Segoe UI', sans-serif;
 }
 
 /* HEADER */
@@ -201,190 +240,200 @@ onMounted(() => {
   margin-bottom: 30px;
 }
 
-.page-header h1 {
-  margin: 0;
-  font-size: 28px;
-  color: #111827;
-}
-
-.subtitle {
-  color: #6b7280;
-  font-size: 14px;
-  margin-top: 4px;
-}
-
 .add-btn {
-  background: #3b82f6;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
   color: #fff;
+  padding: 10px 22px;
+  border-radius: 10px;
   border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
   font-weight: 600;
-  transition: 0.2s;
-}
-.add-btn:hover {
-  background: #2563eb;
+  cursor: pointer;   /* ✅ pointer */
 }
 
 /* GRID */
 .plans-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   gap: 20px;
-  margin-bottom: 40px;
 }
 
+/* ❗ CARD CSS NOT CHANGED */
 .plan-card {
-  background: #fff;
-  padding: 20px;
-  border-radius: 12px;
+  background: white;
+  padding: 18px;
+  border-radius: 14px;
   cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  border: 2px solid transparent;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
 }
-
-.plan-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-}
-
-.plan-card.active {
-  border-color: #22c55e;
-}
-
 .plan-card.inactive {
   opacity: 0.6;
 }
 
-.card-header {
+/* MODAL */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(3px);
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  margin-bottom: 12px;
+  z-index: 999;
 }
 
-.status {
-  font-size: 12px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 6px;
-  text-transform: uppercase;
-}
-
-.status.active {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.status.inactive {
-  background: #fee2e2;
-  color: #b91c1c;
-}
-
-.description {
-  font-size: 14px;
-  color: #4b5563;
-  margin-bottom: 10px;
-}
-
-.amount {
-  font-size: 20px;
-  font-weight: 700;
-  color: #111827;
+.modal-box {
+  background: white;
+  padding: 28px;
+  width: 560px;
+  border-radius: 16px;
+  box-shadow: 0 10px 35px rgba(0,0,0,0.2);
 }
 
 /* FORM */
-.form-box {
-  background: #fff;
-  padding: 30px;
-  border-radius: 12px;
-  max-width: 500px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-  margin-top: 20px;
-}
-
-.form-box h3 {
-  margin-bottom: 20px;
-  font-size: 22px;
-  color: #111827;
-}
-
-/* Form row styling */
 .form-row {
   display: flex;
   flex-direction: column;
-  margin-bottom: 18px;
-}
-
-.form-row label {
-  font-size: 14px;
-  color: #374151;
-  margin-bottom: 6px;
-  font-weight: 500;
+  margin-bottom: 16px;
 }
 
 input, select {
-  padding: 12px;
-  border-radius: 8px;
+  padding: 11px;
+  border-radius: 10px;
   border: 1px solid #d1d5db;
-  outline: none;
   font-size: 14px;
-  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-/* Checkbox styling */
+/* ERROR */
+.error {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* EDITOR */
+.editor {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #d1d5db;
+}
+
+.editor :deep(.ql-toolbar) {
+  border: none;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 12px 12px 0 0;
+}
+
+.editor :deep(.ql-container) {
+  border: none;
+}
+
+.editor :deep(.ql-editor) {
+  min-height: 260px;
+  font-size: 14px;
+}
+
+/* CHECKBOX */
 .checkbox-row {
   flex-direction: row;
   align-items: center;
-}
-.checkbox-row input[type="checkbox"] {
-  margin-right: 8px;
-  width: 18px;
-  height: 18px;
-  accent-color: #22c55e;
+  gap: 6px;
 }
 
-/* Buttons */
+/* ACTIONS */
 .actions {
   display: flex;
+  justify-content: flex-end;
   gap: 12px;
   margin-top: 20px;
 }
 
 button.save {
   background: #22c55e;
-  color: #fff;
+  color: white;
+  padding: 10px 22px;
+  border-radius: 10px;
   border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
   font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.2s;
-}
-button.save:hover {
-  background: #16a34a;
-  transform: translateY(-2px);
+  cursor: pointer;  /* ✅ pointer */
 }
 
 button.cancel {
   background: #9ca3af;
-  color: #fff;
+  color: white;
+  padding: 10px 22px;
+  border-radius: 10px;
   border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-}
-button.cancel:hover {
-  background: #6b7280;
-  transform: translateY(-2px);
+  cursor: pointer;  /* ✅ pointer */
 }
 
 .loading {
-  padding: 20px;
   font-weight: 600;
-  color: #374151;
 }
+
+/* CARD */
+.plan-card {
+  background: #0f766e; /* teal green */
+  padding: 22px;
+  border-radius: 16px;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.15);
+  color: #ffffff; /* all text white */
+  display: flex;
+  flex-direction: column;
+  gap: 14px; /* ✅ correct spacing */
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.plan-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.2);
+}
+
+.plan-card.inactive {
+  opacity: 0.6;
+}
+
+/* HEADER INSIDE CARD */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+}
+
+/* STATUS */
+.status {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  background: rgba(255,255,255,0.2);
+}
+
+/* DESCRIPTION */
+.description {
+  font-size: 14px;
+  line-height: 1.6;
+  color: white;
+}
+
+.plan-card .description * {
+  color: #ffffff !important;
+}
+
+/* AMOUNT */
+.amount {
+  margin-top: auto;
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+}
+
 </style>
