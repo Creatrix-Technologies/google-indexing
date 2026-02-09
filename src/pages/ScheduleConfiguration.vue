@@ -182,7 +182,9 @@ const saveSchedule = async () => {
       frequency: Number(formData.value.frequency),
       startTime: formData.value.startTime,
       endTime: formData.value.endTime,
-      maxUrls: formData.value.maxUrls
+      maxUrls: formData.value.maxUrls,
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      date: new Date().toISOString().split('T')[0]
     })
 
     toast.success('Schedule updated')
