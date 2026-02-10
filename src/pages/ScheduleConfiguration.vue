@@ -238,7 +238,6 @@ const bulkrun = async (websiteId: number) => {
 
   try {
     await api.post('/crawl/index-bulk', { websiteId })
-    toast.info('Queue process started')
   } catch (err: any) {
     const apiError = err?.response?.data?.error
     if (apiError?.description) {
