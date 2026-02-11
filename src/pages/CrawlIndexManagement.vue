@@ -23,31 +23,22 @@
         <p class="stat-label">Total Crawl Queued</p>
         <p class="stat-value queued">{{ stats.queuedCount }}</p>
       </div>
-
       <div class="stat-card">
         <p class="stat-label">Total Crawl Success</p>
         <p class="stat-value success">{{ stats.crawledCount }}</p>
       </div>
-
       <div class="stat-card">
         <p class="stat-label">Total Crawl Failed</p>
         <p class="stat-value failed">{{ stats.failedCount }}</p>
       </div>
-    </div>
-
-        <!-- Stats Cards -->
-        <div class="stats-cards">
-
       <div class="stat-card">
         <p class="stat-label">Total Index Success</p>
         <p class="stat-value success">{{ stats.indexedSucceed }}</p>
       </div>
-
       <div class="stat-card">
         <p class="stat-label">Total Index Queued</p>
         <p class="stat-value indexed">{{ stats.indexedQueued }}</p>
       </div>
-
       <div class="stat-card">
         <p class="stat-label">Total Index Failed</p>
         <p class="stat-value failed">{{ stats.indexedFailed }}</p>
@@ -75,7 +66,7 @@
             <th>Site Name</th>
             <th>URL</th>
             <th>Type</th>
-            <th>Status</th>
+            <th>Status / Progress</th>
             <th>Indexable</th>
             <th>Crawl Date</th>
             <th>Actions</th>
@@ -86,7 +77,6 @@
           <tr
             v-for="site in activeSites"
             :key="site.id"
-            :class="{ selected: selectedSites.includes(site.id) }"
           >
             <td>
               <input
@@ -107,19 +97,57 @@
             <td>{{ site.url }}</td>
             <td>{{ site.type }}</td>
 
+            <!-- STATUS / LOADER -->
             <td>
-              <span class="status-badge" :class="getStatusClass(site.crawlStatus)">
-                {{ site.crawlStatus }}
-              </span>
+              <div style="display:flex; flex-direction:column; gap:4px;">
+
+                <!-- Loader -->
+                <div
+                  v-if="progressMap[site.id]?.status === 'in_progress'"
+                  class="loader-wrapper"
+                >
+                  <span class="spinner"></span>
+                  <span class="loader-text">Processing…</span>
+                </div>
+
+                <!-- SSE message -->
+                <span
+                  v-if="progressMap[site.id]?.message"
+                  class="sse-message"
+                >
+                  {{ progressMap[site.id]?.message }}
+                </span>
+
+                <!-- Status badge -->
+                <span v-else-if="!progressMap[site.id]">
+                  <span
+                    class="status-badge"
+                    :class="getStatusClass(site.crawlStatus)"
+                  >
+                    {{ site.crawlStatus || 'Queue' }}
+                  </span>
+                </span>
+
+              </div>
             </td>
 
             <td>{{ site.isIndexable }}</td>
             <td>{{ formatCrawlDate(site.crawlDate) }}</td>
 
             <td class="action-cell">
-              <button v-if="site.crawlStatus!='In Progress'" class="action-btn" @click="startCrawl(site.id)">Crawl</button>
+              <button
+                v-if="site.crawlStatus !== 'In Progress'"
+                class="action-btn"
+                @click="startCrawl(site.id)"
+              >
+                Crawl
+              </button>
 
-              <button v-if="site.crawlStatus==='Success'" class="action-btn view-details" @click="viewDetails(site.id)">
+              <button
+                v-if="site.crawlStatus === 'Success'"
+                class="action-btn view-details"
+                @click="viewDetails(site.id)"
+              >
                 View
               </button>
             </td>
@@ -142,16 +170,14 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../api'
 import { useToast } from 'vue-toastification'
-import Swal from "sweetalert2";
+import Swal from 'sweetalert2'
 import { useGoogleConfigStore } from '../Shared/googleConfig'
 import { useSubscriptionStore } from '../Shared/subscription'
 
-const googleConfigStore = useGoogleConfigStore()
-
-const subscriptionStore = useSubscriptionStore()
-
 const toast = useToast()
 const router = useRouter()
+const googleConfigStore = useGoogleConfigStore()
+const subscriptionStore = useSubscriptionStore()
 
 interface Site {
   id: number
@@ -164,71 +190,25 @@ interface Site {
   isIndexable: 'Yes' | 'No'
 }
 
-/* ================= STATE ================= */
+interface StatusProgress {
+  status: 'in_progress' | 'completed' | 'failed'
+  message?: string
+}
+
 const allSites = ref<Site[]>([])
 const selectedSites = ref<number[]>([])
+const progressMap = ref<Record<number, StatusProgress>>({})
+const eventSources = new Map<number, EventSource>()
 
 const stats = ref({
-  activeSiteCount: 0,
   queuedCount: 0,
   crawledCount: 0,
   failedCount: 0,
-  indexedSucceed:0,
-  indexedFailed:0,
-  indexedQueued:0
+  indexedSucceed: 0,
+  indexedFailed: 0,
+  indexedQueued: 0
 })
 
-/* ================= API ================= */
-const handleAuthError = (err: any) => {
-  if (err?.response?.status === 400 || err?.response?.status === 401) {
-    toast.error('Session expired. Please login again.')
-    router.push({ name: 'Login' })
-  }
-}
-
-/* Fetch site list */
-const fetchCrawlSites = async () => {
-  try {
-    const res = await api.get('/crawl/site-list?PageNo=1&PageSize=10')
-    const items = res.data?.data || []
-
-    allSites.value = items.map((item: any) => ({
-      id: item.webSiteId,
-      name: item.siteName,
-      url: item.url,
-      type: item.siteType,
-      status: 'Active',
-      crawlStatus: item.crawlStatus,
-      isIndexable: item.isIndexable ? 'Yes' : 'No',
-      crawlDate: item.crawlCompletedDate
-        ? new Date(item.crawlCompletedDate)
-        : undefined
-    }))
-  } catch (err) {
-    handleAuthError(err)
-  }
-}
-
-/* Fetch stats */
-const fetchStats = async () => {
-  try {
-    const res = await api.get('/crawl/site-and-queue-count')
-    if (res.data?.isSuccess) {
-      stats.value = res.data.data
-    }
-  } catch (err) {
-    handleAuthError(err)
-  }
-}
-
-onMounted(() => {
-  fetchCrawlSites()
-  fetchStats()
-  googleConfigStore.check()
-  subscriptionStore.checkSubscription()
-})
-
-/* ================= COMPUTED ================= */
 const activeSites = computed(() =>
   allSites.value.filter(s => s.status === 'Active')
 )
@@ -238,11 +218,57 @@ const isAllSelected = computed(() =>
   selectedSites.value.length === activeSites.value.length
 )
 
-/* ================= METHODS ================= */
 const toggleSelectAll = () => {
   selectedSites.value = isAllSelected.value
     ? []
     : activeSites.value.map(s => s.id)
+}
+
+
+const queueForCrawl = async () => {
+  if (!selectedSites.value.length) return
+
+  const result = await Swal.fire({
+    title: 'Are you sure?',
+    text: `Do you want to crawl ${selectedSites.value.length} selected site(s)?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes',
+    cancelButtonText: 'No'
+  })
+
+  if (!result.isConfirmed) return
+
+  const siteIdsToQueue = selectedSites.value.filter(id => {
+    const site = allSites.value.find(s => s.id === id)
+    return site && site.crawlStatus !== 'In Progress'
+  })
+
+  if (!siteIdsToQueue.length) {
+    toast.info('Selected sites are already in progress')
+    return
+  }
+
+  try {
+    const res = await api.post('/crawl/edit', {
+      webSiteId: siteIdsToQueue
+    })
+
+    if (res.data?.isSuccess) {
+      siteIdsToQueue.forEach(id => {
+        const site = allSites.value.find(s => s.id === id)
+        if (site) {
+          site.crawlStatus = 'Queue'
+        }
+      })
+
+      selectedSites.value = []
+      fetchStats()
+      toast.success(res.data.message || 'Sites queued successfully')
+    }
+  } catch (err) {
+    handleAuthError(err)
+  }
 }
 
 const toggleSiteSelection = (id: number) => {
@@ -252,62 +278,88 @@ const toggleSiteSelection = (id: number) => {
     : selectedSites.value.push(id)
 }
 
-/* ================= CRAWL ================= */
-const queueForCrawl = async () => {
-  if (!selectedSites.value.length) return
+const handleAuthError = (err: any) => {
+  const status = err?.response?.status
+  const data = err?.response?.data
 
-  const result = await Swal.fire({
-    title: "Are you sure?",
-    text: "Do you want to crawl the selected sites(s)?",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Yes",
-    cancelButtonText: "No",
-  });
+  // 401 → auth issue
+  if (status === 401) {
+    toast.error('Session expired. Please login again.')
+    router.push({ name: 'Login' })
+    return
+  }
 
-  if (!result.isConfirmed) return
+  // Business rule errors (400)
+  if (status === 400) {
+    const message =
+      data?.error?.description ||
+      data?.message ||
+      'Something went wrong.'
 
+    toast.warning(message)
+    return
+  }
+
+  // Fallback
+  toast.error('Unexpected error. Please try again.')
+}
+
+
+const fetchCrawlSites = async () => {
   try {
-    const res = await api.post('/crawl/edit', {
-      webSiteId: selectedSites.value
-    })
+    const res = await api.get('/crawl/site-list?PageNo=1&PageSize=10')
+    allSites.value = (res.data?.data || []).map((item: any) => {
+      const site: Site = {
+        id: item.webSiteId,
+        name: item.siteName,
+        url: item.url,
+        type: item.siteType,
+        status: 'Active',
+        crawlStatus: item.crawlStatus,
+        isIndexable: item.isIndexable ? 'Yes' : 'No',
+        crawlDate: item.crawlCompletedDate
+          ? new Date(item.crawlCompletedDate)
+          : undefined
+      }
 
-    if (res.data.isSuccess) {
-      selectedSites.value.forEach(id => {
-        const site = allSites.value.find(s => s.id === id)
-        if (site) site.crawlStatus = 'Queue'
-      })
-      selectedSites.value = []
-      fetchStats()
-      toast.success(res.data.message)
-    }
+      if (site.crawlStatus === 'In Progress') {
+        progressMap.value[site.id] = { status: 'in_progress' }
+        listenToCrawlProgress(site.id)
+      }
+
+      return site
+    })
   } catch (err) {
     handleAuthError(err)
   }
 }
 
-
-
-
+const fetchStats = async () => {
+  try {
+    const res = await api.get('/crawl/site-and-queue-count')
+    if (res.data?.isSuccess) stats.value = res.data.data
+  } catch (err) {
+    handleAuthError(err)
+  }
+}
 
 const startCrawl = async (id: number) => {
+  const confirm = await Swal.fire({
+    title: 'Are you sure?',
+    text: 'Do you want to crawl this site?',
+    icon: 'warning',
+    showCancelButton: true
+  })
+
+  if (!confirm.isConfirmed) return
+
   try {
-    const result = await Swal.fire({
-    title: "Are you sure?",
-    text: "Are you sure, you want to crawl this site?",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Yes",
-    cancelButtonText: "No",
-  });
-
-  if (!result.isConfirmed) return
-
     const res = await api.post('/crawl/edit', { webSiteId: [id] })
     if (res.data.isSuccess) {
       const site = allSites.value.find(s => s.id === id)
-      if (site) site.crawlStatus = 'Queue'
-      fetchStats()
+    if (site) {
+      site.crawlStatus = 'Queue'
+    }
       toast.success(res.data.message)
     }
   } catch (err) {
@@ -315,36 +367,52 @@ const startCrawl = async (id: number) => {
   }
 }
 
-/* ================= UTIL ================= */const viewDetails = (siteId: number) => {
-  // Get menu from localStorage
-  const menuData = localStorage.getItem("menu");
-  if (!menuData) {
-    console.error("No menu found in localStorage");
-    return;
+const listenToCrawlProgress = (siteId: number) => {
+  if (eventSources.has(siteId)) return
+
+  const source = new EventSource(
+    `${import.meta.env.VITE_API_BASE_URL}/crawl/listen/${siteId}`
+  )
+  eventSources.set(siteId, source)
+
+  source.onmessage = (e) => {
+    if (!e.data) return
+
+    const data = JSON.parse(e.data)
+    progressMap.value[siteId] = data
+
+    if (data.status !== 'in_progress') {
+      source.close()
+      eventSources.delete(siteId)
+      fetchStats()
+    }
   }
 
-  // Parse JSON
-  const parsedMenu = JSON.parse(menuData); // parsedMenu should have { menus: [...] }
-  const menuList = parsedMenu.menus || [];
-
-  // Find the menu item by component
-  const menu = menuList.find((m: any) => m.component === 'CrawlIndexDetails');
-  if (!menu) {
-    console.error('Menu item for CrawlIndexDetails not found!');
-    return;
+  source.onerror = () => {
+    source.close()
+    eventSources.delete(siteId)
   }
-
-  // Navigate using router name + params
-  router.push({ name: menu.component, params: { siteId } });
 }
 
+const viewDetails = (siteId: number) => {
+  router.push({ name: 'CrawlIndexDetails', params: { siteId } })
+}
 
 const getStatusClass = (status?: string) =>
   `status-${(status || 'queue').toLowerCase()}`
 
 const formatCrawlDate = (date?: Date) =>
   date ? date.toLocaleDateString() : 'Never'
+
+onMounted(async () => {
+  await fetchCrawlSites()
+  await fetchStats()
+  googleConfigStore.check()
+  subscriptionStore.checkSubscription()
+})
 </script>
+
+
 
   
 <style scoped>
@@ -555,5 +623,39 @@ const formatCrawlDate = (date?: Date) =>
   .stat-value.failed {
     color: #b91c1c; /* red */
   }
+
+  /* Loader */
+.loader-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid #22c55e;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.loader-text {
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.sse-message {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
   
   </style>

@@ -79,7 +79,7 @@
                 class="action-btn"
                 title="Run Instantly"
                 @click="bulkrun(item.websiteId)"
-                :disabled="!!item.isRunning || !!(
+                :disabled="!!item.isRunning || !!item.isPickByJob || !!(
                   getProgress(item.websiteId) &&
                   getProgress(item.websiteId)!.completed < getProgress(item.websiteId)!.total
                 )"
@@ -154,6 +154,7 @@ interface Schedule {
   maxUrls: number
   queued: number
   isRunning: boolean
+  isPickByJob: boolean
 }
 
 interface Progress {
@@ -223,12 +224,13 @@ const fetchSchedules = async () => {
     endTime: i.endTime,
     maxUrls: i.maxUrls,
     queued: i.totalQueued,
-    isRunning: i.isRunning
+    isRunning: i.isRunning,
+    isPickByJob: i.isPickByJob
   }))
 
   // resume listeners for running items
   schedules.value.forEach(i => {
-    if (i.isRunning) listenToProgress(i.websiteId)
+    if (i.isRunning || i.isPickByJob) listenToProgress(i.websiteId)
   })
 }
 
@@ -239,6 +241,7 @@ const bulkrun = async (websiteId: number) => {
   try {
     await api.post('/crawl/index-bulk', { websiteId })
   } catch (err: any) {
+    fetchSchedules()
     const apiError = err?.response?.data?.error
     if (apiError?.description) {
       toast.error(apiError.description)
