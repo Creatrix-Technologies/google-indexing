@@ -292,7 +292,7 @@ const formatTime = (t?: string | null) => {
 }
 
 const formatFrequency = (v: number) =>
-  v === 1 ? 'Daily' : v === 7 ? 'Weekly' : v === 30 ? 'Monthly' : `${v} days`
+  v === 1 ? 'Daily' : v === 7 ? 'Weekly' : v === 30 ? 'Monthly' : ''
 
 /* ================= COMPUTED HELPERS ================= */
 const getProgress = (websiteId: number) => progressMap.value[websiteId]
