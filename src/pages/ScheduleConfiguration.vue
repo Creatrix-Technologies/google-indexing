@@ -17,6 +17,7 @@
             <th>Start Time</th>
             <th>End Time</th>
             <th>Max Url</th>
+            <th>Queue Completed</th>
             <th>Total Queued</th>
             <th>Actions</th>
           </tr>
@@ -40,7 +41,7 @@
             <td>{{ formatTime(item.startTime) }}</td>
             <td>{{ formatTime(item.endTime) }}</td>
             <td>{{ item.maxUrls }}</td>
-
+            <td>{{ item.queueCompleted }}</td>
             <!-- Progress -->
             <td>
               <div style="display:flex;align-items:center;gap:6px;">
@@ -141,6 +142,7 @@
 import { ref, onMounted } from 'vue'
 import api from '../api'
 import { useToast } from 'vue-toastification'
+import Swal from 'sweetalert2'
 
 const toast = useToast()
 
@@ -154,7 +156,8 @@ interface Schedule {
   maxUrls: number
   queued: number
   isRunning: boolean
-  isPickByJob: boolean
+  isPickByJob: boolean,
+  queueCompleted:number
 }
 
 interface Progress {
@@ -225,7 +228,8 @@ const fetchSchedules = async () => {
     maxUrls: i.maxUrls,
     queued: i.totalQueued,
     isRunning: i.isRunning,
-    isPickByJob: i.isPickByJob
+    isPickByJob: i.isPickByJob,
+    queueCompleted: i.queueCompleted
   }))
 
   // resume listeners for running items
@@ -235,6 +239,19 @@ const fetchSchedules = async () => {
 }
 
 const bulkrun = async (websiteId: number) => {
+
+  const confirm = await Swal.fire({
+    title: 'Run Instantly?',
+    text: 'The queue will begin processing right away.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, Run Now',
+    cancelButtonText: 'Cancel',
+    confirmButtonColor: '#22c55e'
+  })
+
+  if (!confirm.isConfirmed) return
+
   progressMap.value[websiteId] = { total: 0, completed: 0, failed: 0 }
   listenToProgress(websiteId)
 
