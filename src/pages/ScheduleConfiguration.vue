@@ -285,13 +285,18 @@ const openEdit = (item: Schedule) => {
 const saveSchedule = async () => {
   if (!editingId.value) return
 
+  const now = new Date();
+  const utcDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  const dateOnlyUtc = utcDate.toISOString().split('T')[0]; // "yyyy-MM-dd" in UTC
+
   await api.post('/schedule/update', {
     websiteId: editingId.value,
     frequency: Number(formData.value.frequency),
     startTime: formData.value.startTime,
     endTime: formData.value.endTime,
     maxUrls: formData.value.maxUrls,
-    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    date: dateOnlyUtc
   })
 
   toast.success('Schedule updated')
