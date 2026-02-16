@@ -85,7 +85,7 @@
                   getProgress(item.websiteId)!.completed < getProgress(item.websiteId)!.total
                 )"
               >
-                ▶
+                Run
               </button>
             </td>
           </tr>

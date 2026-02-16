@@ -82,6 +82,7 @@
             <th>Indexing State</th>
             <th>Coverage State</th>
             <th>Queue Status</th>
+            <th>Priority</th>
             <th>Result</th>
             <th>API Type</th>
             <th>Index Updated At</th>
@@ -116,6 +117,7 @@
             <td>{{ item.indexingState.replace(/_/g, ' ')}}</td>
             <td>{{ item.coverageState}}</td>
             <td>{{ item.indexedStatus}}</td>
+            <td>{{ item.priority}}</td>
             <td>{{ item.indexedResult}}</td>
             <td>{{ item.type }}</td>
             <td>{{ item.indexedAt }}</td>
@@ -174,7 +176,8 @@ interface CrawledUrl {
   indexedAt: string
   indexedResult: string,
   indexedStatus: string,
-  type:string
+  type:string,
+  priority:string
 }
 
 interface PageInfo {
