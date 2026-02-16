@@ -354,25 +354,29 @@ const indexSingleUrl = async (id: number) => {
 
     if (result.isDismissed) return; // Cancel clicked
 
+    // --- Instant Indexing ---
     if (result.isConfirmed) {
       isLoading.value = true;
-      // Instant indexing
-      const res = await api.post("/crawl/index-direct", {
-        websiteId: siteId,
-        urlId: id,
-        type: "URL_UPDATED"
-      });
+      try {
+        const res = await api.post("/crawl/index-direct", {
+          websiteId: siteId,
+          urlId: id,
+          type: "URL_UPDATED"
+        });
 
-      if (res?.data.isSuccess) {
-        Swal.fire("Indexed", "URL Indexed Instantly", "success");
-      } else {
-        Swal.fire("Failed", res?.data?.meta, "error");
+        if (res?.data?.isSuccess) {
+          Swal.fire("Indexed", "URL Indexed Instantly", "success");
+        } else {
+          Swal.fire("Failed", res?.data?.meta || "Something went wrong", "error");
+        }
+      } finally {
+        isLoading.value = false;
       }
     }
 
+    // --- Queue Indexing ---
     if (result.isDenied) {
-      // Queued indexing - ask for priority
-      const { value: priority } = await Swal.fire({
+      const queueResult = await Swal.fire({
         title: "Queue URL for Indexing",
         icon: "question",
         input: "select",
@@ -386,30 +390,37 @@ const indexSingleUrl = async (id: number) => {
         cancelButtonText: "Cancel"
       });
 
-      if (priority === null) return; // User cancelled
+      if (queueResult.isDismissed || queueResult.value === undefined) return;
+
+      const priority = Number(queueResult.value);
 
       isLoading.value = true;
-      const resQueue = await api.post("/crawl/index", {
-        websiteId: siteId,
-        urlId: [id],
-        type: "URL_UPDATED",
-        priority: Number(priority)
-      });
+      try {
+        const resQueue = await api.post("/crawl/index", {
+          websiteId: siteId,
+          urlId: [id],
+          type: "URL_UPDATED",
+          priority
+        });
 
-      if (resQueue?.data.isSuccess) {
-        Swal.fire("Queued", "URL queued for indexing", "success");
-      } else {
-        Swal.fire("Failed", resQueue?.data?.meta, "error");
+        if (resQueue?.data?.isSuccess) {
+          Swal.fire("Queued", "URL queued for indexing", "success");
+        } else {
+          Swal.fire("Failed", resQueue?.data?.meta || "Something went wrong", "error");
+        }
+      } finally {
+        isLoading.value = false;
       }
     }
 
+    // Refresh UI data after any successful action
     fetchCrawlDetails();
     fetchCrawlCounts();
+    
   } catch (err: any) {
-    console.log(err);
-    const msg = err?.response?.data?.error?.description || "You are not authorized to perform instant indexing.";
+    console.error(err);
+    const msg = err?.response?.data?.error?.description || "You are not authorized to perform indexing.";
     Swal.fire("Failed", msg, "error");
-  } finally {
     isLoading.value = false;
   }
 };
@@ -434,27 +445,29 @@ const removeIndexSingleUrl = async (id: number) => {
 
     if (result.isDismissed) return; // Cancel clicked
 
+    // --- Instant Removal ---
     if (result.isConfirmed) {
-      
-    isLoading.value = true;
+      isLoading.value = true;
+      try {
+        const res = await api.post("/crawl/index-direct", {
+          websiteId: siteId,
+          urlId: id,
+          type: "URL_DELETED"
+        });
 
-      // Instant removal
-      const res = await api.post("/crawl/index-direct", {
-        websiteId: siteId,
-        urlId: id,
-        type: "URL_DELETED"
-      });
-
-      if (res?.data.isSuccess) {
-        Swal.fire("Removed", "URL removed instantly", "success");
-      } else {
-        Swal.fire("Failed", res?.data?.meta, "error");
+        if (res?.data?.isSuccess) {
+          Swal.fire("Removed", "URL removed instantly", "success");
+        } else {
+          Swal.fire("Failed", res?.data?.meta || "Something went wrong", "error");
+        }
+      } finally {
+        isLoading.value = false;
       }
     }
 
+    // --- Queue Removal ---
     if (result.isDenied) {
-      // Queued removal - ask for priority
-      const { value: priority } = await Swal.fire({
+      const queueResult = await Swal.fire({
         title: "Queue URL for Removal",
         icon: "question",
         input: "select",
@@ -468,34 +481,41 @@ const removeIndexSingleUrl = async (id: number) => {
         cancelButtonText: "Cancel"
       });
 
-      if (priority === null) return; // user cancelled
+      if (queueResult.isDismissed || queueResult.value === undefined) return;
+
+      const priority = Number(queueResult.value);
 
       isLoading.value = true;
+      try {
+        const resQueue = await api.post("/crawl/index", {
+          websiteId: siteId,
+          urlId: [id],
+          type: "URL_DELETED",
+          priority
+        });
 
-      const resQueue = await api.post("/crawl/index", {
-        websiteId: siteId,
-        urlId: [id],
-        type: "URL_DELETED",
-        priority: Number(priority)
-      });
-
-      if (resQueue?.data.isSuccess) {
-        Swal.fire("Queued", "URL queued for removal", "success");
-      } else {
-        Swal.fire("Failed", resQueue?.data?.meta, "error");
+        if (resQueue?.data?.isSuccess) {
+          Swal.fire("Queued", "URL queued for removal", "success");
+        } else {
+          Swal.fire("Failed", resQueue?.data?.meta || "Something went wrong", "error");
+        }
+      } finally {
+        isLoading.value = false;
       }
     }
 
+    // Refresh UI
     fetchCrawlDetails();
     fetchCrawlCounts();
+
   } catch (err: any) {
-    console.log(err);
-    const msg = err?.response?.data?.error?.description || "You are not authorized to perform instant removal.";
+    console.error(err);
+    const msg = err?.response?.data?.error?.description || "You are not authorized to perform removal.";
     Swal.fire("Failed", msg, "error");
-  } finally {
     isLoading.value = false;
   }
 };
+
 
 
 /* COMPUTED */
