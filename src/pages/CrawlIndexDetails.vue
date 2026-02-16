@@ -269,6 +269,25 @@ const toggleSelectAll = () => {
 
 /* INDEXING */
 const indexSelectedUrls = async () => {
+  const { value: priority } = await Swal.fire({
+    title: "Queue Selected URLs",
+    icon: "warning",
+    input: "select",
+    inputOptions: {
+      2: "High",
+      1: "Medium",
+      0: "Low"
+    },
+    inputPlaceholder: "Select priority",
+    showCancelButton: true,
+    confirmButtonText: "Next",
+    cancelButtonText: "Cancel",
+    confirmButtonColor: "#22c55e"
+  });
+
+  if (!priority && priority !== 0) return; // user cancelled
+
+  // Next step: ask if indexing or removing
   const result = await Swal.fire({
     title: "Queue Selected URLs",
     text: "What do you want to do with the selected URLs?",
@@ -280,148 +299,204 @@ const indexSelectedUrls = async () => {
     confirmButtonColor: "#22c55e",
     denyButtonColor: "#ef4444",
     cancelButtonText: "Cancel"
-  })
+  });
 
-  if (result.isDismissed) return
+  if (result.isDismissed) return;
 
   const type =
     result.isConfirmed ? "URL_UPDATED" :
     result.isDenied ? "URL_DELETED" :
-    null
+    null;
 
-  if (!type) return
+  if (!type) return;
 
+  // API call including priority
   const resQueue = await api.post("/crawl/index", {
     websiteId: siteId,
     urlId: Array.from(selectedIds.value),
-    type
-  })
+    type,
+    priority: Number(priority) // send priority here
+  });
 
   if(resQueue?.data.isSuccess){
     Swal.fire(
-    "Queued",
-    type === "URL_UPDATED"
-      ? "URLs queued for indexing"
-      : "URLs queued for removal",
-    "success"
-  )
-      }
-      else{
-        Swal.fire("Failed", resQueue?.data?.meta, "error")
-      }
+      "Queued",
+      type === "URL_UPDATED"
+        ? "URLs queued for indexing"
+        : "URLs queued for removal",
+      "success"
+    );
+  } else {
+    Swal.fire("Failed", resQueue?.data?.meta, "error");
+  }
 
-  selectedIds.value.clear()
-  fetchCrawlDetails()
-  fetchCrawlCounts()
-}
+  selectedIds.value.clear();
+  fetchCrawlDetails();
+  fetchCrawlCounts();
+};
+
 
 const indexSingleUrl = async (id: number) => {
-  const result = await Swal.fire({
-    title: "Index URL",
-    text: "Choose indexing method",
-    icon: "question",
-    showCancelButton: true,
-    showDenyButton: true,
-    confirmButtonText: "⚡ Index",
-    denyButtonText: "⏳ Add to Queue",
-    cancelButtonText: "Cancel",
-    confirmButtonColor: "#22c55e",
-    denyButtonColor: "#3b82f6"
-  })
-
-  if (result.isDismissed) return
-
   try {
-    isLoading.value = true
+    // Step 1: Ask user for action (Instant or Queue)
+    const result = await Swal.fire({
+      title: "Index URL",
+      text: "Choose indexing method",
+      icon: "question",
+      showCancelButton: true,
+      showDenyButton: true,
+      confirmButtonText: "⚡ Index",
+      denyButtonText: "⏳ Add to Queue",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#22c55e",
+      denyButtonColor: "#3b82f6"
+    });
+
+    if (result.isDismissed) return; // Cancel clicked
+
     if (result.isConfirmed) {
-      const directRes = await api.post("/crawl/index-direct", {
+      isLoading.value = true;
+      // Instant indexing
+      const res = await api.post("/crawl/index-direct", {
         websiteId: siteId,
         urlId: id,
-        type:"URL_UPDATED"
-      })
-      if(directRes?.data.isSuccess){
-        Swal.fire("Indexed", "URL Indexed Instantly", "success")
-      }
-      else{
-        Swal.fire("Failed", directRes?.data?.meta, "error")
+        type: "URL_UPDATED"
+      });
+
+      if (res?.data.isSuccess) {
+        Swal.fire("Indexed", "URL Indexed Instantly", "success");
+      } else {
+        Swal.fire("Failed", res?.data?.meta, "error");
       }
     }
+
     if (result.isDenied) {
-      const directResQueue=await api.post("/crawl/index", {
+      // Queued indexing - ask for priority
+      const { value: priority } = await Swal.fire({
+        title: "Queue URL for Indexing",
+        icon: "question",
+        input: "select",
+        inputOptions: {
+          2: "High",
+          1: "Medium",
+          0: "Low"
+        },
+        inputPlaceholder: "Select priority",
+        showCancelButton: true,
+        cancelButtonText: "Cancel"
+      });
+
+      if (priority === null) return; // User cancelled
+
+      isLoading.value = true;
+      const resQueue = await api.post("/crawl/index", {
         websiteId: siteId,
         urlId: [id],
-        type:"URL_UPDATED"
-      })
-      if(directResQueue?.data.isSuccess){
-        Swal.fire("Queued", "Queued For Indexing", "success")
-      }
-      else{
-        Swal.fire("Failed", directResQueue?.data?.meta, "error")
+        type: "URL_UPDATED",
+        priority: Number(priority)
+      });
+
+      if (resQueue?.data.isSuccess) {
+        Swal.fire("Queued", "URL queued for indexing", "success");
+      } else {
+        Swal.fire("Failed", resQueue?.data?.meta, "error");
       }
     }
-    fetchCrawlDetails()
-    fetchCrawlCounts()
+
+    fetchCrawlDetails();
+    fetchCrawlCounts();
   } catch (err: any) {
-    console.log(err)
-    const msg = err?.response?.data?.error?.description || "You are not authorized to perform instant indexing."
-    Swal.fire("Failed", msg, "error")
+    console.log(err);
+    const msg = err?.response?.data?.error?.description || "You are not authorized to perform instant indexing.";
+    Swal.fire("Failed", msg, "error");
+  } finally {
+    isLoading.value = false;
   }
-  finally { isLoading.value = false }
-}
+};
+
+
 
 const removeIndexSingleUrl = async (id: number) => {
-  const result = await Swal.fire({
-    title: "Remove Index URL",
-    text: "Choose indexing remove method",
-    icon: "question",
-    showCancelButton: true,
-    showDenyButton: true,
-    confirmButtonText: "⚡ Remove",
-    denyButtonText: "⏳ Queue to Remove",
-    cancelButtonText: "Cancel",
-    confirmButtonColor: "#ef4444",
-    denyButtonColor: "#dc2626"
-  })
-
-  if (result.isDismissed) return
-
   try {
-    isLoading.value = true
+    // Step 1: Ask user for action (Instant or Queue)
+    const result = await Swal.fire({
+      title: "Remove Index URL",
+      text: "Choose removal method",
+      icon: "question",
+      showCancelButton: true,
+      showDenyButton: true,
+      confirmButtonText: "⚡ Remove",
+      denyButtonText: "⏳ Queue to Remove",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#ef4444",
+      denyButtonColor: "#dc2626"
+    });
+
+    if (result.isDismissed) return; // Cancel clicked
+
     if (result.isConfirmed) {
-      const directRes=await api.post("/crawl/index-direct", {
+      
+    isLoading.value = true;
+
+      // Instant removal
+      const res = await api.post("/crawl/index-direct", {
         websiteId: siteId,
         urlId: id,
         type: "URL_DELETED"
-      })
-      if(directRes?.data.isSuccess){
-        Swal.fire("Indexed", "URL Removed Instantly", "success")
-      }
-      else{
-        Swal.fire("Failed", directRes?.data?.meta, "error")
+      });
+
+      if (res?.data.isSuccess) {
+        Swal.fire("Removed", "URL removed instantly", "success");
+      } else {
+        Swal.fire("Failed", res?.data?.meta, "error");
       }
     }
+
     if (result.isDenied) {
-      const directResQueue= await api.post("/crawl/index", {
+      // Queued removal - ask for priority
+      const { value: priority } = await Swal.fire({
+        title: "Queue URL for Removal",
+        icon: "question",
+        input: "select",
+        inputOptions: {
+          2: "High",
+          1: "Medium",
+          0: "Low"
+        },
+        inputPlaceholder: "Select priority",
+        showCancelButton: true,
+        cancelButtonText: "Cancel"
+      });
+
+      if (priority === null) return; // user cancelled
+
+      isLoading.value = true;
+
+      const resQueue = await api.post("/crawl/index", {
         websiteId: siteId,
         urlId: [id],
-        type: "URL_DELETED"
-      })
-      if(directResQueue?.data.isSuccess){
-        Swal.fire("Queued", "Queued For Removal", "success")
-      }
-      else{
-        Swal.fire("Failed", directResQueue?.data?.meta, "error")
+        type: "URL_DELETED",
+        priority: Number(priority)
+      });
+
+      if (resQueue?.data.isSuccess) {
+        Swal.fire("Queued", "URL queued for removal", "success");
+      } else {
+        Swal.fire("Failed", resQueue?.data?.meta, "error");
       }
     }
-    fetchCrawlDetails()
-    fetchCrawlCounts()
+
+    fetchCrawlDetails();
+    fetchCrawlCounts();
   } catch (err: any) {
-    console.log(err)
-    const msg = err?.response?.data?.error?.description || "You are not authorized to perform instant indexing."
-    Swal.fire("Failed", msg, "error")
+    console.log(err);
+    const msg = err?.response?.data?.error?.description || "You are not authorized to perform instant removal.";
+    Swal.fire("Failed", msg, "error");
+  } finally {
+    isLoading.value = false;
   }
-  finally { isLoading.value = false }
-}
+};
+
 
 /* COMPUTED */
 const totalUrlCount = computed(() => counts.value.totalCount)
