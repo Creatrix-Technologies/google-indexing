@@ -20,20 +20,24 @@
     <!-- Stats Cards -->
     <div class="stats-cards">
       <div class="stat-card">
-        <p class="stat-label">Total Crawl Queued</p>
+        <p class="stat-label">Crawl Queued</p>
         <p class="stat-value queued">{{ stats.queuedCount }}</p>
       </div>
       <div class="stat-card">
-        <p class="stat-label">Total Crawl Success</p>
+        <p class="stat-label">Crawl Success</p>
         <p class="stat-value success">{{ stats.crawledCount }}</p>
       </div>
       <div class="stat-card">
-        <p class="stat-label">Total Crawl Failed</p>
+        <p class="stat-label">Crawl Failed</p>
         <p class="stat-value failed">{{ stats.failedCount }}</p>
       </div>
       <div class="stat-card">
-        <p class="stat-label">Total Index Success</p>
+        <p class="stat-label">Total Indexed</p>
         <p class="stat-value success">{{ stats.indexedSucceed }}</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">Total DeIndexed</p>
+        <p class="stat-value success">{{ stats.deIndexedSucceed }}</p>
       </div>
       <div class="stat-card">
         <p class="stat-label">Total Index Queued</p>
@@ -205,6 +209,7 @@ const stats = ref({
   crawledCount: 0,
   failedCount: 0,
   indexedSucceed: 0,
+  deIndexedSucceed: 0,
   indexedFailed: 0,
   indexedQueued: 0
 })

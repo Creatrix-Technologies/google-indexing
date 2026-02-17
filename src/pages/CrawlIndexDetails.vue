@@ -49,11 +49,15 @@
         <span class="value success">{{ indexed }}</span>
       </div>
       <div class="summary-item">
+        <span class="label">DeIndexed</span>
+        <span class="value success">{{ deIndexed }}</span>
+      </div>
+      <div class="summary-item">
         <span class="label">Index Failed</span>
         <span class="value failed">{{ indexedFailed }}</span>
       </div>
       <div class="summary-item">
-        <span class="label">Index Queued</span>
+        <span class="label">Total Queued</span>
         <span class="value">{{ indexedQueued }}</span>
       </div>
     </div>
@@ -81,6 +85,8 @@
             <th>Status Code</th>
             <th>Indexing State</th>
             <th>Coverage State</th>
+            <th>Robots Txt State</th>
+            <th>Page Fetch State</th>
             <th>Queue Status</th>
             <th>Priority</th>
             <th>Result</th>
@@ -116,6 +122,8 @@
 
             <td>{{ item.indexingState.replace(/_/g, ' ')}}</td>
             <td>{{ item.coverageState}}</td>
+            <td>{{ item.robotsTxtState ? item.robotsTxtState.replace(/_/g, ' ') : '-' }}</td>
+            <td>{{ item.pageFetchSpecified ? item.pageFetchSpecified.replace(/_/g, ' ') : '-' }}</td>
             <td>{{ item.indexedStatus}}</td>
             <td>{{ item.priority}}</td>
             <td>{{ item.indexedResult}}</td>
@@ -123,11 +131,12 @@
             <td>{{ item.indexedAt }}</td>
 
             <td class="action-cell">
+              <button title="View Logs" class="row-index-btn view" @click="viewLogs(item.id)">Logs</button>
               <button title="Instant Index" class="row-index-btn" @click="indexSingleUrl(item.id)">
-                Index
+                ReIndex
               </button>
               <button title="Queue Index" class="row-index-btn failed" @click="removeIndexSingleUrl(item.id)">
-                Remove
+                DeIndex
               </button>
             </td>
           </tr>
@@ -155,6 +164,45 @@
         </button>
       </div>
     </div>
+
+
+    <Loading :active.sync="logsLoading" :is-full-page="false" />
+
+    <div v-if="showLogsModal" class="modal-overlay" @click.self="showLogsModal = false">
+  <div class="modal">
+    <!-- Close icon at top-right -->
+    <span class="modal-close" @click="showLogsModal = false">
+      <!-- SVG close icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="close-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </span>
+
+    <h3>Queue Logs</h3>
+
+    <table v-if="logs.length > 0" class="logs-table">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(log, index) in logs" :key="index">
+          <td>{{ log.type }}</td>
+          <td :class="log.status === 'Success' ? 'success' : 'failed'">{{ log.status }}</td>
+          <td>{{ new Date(log.date).toLocaleDateString() }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div v-else style="padding: 10px;">No logs found</div>
+  </div>
+</div>
+
+
+
   </div>
 </template>
 
@@ -165,6 +213,30 @@ import api from "../api"
 import Swal from "sweetalert2"
 import Loading from "vue-loading-overlay"
 import 'vue-loading-overlay/dist/css/index.css'
+
+const showLogsModal = ref(false); // controls modal visibility
+const logs = ref<any[]>([]); // store logs
+const logsLoading = ref(false);
+
+const viewLogs = async (urlId: number) => {
+  showLogsModal.value = true;
+  logsLoading.value = true;
+  try {
+    const res = await api.get(`/crawl/queue-logs?urlId=${urlId}`);
+    if (res?.data?.isSuccess) {
+      logs.value = res.data.data;
+    } else {
+      logs.value = [];
+      Swal.fire("Error", res?.data?.meta || "Failed to fetch logs", "error");
+    }
+  } catch (err) {
+    console.error(err);
+    Swal.fire("Error", "Failed to fetch logs", "error");
+    logs.value = [];
+  } finally {
+    logsLoading.value = false;
+  }
+};
 
 interface CrawledUrl {
   id: number
@@ -177,7 +249,10 @@ interface CrawledUrl {
   indexedResult: string,
   indexedStatus: string,
   type:string,
-  priority:string
+  priority:string,
+  verdit:string,
+  pageFetchSpecified:string,
+  robotsTxtState:string
 }
 
 interface PageInfo {
@@ -193,6 +268,7 @@ interface CrawlCount {
   successCount: number
   failedCount: number
   indexedSucceed: number
+  deIndexedSucceed:number
   indexedFailed: number
   indexedQueued: number
   hasDailyQuotaExceed: boolean
@@ -227,6 +303,7 @@ const counts = ref<CrawlCount>({
   successCount: 0,
   failedCount: 0,
   indexedSucceed: 0,
+  deIndexedSucceed:0,
   indexedFailed: 0,
   indexedQueued: 0,
   hasDailyQuotaExceed: false,
@@ -348,7 +425,7 @@ const indexSingleUrl = async (id: number) => {
       icon: "question",
       showCancelButton: true,
       showDenyButton: true,
-      confirmButtonText: "⚡ Index",
+      confirmButtonText: "⚡ Index Now",
       denyButtonText: "⏳ Add to Queue",
       cancelButtonText: "Cancel",
       confirmButtonColor: "#22c55e",
@@ -439,8 +516,8 @@ const removeIndexSingleUrl = async (id: number) => {
       icon: "question",
       showCancelButton: true,
       showDenyButton: true,
-      confirmButtonText: "⚡ Remove",
-      denyButtonText: "⏳ Queue to Remove",
+      confirmButtonText: "⚡ Deindex Now",
+      denyButtonText: "⏳ Queue to Deindex",
       cancelButtonText: "Cancel",
       confirmButtonColor: "#ef4444",
       denyButtonColor: "#dc2626"
@@ -459,7 +536,7 @@ const removeIndexSingleUrl = async (id: number) => {
         });
 
         if (res?.data?.isSuccess) {
-          Swal.fire("Removed", "URL removed instantly", "success");
+          Swal.fire("Removed", "URL deindexed instantly", "success");
         } else {
           Swal.fire("Failed", res?.data?.meta || "Something went wrong", "error");
         }
@@ -471,7 +548,7 @@ const removeIndexSingleUrl = async (id: number) => {
     // --- Queue Removal ---
     if (result.isDenied) {
       const queueResult = await Swal.fire({
-        title: "Queue URL for Removal",
+        title: "Queue URL for Deindexing",
         icon: "question",
         input: "select",
         inputOptions: {
@@ -498,7 +575,7 @@ const removeIndexSingleUrl = async (id: number) => {
         });
 
         if (resQueue?.data?.isSuccess) {
-          Swal.fire("Queued", "URL queued for removal", "success");
+          Swal.fire("Queued", "URL queued for deindexing", "success");
         } else {
           Swal.fire("Failed", resQueue?.data?.meta || "Something went wrong", "error");
         }
@@ -528,6 +605,7 @@ const failedCount = computed(() => counts.value.failedCount)
 const indexed = computed(() => counts.value.indexedSucceed)
 const indexedFailed = computed(() => counts.value.indexedFailed)
 const indexedQueued = computed(() => counts.value.indexedQueued)
+const deIndexed = computed(() => counts.value.deIndexedSucceed)
 const totalPages = computed(() => Math.ceil(counts.value.totalCount / pageInfo.value.pageSize))
 
 /* PAGINATION */
@@ -541,214 +619,144 @@ onMounted(() => {
 
 watch(() => pageInfo.value.page, fetchCrawlDetails)
 </script>
-  <style scoped>
-  .page-container {
-    flex: 1;
-    padding: 30px;
-    overflow-y: auto;
-    background: #f9f9f9;
-  }
-  
-  .page-header {
-    margin-bottom: 30px;
-  }
-  
-  .back-link {
-    display: inline-block;
-    margin-bottom: 15px;
-    color: #22c55e;
-    text-decoration: none;
-    font-weight: 500;
-    cursor: pointer;
-    transition: color 0.2s;
-  }
-  
-  .back-link:hover {
-    color: #16a34a;
-  }
-  
-  .page-header h1 {
-    font-size: 32px;
-    color: #333;
-    margin: 0 0 10px 0;
-    font-weight: 700;
-  }
-  
-  .subtitle {
-    font-size: 14px;
-    color: #999;
-    margin: 0;
-  }
-  
-  .summary-card {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-  }
-  
-  .summary-item {
-    background: #ffffff;
-    padding: 20px;
-    border-radius: 8px;
-    border: 1px solid #e8e8e8;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  
-  .summary-item .label {
-    font-size: 12px;
-    color: #999;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  
-  .summary-item .value {
-    font-size: 24px;
-    color: #333;
-    font-weight: 700;
-  }
-  
-  .summary-item .value.success {
-    color: #22c55e;
-  }
-  
-  .summary-item .value.failed {
-    color: #ef4444;
-  }
-  
-  .table-card {
-    background: #ffffff;
-    border-radius: 12px;
-    border: 1px solid #e8e8e8;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  }
-  
-  .urls-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  .urls-table thead {
-    background: #f5f5f5;
-    border-bottom: 1px solid #e8e8e8;
-  }
-  
-  .urls-table th {
-    padding: 15px;
-    text-align: left;
-    font-weight: 600;
-    font-size: 13px;
-    color: #666;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  
-  .urls-table td {
-    padding: 15px;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 14px;
-    color: #333;
-  }
-  
-  .urls-table tbody tr.success {
-    background: #fafafa;
-  }
-  
-  .urls-table tbody tr.failed {
-    background: #fef2f2;
-  }
-  
-  .url-cell a {
-    /* color: #22c55e; */
-    text-decoration: none;
-    word-break: break-word;
-  }
-  
-  .url-cell a:hover {
-    text-decoration: underline;
-  }
-  
-  .status-badge {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 500;
-    display: inline-block;
-  }
-  
-  .status-badge.success {
-    background: #e8f5e9;
-    color: #22c55e;
-  }
-  
-  .status-badge.failed {
-    background: #fef2f2;
-    color: #ef4444;
-  }
-  
-  .status-code {
-    font-family: monospace;
-    font-weight: 500;
-  }
-  
-  .pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    padding: 20px;
-    background: #f9f9f9;
-    border-top: 1px solid #e8e8e8;
-  }
-  
-  .pagination-btn {
-    padding: 8px 16px;
-    background: #f5f5f5;
-    border: 1px solid #e8e8e8;
-    border-radius: 6px;
-    color: #666;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  
-  .pagination-btn:hover:not(:disabled) {
-    background: #22c55e;
-    border-color: #22c55e;
-    color: #ffffff;
-  }
-  
-  .pagination-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-  
-  .pagination-info {
-    font-size: 14px;
-    color: #666;
-    font-weight: 500;
-  }
-  
-  @media (max-width: 768px) {
-    .page-container {
-      padding: 20px;
-    }
-  
-    .summary-card {
-      grid-template-columns: 1fr;
-    }
-  
-    .pagination {
-      flex-direction: column;
-      gap: 10px;
-    }
-  }
 
-  /* ===== ADDED ONLY ===== */
+ <style scoped>
+.page-container {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto;
+  background: #f9f9f9;
+}
+
+.page-header {
+  margin-bottom: 30px;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 15px;
+  color: #22c55e;
+  text-decoration: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: #16a34a;
+}
+
+.summary-card {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.summary-item {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e8e8e8;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.summary-item .label {
+  font-size: 12px;
+  color: #999;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summary-item .value {
+  font-size: 24px;
+  color: #333;
+  font-weight: 700;
+}
+
+.summary-item .value.success {
+  color: #22c55e;
+}
+
+.summary-item .value.failed {
+  color: #ef4444;
+}
+
+.table-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e8e8e8;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.urls-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.urls-table thead {
+  background: #f5f5f5;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.urls-table th {
+  padding: 15px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.urls-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+  color: #333;
+  vertical-align: middle;
+}
+
+.urls-table tbody tr.success {
+  background: #fafafa;
+}
+
+.urls-table tbody tr.failed {
+  background: #fef2f2;
+}
+
+.url-cell a {
+  text-decoration: none;
+  word-break: break-word;
+}
+
+.url-cell a:hover {
+  text-decoration: underline;
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.status-badge.success {
+  background: #e8f5e9;
+  color: #22c55e;
+}
+
+.status-badge.failed {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+/* Buttons */
 .index-btn {
   padding: 8px 14px;
   background: #22c55e;
@@ -764,24 +772,35 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 }
 
 .row-index-btn {
-  padding: 5px 10px;
-  font-size: 12px;
-  border-radius: 6px;
-  background: #3b82f6;
-  color: white;
+  padding: 6px 12px;
+  font-size: 13px;
+  border-radius: 4px;
+  min-width: 60px;
+  text-align: center;
   border: none;
   cursor: pointer;
-} 
+  color: #fff;
+  margin: 2px;
+  background-color: rgb(62, 47, 129);
+}
 
-.action-cell {
-    display: flex;
-    gap: 8px;
-  }
-  .row-index-btn.failed {
-    background :red;
-  }
+.row-index-btn.view {
+  background-color: #43b42d;
+}
 
-/* SITE INFO */
+.row-index-btn.failed {
+  background-color: #f44336;
+}
+
+.urls-table .action-cell {
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  min-height: 40px;
+  white-space: nowrap;
+}
+
+/* Site Info */
 .site-info {
   margin-top: 6px;
   font-size: 14px;
@@ -791,8 +810,8 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 }
 
 .site-type-chip {
-  background: #22c55e; /* green background */
-  color: white;         /* white text */
+  background: #22c55e;
+  color: white;
   padding: 3px 10px;
   border-radius: 12px;
   font-size: 12px;
@@ -814,11 +833,11 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   text-decoration: underline;
 }
 
-/* SCHEDULE ALERT ORANGE */
+/* Schedule Alert */
 .schedule-alert-orange {
-  background: #fff7ed; /* subtle light orange background */
-  border: 1px solid #f97316; /* orange border */
-  color: #f97316; /* orange text */
+  background: #fff7ed;
+  border: 1px solid #f97316;
+  color: #f97316;
   padding: 12px 16px;
   border-radius: 8px;
   font-size: 14px;
@@ -829,5 +848,123 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   gap: 6px;
 }
 
-  </style>
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  background: #f9f9f9;
+  border-top: 1px solid #e8e8e8;
+}
+
+.pagination-btn {
+  padding: 8px 16px;
+  background: #f5f5f5;
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+  color: #666;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #22c55e;
+  border-color: #22c55e;
+  color: #fff;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+/* Logs Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  position: relative;
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  width: 500px;
+  max-width: 90%;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  cursor: pointer;
+}
+
+.close-icon {
+  width: 24px;
+  height: 24px;
+  color: #666;
+  transition: color 0.2s;
+}
+
+.close-icon:hover {
+  color: #ef4444;
+}
+
+.logs-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.logs-table th,
+.logs-table td {
+  padding: 8px 12px;
+  border: 1px solid #e8e8e8;
+  font-size: 13px;
+  text-align: left;
+}
+
+.logs-table td.success {
+  color: #22c55e;
+  font-weight: 600;
+}
+
+.logs-table td.failed {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .page-container {
+    padding: 20px;
+  }
+
+  .summary-card {
+    grid-template-columns: 1fr;
+  }
+
+  .pagination {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+</style>
   

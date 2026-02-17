@@ -26,7 +26,7 @@
     <div class="charts-container">
       <div class="chart-card" v-if="charts.length">
         <div class="card-header">
-          <h3>Index Success vs Failed (Last 12 Months)</h3>
+          <h3>Index Summary (Last 12 Months)</h3>
         </div>
 
         <div class="chart-content">
@@ -67,6 +67,7 @@ interface DashboardCard {
 interface DashboardChart {
   date: string
   successIndex: number
+  successDeIndex: number
   failedIndex: number
 }
 
@@ -132,6 +133,7 @@ const buildChart = () => {
   )
 
   const success = last12.map(x => x.successIndex || 0)
+  const deIndex = last12.map(x => x.successDeIndex || 0)
   const failed = last12.map(x => x.failedIndex || 0)
 
   chartOptions.value = {
@@ -142,13 +144,19 @@ const buildChart = () => {
     tooltip: { shared: true },
     series: [
       {
-        name: "Success Index",
+        name: "Index",
         data: success,
         color: "#22c55e",
         fillOpacity: 0.15
       },
       {
-        name: "Failed Index",
+        name: "DeIndex",
+        data: deIndex,
+        color: "#3b82f6",
+        fillOpacity: 0.15
+      },
+      {
+        name: "Failed",
         data: failed,
         color: "#ef4444",
         fillOpacity: 0.15
