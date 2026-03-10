@@ -43,7 +43,9 @@ const processQueue = (error: any = null) => {
 ------------------------ */
 api.interceptors.request.use(
   (config) => {
-    const token = getCookie('_aT')
+
+    const token =localStorage.getItem('aT')
+    // const token = getCookie('_aT')
     if (token) {
       config.headers = config.headers || {}
       config.headers.Authorization = `Bearer ${token}`
@@ -76,10 +78,12 @@ api.interceptors.response.use(
 
       isRefreshing = true
       try {
-        await refreshApi.post('/refresh-token') // HttpOnly cookie sent automatically
+        var token=await refreshApi.post('/refresh-token') // HttpOnly cookie sent automatically
+        localStorage.setItem('aT', token.data.aT);
         processQueue(null)
         return api(originalRequest)
       } catch (err) {
+        localStorage.removeItem('aT');
         processQueue(err)
 
         try {

@@ -57,6 +57,8 @@ export async function login(payload: LoginPayload, router: any): Promise<boolean
     console.log(router)
     const response = await api.post('/login', payload, { withCredentials: true });
 
+    const token = response.data.data.accessToken;
+    localStorage.setItem('aT', token);
     // ✅ CORRECT PATH
     const userData = response.data.data;
 
@@ -115,6 +117,11 @@ export async function logout(): Promise<void> {
   const menuStore = useMenuStore();
   menuStore.clearMenus();
   
+  localStorage.removeItem('aT');
+
+  localStorage.removeItem('auth');
+
+  localStorage.removeItem('menu');
   // Hard redirect
   window.location.href = '/login';
 }
