@@ -1062,13 +1062,11 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 .modal {
   position: relative;
   background: #fff;
-  padding: 22px;
-  border-radius: 14px;
-  width: 520px;
+  padding: 20px;
+  border-radius: 12px;
+  width: 500px;
   max-width: 90%;
-  box-shadow:
-    0 10px 25px rgba(0,0,0,0.15),
-    0 4px 10px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 
 .modal-close {
