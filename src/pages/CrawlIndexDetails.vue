@@ -74,7 +74,10 @@
     </div>
 
     <!-- TABLE -->
-    <div class="table-card">
+
+    
+    <div class="table-scroll">
+
       <table class="urls-table">
         <thead>
           <tr>
@@ -120,8 +123,14 @@
               </span>
             </td>
 
-            <td>{{ item.indexingState.replace(/_/g, ' ')}}</td>
-            <td>{{ item.coverageState}}</td>
+            <td>
+  <span style="text-align: center;"
+    class="indexing-chip"
+    :class="getIndexingStateClass(item.indexingState)"
+  >
+    {{ item.indexingState.replace(/_/g, ' ') }}
+  </span>
+</td>            <td>{{ item.coverageState}}</td>
             <td>{{ item.robotsTxtState ? item.robotsTxtState.replace(/_/g, ' ') : '-' }}</td>
             <td>{{ item.pageFetchSpecified ? item.pageFetchSpecified.replace(/_/g, ' ') : '-' }}</td>
             <td>{{ item.indexedStatus}}</td>
@@ -149,57 +158,83 @@
         </tbody>
       </table>
 
-      <!-- PAGINATION -->
-      <div class="pagination">
-        <button class="pagination-btn" :disabled="!pageInfo.hasPreviousPage" @click="previousPage">
-          Previous
-        </button>
 
-        <div class="pagination-info">
-          Page {{ pageInfo.page }} of {{ totalPages }}
-        </div>
 
-        <button class="pagination-btn" :disabled="!pageInfo.hasNextPage" @click="nextPage">
-          Next
-        </button>
-      </div>
+      <div class="table-footer">
+  <!-- Page Size Selector -->
+  <div class="page-size-wrapper">
+    <label for="pageSize">Rows per page:</label>
+    <select id="pageSize" v-model.number="pageInfo.pageSize">
+      <option :value="10">10</option>
+      <option :value="25">25</option>
+      <option :value="50">50</option>
+      <option :value="100">100</option>
+      <option :value="1000">1000</option>
+    </select>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-wrapper">
+    <button class="pagination-btn" :disabled="!pageInfo.hasPreviousPage" @click="previousPage">
+      Previous
+    </button>
+    <span class="pagination-info">
+      Page {{ pageInfo.page }} of {{ totalPages }}
+    </span>
+    <button class="pagination-btn" :disabled="!pageInfo.hasNextPage" @click="nextPage">
+      Next
+    </button>
+  </div>
+</div>
+
     </div>
 
 
     <Loading :active.sync="logsLoading" :is-full-page="false" />
 
-    <div v-if="showLogsModal" class="modal-overlay" @click.self="showLogsModal = false">
-  <div class="modal">
-    <!-- Close icon at top-right -->
-    <span class="modal-close" @click="showLogsModal = false">
-      <!-- SVG close icon -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="close-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-      </svg>
-    </span>
+    <transition name="overlay">
+  <div
+    v-if="showLogsModal"
+    class="modal-overlay"
+    @click.self="showLogsModal = false"
+  >
+    <transition name="modal">
+      <div class="modal">
+        <!-- Close icon -->
+        <span class="modal-close" @click="showLogsModal = false">
+          <svg xmlns="http://www.w3.org/2000/svg" class="close-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </span>
 
-    <h3>Queue Logs</h3>
+        <h3>Queue Logs</h3>
 
-    <table v-if="logs.length > 0" class="logs-table">
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Status</th>
-          <th>Date</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(log, index) in logs" :key="index">
-          <td>{{ log.type }}</td>
-          <td :class="log.status === 'Success' ? 'success' : 'failed'">{{ log.status }}</td>
-          <td>{{ new Date(log.date).toLocaleDateString() }}</td>
-        </tr>
-      </tbody>
-    </table>
+        <table v-if="logs.length > 0" class="logs-table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
 
-    <div v-else style="padding: 10px;">No logs found</div>
+          <tbody>
+            <tr v-for="(log, index) in logs" :key="index">
+              <td>{{ log.type }}</td>
+              <td :class="log.status === 'Success' ? 'success' : 'failed'">
+                {{ log.status }}
+              </td>
+              <td>{{ new Date(log.date).toLocaleDateString() }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div v-else style="padding:10px;">No logs found</div>
+
+      </div>
+    </transition>
   </div>
-</div>
+</transition>
 
 
 
@@ -214,17 +249,29 @@ import Swal from "sweetalert2"
 import Loading from "vue-loading-overlay"
 import 'vue-loading-overlay/dist/css/index.css'
 
+
 const showLogsModal = ref(false); // controls modal visibility
 const logs = ref<any[]>([]); // store logs
 const logsLoading = ref(false);
 
+const getIndexingStateClass = (state: string) => {
+  if (!state) return "red";
+
+  if (state === "INDEXING_ALLOWED") return "green";
+  if (state === "INDEXING_STATE_UNSPECIFIED") return "orange";
+
+  return "red";
+};
 const viewLogs = async (urlId: number) => {
-  showLogsModal.value = true;
+  showLogsModal.value = true; // first show modal
   logsLoading.value = true;
+  console.log("Fetching logs for URL ID:", urlId);
+
   try {
     const res = await api.get(`/crawl/queue-logs?urlId=${urlId}`);
     if (res?.data?.isSuccess) {
       logs.value = res.data.data;
+      console.log("Logs fetched:", logs.value);
     } else {
       logs.value = [];
       Swal.fire("Error", res?.data?.meta || "Failed to fetch logs", "error");
@@ -297,6 +344,12 @@ const pageInfo = ref<PageInfo>({
   hasNextPage: false,
   hasPreviousPage: false
 })
+
+
+watch(() => pageInfo.value.pageSize, () => {
+  pageInfo.value.page = 1
+  fetchCrawlDetails()
+});
 
 const counts = ref<CrawlCount>({
   totalCount: 0,
@@ -685,22 +738,28 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   color: #ef4444;
 }
 
-.table-card {
-  background: #fff;
-  border-radius: 12px;
-  border: 1px solid #e8e8e8;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+/* Table Scroll Wrapper */
+.table-scroll {
+  overflow-x: auto; /* horizontal scroll for small screens */
+  max-width: 100%;
+  display: block;
+  max-height: calc(20 * 48px); /* 48px per row including padding/border */
+  overflow-y: auto;
 }
 
+/* Table Styles */
 .urls-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 900px; /* ensures horizontal scroll triggers on small screens */
 }
 
 .urls-table thead {
+  position: sticky;
+  top: 0;
   background: #f5f5f5;
   border-bottom: 1px solid #e8e8e8;
+  z-index: 1;
 }
 
 .urls-table th {
@@ -731,13 +790,13 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 
 .url-cell a {
   text-decoration: none;
-  word-break: break-word;
 }
 
 .url-cell a:hover {
   text-decoration: underline;
 }
 
+/* Status Badges */
 .status-badge {
   padding: 6px 12px;
   border-radius: 20px;
@@ -781,11 +840,11 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   cursor: pointer;
   color: #fff;
   margin: 2px;
-  background-color: rgb(62, 47, 129);
+  background-color: rgb(126 134 175);
 }
 
 .row-index-btn.view {
-  background-color: #43b42d;
+  background-color: #1cb397;
 }
 
 .row-index-btn.failed {
@@ -848,19 +907,48 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   gap: 6px;
 }
 
-/* Pagination */
-.pagination {
+/* Pagination Footer */
+.table-footer {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  gap: 20px;
-  padding: 20px;
+  padding: 12px 16px;
   background: #f9f9f9;
   border-top: 1px solid #e8e8e8;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.page-size-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #555;
+}
+
+.page-size-wrapper select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+}
+
+.pagination-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pagination-info {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
 }
 
 .pagination-btn {
-  padding: 8px 16px;
+  padding: 6px 14px;
   background: #f5f5f5;
   border: 1px solid #e8e8e8;
   border-radius: 6px;
@@ -881,10 +969,83 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   cursor: not-allowed;
 }
 
-.pagination-info {
-  font-size: 14px;
-  color: #666;
-  font-weight: 500;
+/* Chips */
+.indexing-chip {
+  padding: 5px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+  text-transform: capitalize;
+}
+
+.indexing-chip.green {
+  background-color: rgba(41, 145, 69, 0.12);
+  color: #299145;
+}
+
+.indexing-chip.orange {
+  background-color: #ffedd5;
+  color: #ea580c;
+}
+
+.indexing-chip.red {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .table-scroll {
+    overflow-x: auto; /* horizontal scroll for medium screens */
+  }
+
+  .urls-table {
+    min-width: 900px; /* force scroll if table is too wide */
+  }
+
+  .urls-table th,
+  .urls-table td {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .row-index-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+    min-width: 50px;
+  }
+
+  .index-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  .summary-card {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .page-size-wrapper,
+  .pagination-wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}
+
+.table-footer {
+  position: sticky;
+  bottom: 0; /* stick to bottom */
+  background: #f5f5f5;
+  border-top: 1px solid #e8e8e8;
+  z-index: 2; /* higher than table rows */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
 }
 
 /* Logs Modal */
@@ -901,11 +1062,13 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 .modal {
   position: relative;
   background: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  width: 500px;
+  padding: 22px;
+  border-radius: 14px;
+  width: 520px;
   max-width: 90%;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  box-shadow:
+    0 10px 25px rgba(0,0,0,0.15),
+    0 4px 10px rgba(0,0,0,0.08);
 }
 
 .modal-close {
@@ -950,21 +1113,51 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   font-weight: 600;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .page-container {
-    padding: 20px;
-  }
+/* Overlay animation */
 
-  .summary-card {
-    grid-template-columns: 1fr;
-  }
-
-  .pagination {
-    flex-direction: column;
-    gap: 10px;
-  }
+.overlay-enter-active,
+.overlay-leave-active {
+  transition: opacity 0.25s ease;
 }
 
-</style>
+.overlay-enter-from,
+.overlay-leave-to {
+  opacity: 0;
+}
+
+.overlay-enter-to,
+.overlay-leave-from {
+  opacity: 1;
+}
+
+/* Modal animation */
+
+.modal-enter-active {
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-leave-active {
+  transition: all 0.18s ease;
+}
+
+.modal-enter-from {
+  opacity: 0;
+  transform: translateY(-25px) scale(0.92);
+}
+
+.modal-enter-to {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.modal-leave-from {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.modal-leave-to {
+  opacity: 0;
+  transform: translateY(-20px) scale(0.9);
+}
+ </style>
   

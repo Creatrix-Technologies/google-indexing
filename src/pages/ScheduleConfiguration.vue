@@ -12,6 +12,7 @@
         <thead>
           <tr>
             <th>Website</th>
+            <th>Status</th>
             <th>Type</th>
             <th>Frequency</th>
             <th>Start Time</th>
@@ -29,7 +30,13 @@
               <div class="site-icon">{{ item.url.charAt(0).toUpperCase() }}</div>
               <span>{{ item.url }}</span>
             </td>
-
+            <td>
+  <span
+    :class="item.isActive ? 'status-active' : 'status-inactive'"
+  >
+    {{ item.isActive ? 'Active' : 'Not Active' }}
+  </span>
+</td>
             <td>{{ item.type }}</td>
 
             <td>
@@ -129,6 +136,21 @@
             <input type="number" v-model.number="formData.maxUrls" min="1" max="200" required />
           </div>
 
+          <div class="form-group">
+    <label>Status</label>
+
+    <div style="display:flex;align-items:center;gap:10px;">
+      <label class="switch">
+        <input type="checkbox" v-model="formData.isActive" />
+        <span class="slider"></span>
+      </label>
+
+      <span :class="formData.isActive ? 'status-active' : 'status-inactive'">
+        {{ formData.isActive ? 'Active' : 'Not Active' }}
+      </span>
+    </div>
+  </div>
+
           <div class="modal-footer">
             <button type="submit" class="btn-primary">Save</button>
           </div>
@@ -157,7 +179,8 @@ interface Schedule {
   queued: number
   isRunning: boolean
   isPickByJob: boolean,
-  queueCompleted:number
+  queueCompleted:number,
+  isActive: boolean
 }
 
 interface Progress {
@@ -178,7 +201,8 @@ const formData = ref({
   frequency: '',
   startTime: '',
   endTime: '',
-  maxUrls: 1
+  maxUrls: 1,
+  isActive: true 
 })
 
 /* ================= SSE LISTENER ================= */
@@ -229,7 +253,8 @@ const fetchSchedules = async () => {
     queued: i.totalQueued,
     isRunning: i.isRunning,
     isPickByJob: i.isPickByJob,
-    queueCompleted: i.queueCompleted
+    queueCompleted: i.queueCompleted,
+    isActive: i.isActive 
   }))
 
   // resume listeners for running items
@@ -277,7 +302,8 @@ const openEdit = (item: Schedule) => {
     frequency: String(item.frequency),
     startTime: item.startTime || '',
     endTime: item.endTime || '',
-    maxUrls: item.maxUrls
+    maxUrls: item.maxUrls,
+    isActive: item.isActive 
   }
   showModal.value = true
 }
@@ -358,4 +384,58 @@ form { padding:20px; }
 .modal-footer { display:flex; justify-content:flex-end; }
 .btn-primary { padding:10px 20px; background:#22c55e; color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer; }
 .btn-primary:hover { background:#16a34a; }
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 22px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #ccc;
+  transition: .3s;
+  border-radius: 22px;
+}
+
+.slider:before {
+  content: "";
+  position: absolute;
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #22c55e;
+}
+
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+.status-active {
+  color: #16a34a;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.status-inactive {
+  color: #dc2626;
+  font-weight: 600;
+  font-size: 13px;
+}
 </style>

@@ -124,8 +124,8 @@ const formatDate = (dateStr: string | null) => {
 /* Google Config Warning Bar */
 .google-config-bar {
   position: sticky;
-  top: 0;
-  z-index: 3000;
+  top: 70px; /* match header height */
+ 
   background: #fef3c7;
   color: #92400e;
   padding: 10px 30px;
