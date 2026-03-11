@@ -8,6 +8,7 @@ const toast = useToast()
    Helper: Get _aT cookie
 ------------------------ */
 function getCookie(name: string): string | null {
+  console.log('Getting cookie:', document.cookie)
   const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
   return match?.[2] ? decodeURIComponent(match[2]) : null;
 }
@@ -41,19 +42,20 @@ const processQueue = (error: any = null) => {
 /* ------------------------
    Request Interceptor: Add Bearer Token
 ------------------------ */
-// api.interceptors.request.use(
-//   (config) => {
-
-//     // const token =localStorage.getItem('aT')
-//     const token = getCookie('_aT')
-//     if (token) {
-//       config.headers = config.headers || {}
-//       config.headers.Authorization = `Bearer ${token}`
-//     }
-//     return config
-//   },
-//   (error) => Promise.reject(error)
-// )
+api.interceptors.request.use(
+  (config) => {
+alert();
+    // const token =localStorage.getItem('aT')
+    const token = getCookie('_aT')
+    console.log('Attaching token to request:', token)
+    if (token) {
+      config.headers = config.headers || {}
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => Promise.reject(error)
+)
 
 /* ------------------------
    Response Interceptor: Handle 401 / Refresh
