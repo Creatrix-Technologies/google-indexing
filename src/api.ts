@@ -41,19 +41,19 @@ const processQueue = (error: any = null) => {
 /* ------------------------
    Request Interceptor: Add Bearer Token
 ------------------------ */
-api.interceptors.request.use(
-  (config) => {
+// api.interceptors.request.use(
+//   (config) => {
 
-    // const token =localStorage.getItem('aT')
-    const token = getCookie('_aT')
-    if (token) {
-      config.headers = config.headers || {}
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-  },
-  (error) => Promise.reject(error)
-)
+//     // const token =localStorage.getItem('aT')
+//     const token = getCookie('_aT')
+//     if (token) {
+//       config.headers = config.headers || {}
+//       config.headers.Authorization = `Bearer ${token}`
+//     }
+//     return config
+//   },
+//   (error) => Promise.reject(error)
+// )
 
 /* ------------------------
    Response Interceptor: Handle 401 / Refresh
