@@ -114,8 +114,10 @@ export async function logout(): Promise<void> {
   const authStore = useAuthStore();
   authStore.clearUser();
 
-  const menuStore = useMenuStore();
-  menuStore.clearMenus();
+  localStorage.removeItem('menu');
+
+  // const menuStore = useMenuStore();
+  // menuStore.clearMenus();
   
   // localStorage.removeItem('aT');
 
