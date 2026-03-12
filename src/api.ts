@@ -8,7 +8,6 @@ const toast = useToast()
    Helper: Get _aT cookie
 ------------------------ */
 function getCookie(name: string): string | null {
-  console.log('Getting cookie:', document.cookie)
   const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
   return match?.[2] ? decodeURIComponent(match[2]) : null;
 }
@@ -44,10 +43,7 @@ const processQueue = (error: any = null) => {
 ------------------------ */
 api.interceptors.request.use(
   (config) => {
-alert();
-    // const token =localStorage.getItem('aT')
     const token = getCookie('_aT')
-    console.log('Attaching token to request:', token)
     if (token) {
       config.headers = config.headers || {}
       config.headers.Authorization = `Bearer ${token}`
@@ -80,12 +76,10 @@ api.interceptors.response.use(
 
       isRefreshing = true
       try {
-        var token=await refreshApi.post('/refresh-token') // HttpOnly cookie sent automatically
-        localStorage.setItem('aT', token.data.aT);
+       await refreshApi.post('/refresh-token') // HttpOnly cookie sent automatically
         processQueue(null)
         return api(originalRequest)
       } catch (err) {
-        localStorage.removeItem('aT');
         processQueue(err)
 
         try {
