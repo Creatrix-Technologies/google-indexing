@@ -109,7 +109,7 @@ const initApp = async () => {
     try {
       await api.get('/auth-check');
 
-      if (!menuStore.loaded) {
+      if (!menuStore.loaded || menuStore.menus.length > 0) {
         await menuStore.fetchMenus();
       }
 
