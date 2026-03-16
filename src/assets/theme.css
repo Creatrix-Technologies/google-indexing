@@ -1,33 +1,108 @@
-/* Global Theme */
+/* Enterprise Theme - Deep Navy / Slate Palette */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 :root {
-    --font-family: 'Inter', sans-serif;
-    --color-primary: #1e293b;
-    --color-secondary: #64748b;
-    --color-background: #f8fafc;
-    --color-card-bg: #ffffff;
-    --color-border: #e2e8f0;
-    --color-placeholder: #f1f5f9;
-    --color-text: #1e293b;
-    --color-muted: #94a3b8;
-    --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  body {
-    font-family: var(--font-family);
-    background-color: var(--color-background);
-    color: var(--color-text);
-    margin: 0;
-    padding: 0;
-  }
-  
-  h1, h2, h3, h4, h5, h6 {
-    color: var(--color-primary);
-  }
-  
-  .card {
-    background: var(--color-card-bg);
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
-    box-shadow: var(--box-shadow);
-    padding: 20px;
-  }
+  /* Primary - Deep Navy / Bright Blue */
+  --color-primary: #1e40af;
+  --color-primary-hover: #1d4ed8;
+  --color-accent: #3b82f6;
+  --color-accent-hover: #2563eb;
+
+  /* Slate scale */
+  --color-slate-900: #0f172a;
+  --color-slate-800: #1e293b;
+  --color-slate-700: #334155;
+  --color-slate-600: #475569;
+  --color-slate-400: #94a3b8;
+  --color-slate-200: #e2e8f0;
+  --color-slate-50: #f8fafc;
+
+  /* Semantic */
+  --color-success: #10b981;
+  --color-success-hover: #059669;
+  --color-warning: #f59e0b;
+  --color-warning-hover: #d97706;
+  --color-error: #ef4444;
+  --color-error-hover: #dc2626;
+
+  /* UI */
+  --color-bg: #f8fafc;
+  --color-card: #ffffff;
+  --color-border: #e2e8f0;
+  --color-text: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted: #94a3b8;
+  --color-input-focus: #3b82f6;
+  --color-input-focus-ring: rgba(59, 130, 246, 0.25);
+
+  /* Sidebar (light enterprise) */
+  --color-sidebar: #ffffff;
+  --color-sidebar-hover: #f1f5f9;
+  --color-sidebar-active-bg: #eff6ff;
+  --color-sidebar-active-text: #1e40af;
+  --color-sidebar-text: #334155;
+  --color-sidebar-text-muted: #64748b;
+
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --box-shadow: 0 2px 4px rgba(15, 23, 42, 0.06);
+  --box-shadow-hover: 0 4px 12px rgba(15, 23, 42, 0.1);
+  --box-shadow-card: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.06);
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.2s ease;
+  --transition-slow: 0.3s ease;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  margin: 0;
+  padding: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-text);
+}
+
+.card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--box-shadow);
+  padding: var(--space-5);
+}
+
+/* Utility classes */
+.btn-base {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+

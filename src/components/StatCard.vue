@@ -39,28 +39,29 @@ defineProps<{
   display: flex;
   align-items: center;
   gap: 20px;
-  padding: 20px;
-  background: #ffffff;
-  border-radius: 12px;
-  border: 1px solid #e8e8e8;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
+  padding: 24px;
+  background: var(--color-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--box-shadow);
+  transition: transform var(--transition-slow), box-shadow var(--transition-slow);
 }
 
 .stat-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+  box-shadow: var(--box-shadow-card);
 }
 
 .stat-icon {
   width: 70px;
   height: 70px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 28px;
   flex-shrink: 0;
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
   color: #ffffff;
 }
 
@@ -70,7 +71,7 @@ defineProps<{
 
 .stat-label {
   font-size: 12px;
-  color: #999;
+  color: var(--color-text-muted);
   font-weight: 600;
   letter-spacing: 0.5px;
   margin-bottom: 8px;
@@ -79,19 +80,19 @@ defineProps<{
 
 .stat-value {
   font-size: 28px;
-  color: #333;
+  color: var(--color-text);
   font-weight: 700;
   margin-bottom: 8px;
 }
 
 .stat-meta {
   font-size: 13px;
-  color: #22c55e;
+  color: var(--color-success);
   font-weight: 500;
 }
 
 .stat-meta.negative {
-  color: #ef4444;
+  color: var(--color-error);
 }
 
 @media (max-width: 768px) {

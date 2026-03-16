@@ -2,7 +2,11 @@
 
   <!-- Header -->
   <header class="header">
-    <div class="header-left"></div>
+    <div class="header-left">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <span class="breadcrumb-item">{{ breadcrumbTitle }}</span>
+      </nav>
+    </div>
 
     <div class="header-right">
       <div class="profile-actions">
@@ -94,12 +98,19 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { logout, useAuthStore } from '../Store/auth'
 import { useGoogleConfigStore } from '../Shared/googleConfig'
 import { useSubscriptionStore } from '../Shared/subscription'
 
+const route = useRoute()
 const authStore = useAuthStore()
+
+const breadcrumbTitle = computed(() => {
+  const meta = route.meta as { title?: string }
+  return meta?.title || (typeof route.name === 'string' ? route.name : 'Dashboard')
+})
 const googleConfigStore = useGoogleConfigStore()
 const subscriptionStore = useSubscriptionStore()
 
@@ -124,21 +135,20 @@ const formatDate = (dateStr: string | null) => {
 /* Google Config Warning Bar */
 .google-config-bar {
   position: sticky;
-  top: 70px; /* match header height */
- 
-  background: #fef3c7;
-  color: #92400e;
+  top: 70px;
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--color-slate-800);
   padding: 10px 30px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 14px;
   font-weight: 500;
-  border-bottom: 1px solid #fde68a;
+  border-bottom: 1px solid var(--color-warning);
 }
 
 .config-link {
-  background: #f59e0b;
+  background: var(--color-warning);
   color: #ffffff;
   padding: 6px 12px;
   border-radius: 6px;
@@ -147,7 +157,7 @@ const formatDate = (dateStr: string | null) => {
 }
 
 .config-link:hover {
-  background: #d97706;
+  background: var(--color-warning-hover);
 }
 
 /* Header Styles */
@@ -156,9 +166,19 @@ const formatDate = (dateStr: string | null) => {
   justify-content: space-between;
   align-items: center;
   padding: 15px 30px;
-  background: #ffffff;
-  border-bottom: 1px solid #e8e8e8;
+  background: var(--color-card);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
   height: 70px;
+}
+
+.breadcrumbs {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.breadcrumb-item {
+  font-weight: 500;
+  color: var(--color-text);
 }
 
 .header-right {
@@ -178,10 +198,15 @@ const formatDate = (dateStr: string | null) => {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #f9fafb;
+  background: var(--color-slate-50);
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform var(--transition-fast);
+}
+
+.subscription-wrapper:hover {
+  transform: scale(1.08);
 }
 
 /* Subscription Icon (Large SVG) */
@@ -191,45 +216,59 @@ const formatDate = (dateStr: string | null) => {
 }
 
 .subscription-icon.valid {
-  color: #22c55e;
+  color: var(--color-success);
 }
 
 .subscription-icon.invalid {
-  color: #ef4444;
+  color: var(--color-error);
 }
 
 /* User Avatar */
 .user-avatar {
-  width: 32px;
-  height: 32px;
-  background: #22c55e;
+  width: 36px;
+  height: 36px;
+  background: var(--color-primary);
+  border: 2px solid var(--color-slate-200);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
   font-weight: 600;
-  font-size: 12px;
+  font-size: 14px;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.user-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(30, 64, 175, 0.3);
 }
 
 /* User Name */
 .user-name {
   font-size: 14px;
   font-weight: 500;
-  color: #333;
+  color: var(--color-text);
 }
 
 /* Logout */
 .logout-btn {
-  background: none;
+  background: var(--color-slate-50);
   border: none;
+  border-radius: 8px;
+  padding: 8px;
   cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.logout-btn:hover {
+  background: var(--color-slate-200);
 }
 
 .icon-logout {
   width: 18px;
   height: 18px;
-  stroke: #333;
+  stroke: var(--color-text);
 }
 
 @media (max-width: 768px) {

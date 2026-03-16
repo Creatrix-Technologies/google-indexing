@@ -58,18 +58,18 @@
   background: white;
   padding: 30px;
   border-radius: 4px;
-  border: 1px solid #e8e8e8;
+  border: 1px solid var(--color-border);
 }
 
 .notifications-card h3 {
   margin: 0 0 10px 0;
   font-size: 24px;
-  color: #333;
+  color: var(--color-text);
 }
 
 .subtitle {
   margin: 0 0 30px 0;
-  color: #999;
+  color: var(--color-text-muted);
   font-size: 14px;
 }
 
@@ -155,12 +155,12 @@
   border: none;
   font-size: 18px;
   cursor: pointer;
-  color: #999;
+  color: var(--color-text-muted);
   padding: 0;
   flex-shrink: 0;
 }
 
 .close-btn:hover {
-  color: #666;
+  color: var(--color-text-secondary);
 }
 </style>

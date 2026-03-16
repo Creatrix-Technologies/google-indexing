@@ -143,7 +143,7 @@ onMounted(() => {
         <p class="subtitle">Manage your plans</p>
       </div>
 
-      <button class="add-btn" @click="addPlan">➕ Add New Plan</button>
+      <button class="add-btn" @click="addPlan">Add New Plan</button>
     </div>
 
     <div v-if="isLoading" class="loading">Loading plans...</div>
@@ -226,174 +226,80 @@ onMounted(() => {
 
 <style scoped>
 .page-container {
-  padding: 32px;
-  background: linear-gradient(135deg, #f8fafc, #eef2ff);
+  padding: 24px 32px;
+  background: var(--color-bg);
   min-height: 100vh;
-  font-family: 'Segoe UI', sans-serif;
 }
 
-/* HEADER */
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 28px;
+}
+
+.page-header h1 {
+  margin: 0 0 6px 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--color-text-muted);
 }
 
 .add-btn {
-  background: linear-gradient(135deg, #3b82f6, #6366f1);
-  color: #fff;
-  padding: 10px 22px;
-  border-radius: 10px;
+  background: var(--color-primary);
+  color: white;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
   border: none;
   font-weight: 600;
-  cursor: pointer;   /* ✅ pointer */
-}
-
-/* GRID */
-.plans-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 20px;
-}
-
-/* ❗ CARD CSS NOT CHANGED */
-.plan-card {
-  background: white;
-  padding: 18px;
-  border-radius: 14px;
+  font-size: 14px;
   cursor: pointer;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-}
-.plan-card.inactive {
-  opacity: 0.6;
+  transition: background var(--transition-base), transform var(--transition-fast);
 }
 
-/* MODAL */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  backdrop-filter: blur(3px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-}
-
-.modal-box {
-  background: white;
-  padding: 28px;
-  width: 560px;
-  border-radius: 16px;
-  box-shadow: 0 10px 35px rgba(0,0,0,0.2);
-}
-
-/* FORM */
-.form-row {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 16px;
-}
-
-input, select {
-  padding: 11px;
-  border-radius: 10px;
-  border: 1px solid #d1d5db;
-  font-size: 14px;
-}
-
-/* ERROR */
-.error {
-  color: #dc2626;
-  font-size: 12px;
-  margin-top: 4px;
-}
-
-/* EDITOR */
-.editor {
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid #d1d5db;
-}
-
-.editor :deep(.ql-toolbar) {
-  border: none;
-  border-bottom: 1px solid #e5e7eb;
-  border-radius: 12px 12px 0 0;
-}
-
-.editor :deep(.ql-container) {
-  border: none;
-}
-
-.editor :deep(.ql-editor) {
-  min-height: 260px;
-  font-size: 14px;
-}
-
-/* CHECKBOX */
-.checkbox-row {
-  flex-direction: row;
-  align-items: center;
-  gap: 6px;
-}
-
-/* ACTIONS */
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 20px;
-}
-
-button.save {
-  background: #22c55e;
-  color: white;
-  padding: 10px 22px;
-  border-radius: 10px;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;  /* ✅ pointer */
-}
-
-button.cancel {
-  background: #9ca3af;
-  color: white;
-  padding: 10px 22px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;  /* ✅ pointer */
+.add-btn:hover {
+  background: var(--color-primary-hover);
+  transform: translateY(-1px);
 }
 
 .loading {
   font-weight: 600;
+  color: var(--color-text-secondary);
 }
 
-/* CARD */
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
 .plan-card {
-  background: #0f766e; /* teal green */
-  padding: 22px;
-  border-radius: 16px;
+  background: var(--color-card);
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--box-shadow);
   cursor: pointer;
-  box-shadow: 0 8px 22px rgba(0,0,0,0.15);
-  color: #ffffff; /* all text white */
   display: flex;
   flex-direction: column;
-  gap: 14px; /* ✅ correct spacing */
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  gap: 16px;
+  transition: transform var(--transition-slow), box-shadow var(--transition-slow);
 }
 
 .plan-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 28px rgba(0,0,0,0.2);
+  transform: translateY(-2px);
+  box-shadow: var(--box-shadow-hover);
 }
 
 .plan-card.inactive {
   opacity: 0.6;
 }
 
-/* HEADER INSIDE CARD */
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -404,36 +310,166 @@ button.cancel {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: white;
+  color: var(--color-text);
 }
 
-/* STATUS */
 .status {
   padding: 4px 10px;
-  border-radius: 999px;
+  border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
-  color: white;
-  background: rgba(255,255,255,0.2);
 }
 
-/* DESCRIPTION */
+.status.active {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--color-success);
+}
+
+.status.inactive {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--color-error);
+}
+
 .description {
   font-size: 14px;
   line-height: 1.6;
-  color: white;
+  color: var(--color-text-secondary);
 }
 
-.plan-card .description * {
-  color: #ffffff !important;
+.description :deep(*) {
+  color: inherit !important;
 }
 
-/* AMOUNT */
 .amount {
   margin-top: auto;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
-  color: white;
+  color: var(--color-primary);
 }
 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal-box {
+  background: var(--color-card);
+  padding: 28px;
+  width: 560px;
+  max-width: 95vw;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--box-shadow-hover);
+  border: 1px solid var(--color-border);
+}
+
+.modal-box h3 {
+  margin: 0 0 24px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 18px;
+}
+
+.form-row label {
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+input, select {
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  font-size: 14px;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--color-input-focus);
+  box-shadow: 0 0 0 2px var(--color-input-focus-ring);
+}
+
+.error {
+  color: var(--color-error);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.editor {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.editor :deep(.ql-toolbar) {
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.editor :deep(.ql-container) {
+  border: none;
+}
+
+.editor :deep(.ql-editor) {
+  min-height: 200px;
+  font-size: 14px;
+}
+
+.checkbox-row {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkbox-row input {
+  width: auto;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+button.save {
+  background: var(--color-primary);
+  color: white;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button.save:hover {
+  background: var(--color-primary-hover);
+}
+
+button.cancel {
+  background: var(--color-slate-200);
+  color: var(--color-text-secondary);
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+}
+
+button.cancel:hover {
+  background: var(--color-slate-400);
+  color: var(--color-slate-50);
+}
 </style>

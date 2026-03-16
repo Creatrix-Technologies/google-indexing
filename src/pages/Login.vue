@@ -1,7 +1,22 @@
 <template>
   <div class="login-wrapper">
-    <div class="login-card">
+    <!-- Left: Branding panel -->
+    <div class="login-brand">
+      <div class="brand-content">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+          </svg>
+        </div>
+        <h1 class="brand-title">Site Booster</h1>
+        <p class="brand-tagline">Enterprise indexing & crawl management</p>
+      </div>
+    </div>
 
+    <!-- Right: Login form -->
+    <div class="login-panel">
+      <div class="login-card">
       <h2 class="title">Welcome Back</h2>
       <p class="subtitle">Sign in to continue</p>
 
@@ -65,10 +80,11 @@
 
       <RegisterModal :show="showRegister" @close="showRegister = false" />
 
-      <p v-if="errorMessage" style="color:red; margin-top: 10px;">
+      <p v-if="errorMessage" class="error-message">
         {{ errorMessage }}
       </p>
 
+    </div>
     </div>
   </div>
 </template>
@@ -132,19 +148,70 @@ const handleGoogleLogin = () => {
 <style scoped>
 /* ---------- Layout ---------- */
 .login-wrapper {
-  background: #f5f6fa;
-  height: 100vh;
   display: flex;
-  justify-content: center;
+  min-height: 100vh;
+}
+
+.login-brand {
+  flex: 1;
+  background: linear-gradient(135deg, var(--color-slate-900) 0%, var(--color-slate-800) 50%, var(--color-primary) 100%);
+  display: flex;
   align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.brand-content {
+  max-width: 400px;
+}
+
+.brand-logo {
+  width: 64px;
+  height: 64px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.brand-logo svg {
+  width: 36px;
+  height: 36px;
+  color: #fff;
+}
+
+.brand-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 8px 0;
+}
+
+.brand-tagline {
+  font-size: 16px;
+  color: rgba(255,255,255,0.8);
+  margin: 0;
+}
+
+.login-panel {
+  flex: 1;
+  background: var(--color-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
 }
 
 .login-card {
-  background: white;
-  width: 380px;
-  padding: 35px;
-  border-radius: 12px;
-  box-shadow: 0px 3px 18px rgba(0, 0, 0, 0.08);
+  background: var(--color-card);
+  width: 100%;
+  max-width: 400px;
+  padding: 40px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--box-shadow-hover);
+  border: 1px solid var(--color-border);
   text-align: center;
 }
 
@@ -152,13 +219,13 @@ const handleGoogleLogin = () => {
 .title {
   font-size: 26px;
   font-weight: 700;
-  color: #333;
+  color: var(--color-text);
   margin-bottom: 6px;
 }
 
 .subtitle {
   font-size: 14px;
-  color: #777;
+  color: var(--color-text-secondary);
   margin-bottom: 25px;
 }
 
@@ -172,22 +239,22 @@ const handleGoogleLogin = () => {
   display: block;
   margin-bottom: 6px;
   font-size: 14px;
-  color: #444;
+  color: var(--color-text-secondary);
 }
 
 .form-group input {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #dedede;
-  border-radius: 6px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
   font-size: 14px;
   outline: none;
-  transition: 0.2s;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
 }
 
 .form-group input:focus {
-  border-color: #4c6fff;
-  box-shadow: 0 0 0 2px rgba(76, 111, 255, 0.15);
+  border-color: var(--color-input-focus);
+  box-shadow: 0 0 0 2px var(--color-input-focus-ring);
 }
 
 /* ---------- Password Toggle ---------- */
@@ -207,7 +274,7 @@ const handleGoogleLogin = () => {
   background: none;
   border: none;
   font-size: 13px;
-  color: #4c6fff;
+  color: var(--color-accent);
   cursor: pointer;
   font-weight: 500;
 }
@@ -219,20 +286,26 @@ const handleGoogleLogin = () => {
 /* ---------- Buttons ---------- */
 .btn-primary {
   width: 100%;
-  padding: 10px;
-  background: #4c6fff;
+  padding: 12px;
+  background: var(--color-primary);
   border: none;
   color: white;
   font-size: 15px;
   font-weight: 600;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   margin-top: 5px;
-  transition: 0.2s;
+  transition: background var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base);
 }
 
 .btn-primary:hover {
-  background: #3f5ae0;
+  background: var(--color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(30, 64, 175, 0.35);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
 }
 
 /* ---------- Divider ---------- */
@@ -248,14 +321,14 @@ const handleGoogleLogin = () => {
   max-width: 60px;
   margin: 0 auto;
   font-size: 12px;
-  color: #666;
+  color: var(--color-text-muted);
 }
 
 .divider::before,
 .divider::after {
   content: "";
   flex: 1;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--color-border);
 }
 
 /* ---------- Google Login Button ---------- */
@@ -263,7 +336,7 @@ const handleGoogleLogin = () => {
   margin-top: 10px;
   width: 100%;
   padding: 9px;
-  border: 1px solid #d3d3d3;
+  border: 1px solid var(--color-border);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -271,8 +344,8 @@ const handleGoogleLogin = () => {
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  color: #444;
-  background: white;
+  color: var(--color-text-secondary);
+  background: var(--color-card);
   transition: 0.2s;
 }
 
@@ -282,25 +355,43 @@ const handleGoogleLogin = () => {
 }
 
 .btn-google:hover {
-  background: #f3f3f3;
+  background: var(--color-slate-50);
 }
 
 /* ---------- Secondary Button ---------- */
 .btn-secondary {
   width: 100%;
   padding: 10px;
-  background: #e6e6e6;
-  border: 1px solid #d3d3d3;
+  background: var(--color-slate-200);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   font-size: 14px;
   font-weight: 500;
-  color: #444;
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: 0.2s;
   margin-top: 10px;
 }
 
 .btn-secondary:hover {
-  background: #dcdcdc;
+  background: var(--color-slate-400);
+  color: var(--color-slate-50);
+}
+
+.error-message {
+  color: var(--color-error);
+  margin-top: 10px;
+}
+
+@media (max-width: 768px) {
+  .login-wrapper {
+    flex-direction: column;
+  }
+  .login-brand {
+    min-height: 200px;
+    padding: 32px;
+  }
+  .brand-title { font-size: 24px; }
+  .brand-tagline { font-size: 14px; }
 }
 </style>

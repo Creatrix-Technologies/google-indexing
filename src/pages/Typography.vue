@@ -72,7 +72,7 @@
   background: white;
   padding: 30px;
   border-radius: 4px;
-  border: 1px solid #e8e8e8;
+  border: 1px solid var(--color-border);
 }
 
 .typography-card > h3 {
@@ -84,7 +84,7 @@
 .typography-section {
   margin-bottom: 40px;
   padding-bottom: 30px;
-  border-bottom: 1px solid #e8e8e8;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .typography-section:last-child {
@@ -96,7 +96,7 @@
 .typography-section h4 {
   margin: 0 0 15px 0;
   font-size: 18px;
-  color: #666;
+  color: var(--color-text-secondary);
   font-weight: 600;
 }
 
@@ -136,7 +136,7 @@
 
 .typography-section p {
   margin: 10px 0;
-  color: #666;
+  color: var(--color-text-secondary);
   font-size: 14px;
   line-height: 1.6;
 }
@@ -146,7 +146,7 @@ blockquote {
   padding: 20px;
   background: #f9f9f9;
   border-left: 4px solid #51cbce;
-  color: #666;
+  color: var(--color-text-secondary);
   font-style: italic;
 }
 
@@ -167,7 +167,7 @@ ul, ol {
 
 li {
   margin: 8px 0;
-  color: #666;
+  color: var(--color-text-secondary);
   font-size: 14px;
 }
 

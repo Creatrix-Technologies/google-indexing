@@ -36,7 +36,7 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f9fafb;
+  background: var(--color-bg);
 }
 
 /* Header (Fixed) */
@@ -56,20 +56,20 @@
 .settings-menu {
   display: flex;
   gap: 16px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .menu-item {
   padding: 12px 14px;
   text-decoration: none;
-  color: #6b7280;
+  color: var(--color-text-muted);
   font-weight: 500;
   border-bottom: 2px solid transparent;
 }
 
 .menu-item.active {
-  color: #2563eb;
-  border-color: #2563eb;
+  color: var(--color-accent);
+  border-color: var(--color-accent);
 }
 
 /* ===== Scroll Area ===== */

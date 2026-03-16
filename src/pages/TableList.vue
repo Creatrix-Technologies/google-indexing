@@ -69,13 +69,13 @@
   background: white;
   padding: 20px;
   border-radius: 4px;
-  border: 1px solid #e8e8e8;
+  border: 1px solid var(--color-border);
 }
 
 .table-card h3 {
   margin: 0 0 20px 0;
   font-size: 18px;
-  color: #333;
+  color: var(--color-text);
 }
 
 .table-wrapper {
@@ -88,8 +88,8 @@
 }
 
 .styled-table thead tr {
-  background: #f5f5f5;
-  border-bottom: 2px solid #e8e8e8;
+  background: var(--color-slate-50);
+  border-bottom: 2px solid var(--color-border);
 }
 
 .styled-table th {
@@ -97,7 +97,7 @@
   text-align: left;
   font-size: 12px;
   font-weight: 600;
-  color: #999;
+  color: var(--color-text-muted);
   letter-spacing: 0.5px;
 }
 
@@ -105,7 +105,7 @@
   padding: 15px;
   border-bottom: 1px solid #f0f0f0;
   font-size: 14px;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 .styled-table tbody tr {

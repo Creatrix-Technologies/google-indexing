@@ -35,18 +35,18 @@ const icons = ref([
   background: white;
   padding: 30px;
   border-radius: 4px;
-  border: 1px solid #e8e8e8;
+  border: 1px solid var(--color-border);
 }
 
 .icons-card h3 {
   margin: 0 0 10px 0;
   font-size: 24px;
-  color: #333;
+  color: var(--color-text);
 }
 
 .subtitle {
   margin: 0 0 30px 0;
-  color: #999;
+  color: var(--color-text-muted);
   font-size: 14px;
 }
 
@@ -64,7 +64,7 @@ const icons = ref([
   padding: 20px;
   background: #f9f9f9;
   border-radius: 4px;
-  border: 1px solid #e8e8e8;
+  border: 1px solid var(--color-border);
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -83,7 +83,7 @@ const icons = ref([
 .icon-name {
   margin: 0;
   font-size: 12px;
-  color: #999;
+  color: var(--color-text-muted);
   text-align: center;
 }
 </style>

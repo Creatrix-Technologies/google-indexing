@@ -28,17 +28,18 @@
   .error-page h1 {
     font-size: 48px;
     margin-bottom: 20px;
-    color: #e74c3c;
+    color: var(--color-error);
   }
   
   .error-page p {
     font-size: 18px;
     margin-bottom: 20px;
+    color: var(--color-text-secondary);
   }
   
   .error-page button {
     padding: 10px 20px;
-    background: #4c6fff;
+    background: var(--color-primary);
     color: white;
     border: none;
     border-radius: 6px;
@@ -46,7 +47,7 @@
   }
   
   .error-page button:hover {
-    background: #3f5ae0;
+    background: var(--color-primary-hover);
   }
   </style>
   

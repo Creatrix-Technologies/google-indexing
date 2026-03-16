@@ -13,7 +13,8 @@ export function buildRoutes(menus: any[]) {
           component: componentMap[menu.component],
           meta: { 
             requiresAuth: menu.requiresAuth,
-            public: !menu.requiresAuth // optional, for convenience
+            public: !menu.requiresAuth,
+            title: menu.title
            }
         });
       }

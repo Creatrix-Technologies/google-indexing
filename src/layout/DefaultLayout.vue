@@ -69,9 +69,10 @@ const toggleSidebar = () => {
 }
 
 .main-content .page-wrapper {
-  padding: 20px;
+  padding: 24px 32px;
   min-height: 100vh;
   box-sizing: border-box;
+  background: var(--color-bg);
 }
 
 /* Mobile adjustments */
@@ -86,8 +87,15 @@ const toggleSidebar = () => {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.3);
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(2px);
     z-index: 999;
+    animation: overlayFade 0.2s ease;
+  }
+
+  @keyframes overlayFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 }
 </style>

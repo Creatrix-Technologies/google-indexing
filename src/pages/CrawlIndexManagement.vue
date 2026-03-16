@@ -438,20 +438,20 @@ onMounted(async () => {
   .page-title {
     font-size: 32px;
     font-weight: 700;
-    color: #111827;
+    color: var(--color-text);
     margin: 0 0 8px 0;
   }
   
   .subtitle {
     font-size: 14px;
-    color: #6b7280;
+    color: var(--color-text-muted);
     margin: 0;
   }
   
   .btn-primary {
     padding: 10px 20px;
-    background: #22c55e;
-    color: #ffffff;
+    background: var(--color-success);
+    color: var(--color-card);
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
@@ -463,7 +463,7 @@ onMounted(async () => {
     cursor: not-allowed;
   }
   .btn-primary:hover:not(:disabled) {
-    background: #16a34a;
+    background: var(--color-success-hover);
   }
   
   /* Stats Cards */
@@ -492,7 +492,7 @@ onMounted(async () => {
   }
   .stat-label {
     font-size: 14px;
-    color: #6b7280;
+    color: var(--color-text-muted);
     font-weight: 600;
     margin: 0;
   }
@@ -504,15 +504,15 @@ onMounted(async () => {
   
   /* Table */
   .grid-card {
-    background: #ffffff;
+    background: var(--color-card);
     border-radius: 12px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.05);
     overflow: hidden;
   }
   .grid-header {
     padding: 15px;
-    border-bottom: 1px solid #e5e7eb;
-    background: #f9fafb;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-slate-50);
   }
   .checkbox-container {
     display: flex;
@@ -523,11 +523,11 @@ onMounted(async () => {
     width: 18px;
     height: 18px;
     cursor: pointer;
-    accent-color: #22c55e;
+    accent-color: var(--color-success);
   }
   .select-all-label {
     font-weight: 500;
-    color: #111827;
+    color: var(--color-text);
     cursor: pointer;
   }
   
@@ -536,16 +536,19 @@ onMounted(async () => {
     border-collapse: collapse;
   }
   .crawl-table thead {
-    background: #f3f4f6;
+    background: var(--color-slate-50);
   }
   .crawl-table th, .crawl-table td {
     padding: 14px;
     text-align: left;
     font-size: 14px;
-    color: #374151;
+    color: var(--color-text-secondary);
+  }
+  .crawl-table tbody tr:nth-child(even) {
+    background: rgba(248, 250, 252, 0.6);
   }
   .crawl-table tbody tr:hover {
-    background: #f0fdf4;
+    background: rgba(59, 130, 246, 0.04);
   }
   .status-badge {
     padding: 6px 12px;
@@ -566,12 +569,12 @@ onMounted(async () => {
   .site-icon {
     width: 40px;
     height: 40px;
-    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    background: linear-gradient(135deg, var(--color-success) 0%, var(--color-success-hover) 100%);
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #ffffff;
+    color: var(--color-card);
     font-weight: 600;
     font-size: 16px;
   }
@@ -582,22 +585,22 @@ onMounted(async () => {
   }
   .action-btn {
     padding: 6px 12px;
-    background: #f3f4f6;
+    background: var(--color-slate-50);
     border-radius: 6px;
     font-size: 12px;
     cursor: pointer;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--color-border);
     transition: 0.2s;
   }
   .action-btn:hover {
-    background: #22c55e;
-    color: #ffffff;
-    border-color: #22c55e;
+    background: var(--color-success);
+    color: var(--color-card);
+    border-color: var(--color-success);
   }
   .action-btn.view-details:hover {
     background: #3b82f6;
     border-color: #3b82f6;
-    color: #ffffff;
+    color: var(--color-card);
   }
   
   /* Responsive */
@@ -617,7 +620,7 @@ onMounted(async () => {
   
   /* Color overrides */
   .stat-value.total {
-    color: #111827; /* dark text */
+    color: var(--color-text); /* dark text */
   }
   .stat-value.queued {
     color: #f97316; /* orange */
@@ -639,8 +642,8 @@ onMounted(async () => {
 .spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid #e5e7eb;
-  border-top: 2px solid #22c55e;
+  border: 2px solid var(--color-border);
+  border-top: 2px solid var(--color-success);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -648,12 +651,12 @@ onMounted(async () => {
 .loader-text {
   font-size: 12px;
   font-weight: 500;
-  color: #374151;
+  color: var(--color-text-secondary);
 }
 
 .sse-message {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
 @keyframes spin {

@@ -146,7 +146,7 @@ const buildChart = () => {
       {
         name: "Index",
         data: success,
-        color: "#22c55e",
+        color: "#10b981",
         fillOpacity: 0.15
       },
       {
@@ -170,18 +170,18 @@ const buildChart = () => {
 ======================= */
 const getCardColor = (title: string) => {
   if (title == "Active Sites")
-    return "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)"
+    return "linear-gradient(135deg, var(--color-success) 0%, var(--color-success-hover) 100%)"
 
   if (title == "Total Failed Indexed")
-    return "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)"
+    return "linear-gradient(135deg, var(--color-error) 0%, var(--color-error-hover) 100%)"
 
   if (title == "In Active Sites")
-    return "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)"
+    return "linear-gradient(135deg, var(--color-error) 0%, var(--color-error-hover) 100%)"
 
   if (title.includes("Crawled"))
-    return "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)"
+    return "linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%)"
 
-  return "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
+  return "linear-gradient(135deg, var(--color-warning) 0%, var(--color-warning-hover) 100%)"
 }
 
 /* =======================
@@ -199,7 +199,7 @@ onMounted(() => {
   flex: 1;
   padding: 30px;
   overflow-y: auto;
-  background: #f9f9f9;
+  background: var(--color-bg);
 }
 
 .page-header {
@@ -208,14 +208,14 @@ onMounted(() => {
 
 .page-header h1 {
   font-size: 32px;
-  color: #333;
+  color: var(--color-text);
   margin: 0 0 10px 0;
   font-weight: 700;
 }
 
 .subtitle {
   font-size: 14px;
-  color: #999;
+  color: var(--color-text-muted);
 }
 
 .stats-grid {
@@ -232,10 +232,11 @@ onMounted(() => {
 }
 
 .chart-card {
-  background: #fff;
-  border-radius: 12px;
-  border: 1px solid #e8e8e8;
-  padding: 20px;
+  background: var(--color-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  padding: 24px;
+  box-shadow: var(--box-shadow);
 }
 
 .chart-content {
@@ -245,8 +246,11 @@ onMounted(() => {
 
 .empty-message {
   text-align: center;
-  color: #666;
-  font-size: 16px;
-  padding: 30px 0;
+  color: var(--color-text-muted);
+  font-size: 15px;
+  padding: 48px 24px;
+  background: var(--color-card);
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--color-border);
 }
 </style>

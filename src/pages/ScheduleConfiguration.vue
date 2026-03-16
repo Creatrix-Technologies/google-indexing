@@ -62,7 +62,7 @@
                     <div
                       :style="{
                         width: getProgressPercent(item.websiteId) + '%',
-                        background:'#22c55e',
+                        background:'#10b981',
                         height:'100%',
                         transition:'width .3s'
                       }"
@@ -272,7 +272,7 @@ const bulkrun = async (websiteId: number) => {
     showCancelButton: true,
     confirmButtonText: 'Yes, Run Now',
     cancelButtonText: 'Cancel',
-    confirmButtonColor: '#22c55e'
+    confirmButtonColor: '#10b981'
   })
 
   if (!confirm.isConfirmed) return
@@ -355,35 +355,35 @@ onMounted(fetchSchedules)
 </script>
 
 <style scoped>
-.page-container { flex: 1; padding: 30px; overflow-y:auto; background:#f9f9f9; }
+.page-container { flex: 1; padding: 30px; overflow-y:auto; background:var(--color-bg); }
 .page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; }
-.page-header h1 { font-size:32px; color:#333; margin:0 0 10px 0; font-weight:700; }
-.subtitle { font-size:14px; color:#999; margin:0; }
-.table-card { background:#fff; border-radius:12px; border:1px solid #e8e8e8; overflow:hidden; box-shadow:0 2px 4px rgba(0,0,0,0.05); }
+.page-header h1 { font-size:32px; color:var(--color-text); margin:0 0 10px 0; font-weight:700; }
+.subtitle { font-size:14px; color:var(--color-text-muted); margin:0; }
+.table-card { background:var(--color-card); border-radius:12px; border:1px solid var(--color-border); overflow:hidden; box-shadow:0 2px 4px rgba(0,0,0,0.05); }
 .sites-table { width:100%; border-collapse:collapse; }
-.sites-table thead { background:#f5f5f5; border-bottom:1px solid #e8e8e8; }
-.sites-table th { padding:15px; text-align:left; font-weight:600; font-size:13px; color:#666; text-transform:uppercase; letter-spacing:0.5px; }
-.sites-table td { padding:15px; border-bottom:1px solid #f0f0f0; font-size:14px; color:#333; }
+.sites-table thead { background:var(--color-slate-50); border-bottom:1px solid var(--color-border); }
+.sites-table th { padding:15px; text-align:left; font-weight:600; font-size:13px; color:var(--color-text-secondary); text-transform:uppercase; letter-spacing:0.5px; }
+.sites-table td { padding:15px; border-bottom:1px solid var(--color-border); font-size:14px; color:var(--color-text); }
 .sites-table tbody tr:last-child td { border-bottom:none; }
 .site-name-cell { display:flex; align-items:center; gap:10px; }
-.site-icon { width:40px; height:40px; background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%); border-radius:8px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:600; font-size:16px; flex-shrink:0; }
-.status-badge { padding:4px 12px; border-radius:20px; font-size:12px; font-weight:500; background:#e8f5e9; color:#22c55e; }
+.site-icon { width:40px; height:40px; background:linear-gradient(135deg,var(--color-success) 0%,var(--color-success-hover) 100%); border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--color-card); font-weight:600; font-size:16px; flex-shrink:0; }
+.status-badge { padding:4px 12px; border-radius:20px; font-size:12px; font-weight:500; background:rgba(16, 185, 129, 0.15); color:var(--color-success); }
 .action-cell { display:flex; gap:8px; align-items:center; }
-.action-btn { padding:6px 12px; background:#f5f5f5; border:1px solid #e8e8e8; border-radius:6px; color:#666; font-size:12px; cursor:pointer; transition:all 0.2s; }
-.action-btn:hover { background:#22c55e; border-color:#22c55e; color:#fff; }
+.action-btn { padding:6px 12px; background:var(--color-slate-50); border:1px solid var(--color-border); border-radius:6px; color:var(--color-text-secondary); font-size:12px; cursor:pointer; transition:all 0.2s; }
+.action-btn:hover { background:var(--color-success); border-color:var(--color-success); color:var(--color-card); }
 .modal-overlay { position:fixed; inset:0; background: rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; }
-.modal-content { background:#fff; border-radius:12px; width:90%; max-width:450px; }
-.modal-header { display:flex; justify-content:space-between; padding:20px; border-bottom:1px solid #e8e8e8; }
-.close-btn { background:none; border:none; font-size:26px; cursor:pointer; color:#999; }
-.close-btn:hover { color:#333; }
+.modal-content { background:var(--color-card); border-radius:12px; width:90%; max-width:450px; }
+.modal-header { display:flex; justify-content:space-between; padding:20px; border-bottom:1px solid var(--color-border); }
+.close-btn { background:none; border:none; font-size:26px; cursor:pointer; color:var(--color-text-muted); }
+.close-btn:hover { color:var(--color-text); }
 form { padding:20px; }
-.site-info { background:#eff6ff; padding:10px; border-radius:8px; margin-bottom:16px; text-align:center; font-weight:600; color:#1d4ed8; }
+.site-info { background:rgba(59, 130, 246, 0.1); padding:10px; border-radius:8px; margin-bottom:16px; text-align:center; font-weight:600; color:var(--color-primary); }
 .form-group { margin-bottom:20px; }
 .form-group label { display:block; margin-bottom:8px; font-weight:600; }
-.form-group input, .form-group select { width:100%; padding:10px 12px; border:1px solid #e8e8e8; border-radius:6px; }
+.form-group input, .form-group select { width:100%; padding:10px 12px; border:1px solid var(--color-border); border-radius:6px; }
 .modal-footer { display:flex; justify-content:flex-end; }
-.btn-primary { padding:10px 20px; background:#22c55e; color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer; }
-.btn-primary:hover { background:#16a34a; }
+.btn-primary { padding:10px 20px; background:var(--color-success); color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer; }
+.btn-primary:hover { background:var(--color-success-hover); }
 
 .switch {
   position: relative;
@@ -420,7 +420,7 @@ form { padding:20px; }
 }
 
 input:checked + .slider {
-  background-color: #22c55e;
+  background-color: var(--color-success);
 }
 
 input:checked + .slider:before {
@@ -428,13 +428,13 @@ input:checked + .slider:before {
 }
 
 .status-active {
-  color: #16a34a;
+  color: var(--color-success-hover);
   font-weight: 600;
   font-size: 13px;
 }
 
 .status-inactive {
-  color: #dc2626;
+  color: var(--color-error);
   font-weight: 600;
   font-size: 13px;
 }

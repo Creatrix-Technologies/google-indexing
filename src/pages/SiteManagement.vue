@@ -297,7 +297,7 @@ onMounted(() => {
   flex: 1;
   padding: 30px;
   overflow-y: auto;
-  background: #f9f9f9;
+  background: var(--color-bg);
 }
 
 .page-header {
@@ -309,21 +309,21 @@ onMounted(() => {
 
 .page-header h1 {
   font-size: 32px;
-  color: #333;
+  color: var(--color-text);
   margin: 0 0 10px 0;
   font-weight: 700;
 }
 
 .subtitle {
   font-size: 14px;
-  color: #999;
+  color: var(--color-text-muted);
   margin: 0;
 }
 
 .btn-primary {
   padding: 10px 20px;
-  background: #22c55e;
-  color: #ffffff;
+  background: var(--color-success);
+  color: var(--color-card);
   border: none;
   border-radius: 8px;
   font-weight: 600;
@@ -332,13 +332,13 @@ onMounted(() => {
 }
 
 .btn-primary:hover {
-  background: #16a34a;
+  background: var(--color-success-hover);
 }
 
 .btn-secondary {
   padding: 10px 20px;
-  background: #e8e8e8;
-  color: #333;
+  background: var(--color-border);
+  color: var(--color-text);
   border: none;
   border-radius: 8px;
   font-weight: 600;
@@ -347,15 +347,15 @@ onMounted(() => {
 }
 
 .btn-secondary:hover {
-  background: #d0d0d0;
+  background: var(--color-slate-400);
 }
 
 .table-card {
-  background: #ffffff;
-  border-radius: 12px;
-  border: 1px solid #e8e8e8;
+  background: var(--color-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--box-shadow);
 }
 
 .sites-table {
@@ -364,8 +364,8 @@ onMounted(() => {
 }
 
 .sites-table thead {
-  background: #f5f5f5;
-  border-bottom: 1px solid #e8e8e8;
+  background: var(--color-slate-50);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .sites-table th {
@@ -373,19 +373,27 @@ onMounted(() => {
   text-align: left;
   font-weight: 600;
   font-size: 13px;
-  color: #666;
+  color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .sites-table td {
   padding: 15px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--color-border);
   font-size: 14px;
-  color: #333;
+  color: var(--color-text);
+  transition: background var(--transition-fast);
 }
 
-/* Remove border from the last row */
+.sites-table tbody tr:nth-child(even) {
+  background: rgba(248, 250, 252, 0.6);
+}
+
+.sites-table tbody tr:hover {
+  background: rgba(59, 130, 246, 0.04);
+}
+
 .sites-table tbody tr:last-child td {
   border-bottom: none;
 }
@@ -399,12 +407,12 @@ onMounted(() => {
 .site-icon {
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  background: linear-gradient(135deg, var(--color-success) 0%, var(--color-success-hover) 100%);
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  color: var(--color-card);
   font-weight: 600;
   font-size: 16px;
   flex-shrink: 0;
@@ -415,13 +423,13 @@ onMounted(() => {
   border-radius: 20px;
   font-size: 12px;
   font-weight: 500;
-  background: #e8f5e9;
-  color: #22c55e;
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--color-success);
 }
 
 .status-badge.inactive {
-  background: #fef2f2;
-  color: #ef4444;
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--color-error);
 }
 
 .action-cell {
@@ -431,29 +439,29 @@ onMounted(() => {
 
 .action-btn {
   padding: 6px 12px;
-  background: #f5f5f5;
-  border: 1px solid #e8e8e8;
+  background: var(--color-slate-50);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
-  color: #666;
+  color: var(--color-text-secondary);
   font-size: 12px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .action-btn:hover {
-  background: #22c55e;
-  border-color: #22c55e;
-  color: #ffffff;
+  background: var(--color-success);
+  border-color: var(--color-success);
+  color: var(--color-card);
 }
 
 .action-btn.delete {
-  color: #ef4444;
+  color: var(--color-error);
 }
 
 .action-btn.delete:hover {
-  background: #ef4444;
-  border-color: #ef4444;
-  color: #ffffff;
+  background: var(--color-error);
+  border-color: var(--color-error);
+  color: var(--color-card);
 }
 
 /* Modal Styles */
@@ -471,7 +479,7 @@ onMounted(() => {
 }
 
 .modal-content {
-  background: #ffffff;
+  background: var(--color-card);
   border-radius: 12px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   width: 90%;
@@ -485,13 +493,13 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 25px;
-  border-bottom: 1px solid #e8e8e8;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .modal-header h2 {
   margin: 0;
   font-size: 20px;
-  color: #333;
+  color: var(--color-text);
 }
 
 .close-btn {
@@ -499,12 +507,12 @@ onMounted(() => {
   border: none;
   font-size: 28px;
   cursor: pointer;
-  color: #999;
+  color: var(--color-text-muted);
   transition: color 0.2s;
 }
 
 .close-btn:hover {
-  color: #333;
+  color: var(--color-text);
 }
 
 .modal-footer {
@@ -512,8 +520,8 @@ onMounted(() => {
   justify-content: flex-end;
   gap: 10px;
   padding: 20px 25px;
-  border-top: 1px solid #e8e8e8;
-  background: #f9f9f9;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg);
 }
 
 form {
@@ -535,7 +543,7 @@ form {
   display: block;
   margin-bottom: 8px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-text);
   font-size: 14px;
 }
 
@@ -544,7 +552,7 @@ form {
 .form-group textarea {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #e8e8e8;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   font-size: 14px;
   font-family: inherit;
@@ -555,7 +563,7 @@ form {
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #22c55e;
+  border-color: var(--color-success);
   box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
 }
 
@@ -582,7 +590,7 @@ form {
   position: relative;
   width: 44px;
   height: 24px;
-  background: #e8e8e8;
+  background: var(--color-border);
   border-radius: 12px;
   transition: background 0.3s;
   display: block;
@@ -593,7 +601,7 @@ form {
   position: absolute;
   width: 20px;
   height: 20px;
-  background: #ffffff;
+  background: var(--color-card);
   border-radius: 10px;
   top: 2px;
   left: 2px;
@@ -602,7 +610,7 @@ form {
 }
 
 .toggle-input:checked + .toggle-label .toggle-switch {
-  background: #22c55e;
+  background: var(--color-success);
 }
 
 .toggle-input:checked + .toggle-label .toggle-switch::after {
@@ -612,7 +620,7 @@ form {
 .toggle-text {
   font-size: 14px;
   font-weight: 500;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 @media (max-width: 768px) {

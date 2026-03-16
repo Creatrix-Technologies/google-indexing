@@ -17,11 +17,11 @@
             v-model="email"
             type="email"
             placeholder="Enter email"
-            :style="emailError ? errorStyle : {}"
+            :class="{ 'input-error': emailError }"
             @input="validateEmail"
             @keyup.enter="handleRegister"
           />
-          <small v-if="emailError" style="color:#c53030">{{ emailError }}</small>
+          <small v-if="emailError" class="field-error">{{ emailError }}</small>
         </div>
 
         <!-- Username -->
@@ -31,11 +31,11 @@
             v-model="username"
             type="text"
             placeholder="Enter username"
-            :style="usernameError ? errorStyle : {}"
+            :class="{ 'input-error': usernameError }"
             @input="validateUsername"
             @keyup.enter="handleRegister"
           />
-          <small v-if="usernameError" style="color:#c53030">{{ usernameError }}</small>
+          <small v-if="usernameError" class="field-error">{{ usernameError }}</small>
         </div>
 
         <!-- Password -->
@@ -45,11 +45,11 @@
             v-model="password"
             type="password"
             placeholder="Enter password"
-            :style="passwordError ? errorStyle : {}"
+            :class="{ 'input-error': passwordError }"
             @input="validatePassword"
             @keyup.enter="handleRegister"
           />
-          <small v-if="passwordError" style="color:#c53030">{{ passwordError }}</small>
+          <small v-if="passwordError" class="field-error">{{ passwordError }}</small>
         </div>
 
         <!-- Confirm Password -->
@@ -59,11 +59,11 @@
             v-model="confirmPassword"
             type="password"
             placeholder="Confirm password"
-            :style="confirmPasswordError ? errorStyle : {}"
+            :class="{ 'input-error': confirmPasswordError }"
             @input="validateConfirmPassword"
             @keyup.enter="handleRegister"
           />
-          <small v-if="confirmPasswordError" style="color:#c53030">{{ confirmPasswordError }}</small>
+          <small v-if="confirmPasswordError" class="field-error">{{ confirmPasswordError }}</small>
         </div>
 
         <!-- Buttons -->
@@ -101,9 +101,6 @@ const emailError = ref("");
 const usernameError = ref("");
 const passwordError = ref("");
 const confirmPasswordError = ref("");
-
-// inline error style
-const errorStyle = { borderColor: "#c53030" };
 
 // Close modal
 const close = () => emit("close");
@@ -193,7 +190,7 @@ watch(password, () => {
 .modal-container {
   width: 420px;
   position: relative;
-  background: #fff;
+  background: var(--color-card);
   padding: 32px;
   border-radius: 16px;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
@@ -213,39 +210,47 @@ watch(password, () => {
   background: transparent;
   border: none;
   font-size: 20px;
-  color: #444;
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: 0.2s;
 }
 
-.close-btn:hover { color: #d22; }
+.close-btn:hover { color: var(--color-error); }
 
 /* ------------------ Typography ------------------ */
 .title { font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 4px; }
-.subtitle { text-align: center; font-size: 14px; color: #666; margin-bottom: 24px; }
+.subtitle { text-align: center; font-size: 14px; color: var(--color-text-secondary); margin-bottom: 24px; }
 
 /* ------------------ Form Styles ------------------ */
 .form-group { margin-bottom: 18px; }
-.form-label { display: block; text-align: left; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: #333; }
+.form-label { display: block; text-align: left; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--color-text); }
 .form-group input {
   width: 100%;
   padding: 12px;
   border-radius: 8px;
-  border: 1px solid #d6d6d6;
+  border: 1px solid var(--color-border);
   transition: all 0.2s;
 }
 .form-group input:focus {
-  border-color: #4c6fff;
-  box-shadow: 0 0 0 2px rgba(76, 111, 255, 0.25);
+  border-color: var(--color-input-focus);
+  box-shadow: 0 0 0 2px var(--color-input-focus-ring);
   outline: none;
 }
 
+.form-group input.input-error {
+  border-color: var(--color-error);
+}
+
+.field-error { color: var(--color-error); }
+
 /* ------------------ Buttons ------------------ */
-.btn-primary { width: 100%; padding: 12px; background: #4c6fff; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: 0.2s; }
-.btn-primary:hover { background: #3b57d8; }
-.btn-primary:disabled { background: #a0b0ff; cursor: not-allowed; }
-.btn-secondary { width: 100%; padding: 12px; background: #efefef; border: none; border-radius: 8px; margin-top: 10px; cursor: pointer; transition: 0.2s; }
-.btn-secondary:hover { background: #dedede; }
+.btn-primary { width: 100%; padding: 12px; background: var(--color-primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: 0.2s; }
+.btn-primary:hover { background: var(--color-primary-hover); }
+.btn-primary:disabled { background: var(--color-slate-400); cursor: not-allowed; }
+.btn-secondary { width: 100%; padding: 12px; background: var(--color-slate-200); border: none; border-radius: 8px; margin-top: 10px; cursor: pointer; transition: 0.2s; color: var(--color-text-secondary); }
+.btn-secondary:hover { background: var(--color-slate-400); color: var(--color-slate-50); }
+
+.field-error { color: var(--color-error); }
 
 /* ------------------ Transition ------------------ */
 .modal-enter-active, .modal-leave-active { transition: opacity 0.25s ease; }

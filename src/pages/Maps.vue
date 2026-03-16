@@ -28,24 +28,24 @@
   background: white;
   padding: 30px;
   border-radius: 4px;
-  border: 1px solid #e8e8e8;
+  border: 1px solid var(--color-border);
 }
 
 .maps-card h3 {
   margin: 0 0 10px 0;
   font-size: 24px;
-  color: #333;
+  color: var(--color-text);
 }
 
 .subtitle {
   margin: 0 0 30px 0;
-  color: #999;
+  color: var(--color-text-muted);
   font-size: 14px;
 }
 
 .map-placeholder {
   height: 500px;
-  background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+  background: linear-gradient(135deg, var(--color-slate-50) 0%, var(--color-border) 100%);
   border-radius: 4px;
   border: 1px solid #e0e0e0;
   display: flex;
@@ -66,12 +66,12 @@
 .map-content h4 {
   margin: 0 0 10px 0;
   font-size: 20px;
-  color: #333;
+  color: var(--color-text);
 }
 
 .map-content p {
   margin: 0;
-  color: #999;
+  color: var(--color-text-muted);
   font-size: 14px;
 }
 </style>

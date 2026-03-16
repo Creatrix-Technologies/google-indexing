@@ -231,20 +231,20 @@
   
   .page-header h1 {
     font-size: 32px;
-    color: #333;
+    color: var(--color-text);
     margin: 0 0 10px 0;
     font-weight: 700;
   }
   
   .subtitle {
     font-size: 14px;
-    color: #999;
+    color: var(--color-text-muted);
   }
   
   .table-card {
     background: #fff;
     border-radius: 12px;
-    border: 1px solid #e8e8e8;
+    border: 1px solid var(--color-border);
     overflow: hidden;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     margin-bottom: 20px;
@@ -260,8 +260,8 @@
     text-align: left;
     font-weight: 600;
     font-size: 13px;
-    color: #666;
-    background: #f5f5f5;
+    color: var(--color-text-secondary);
+    background: var(--color-slate-50);
     text-transform: uppercase;
   }
   
@@ -269,7 +269,7 @@
     padding: 15px;
     border-bottom: 1px solid #f0f0f0;
     font-size: 14px;
-    color: #333;
+    color: var(--color-text);
     vertical-align: top;
   }
   
@@ -309,7 +309,7 @@
   }
   
   input:checked + .slider {
-    background-color: #22c55e;
+    background-color: var(--color-success);
   }
   
   input:checked + .slider:before {
@@ -322,7 +322,7 @@
     border-radius: 6px;
     border: 1px solid #e0e0e0;
     font-size: 13px;
-    color: #333;
+    color: var(--color-text);
     background-color: #fff;
     cursor: pointer;
     transition: border 0.2s, box-shadow 0.2s;
@@ -343,7 +343,7 @@
   
   .users-table select:focus {
     outline: none;
-    border-color: #22c55e;
+    border-color: var(--color-success);
     box-shadow: 0 0 4px rgba(34, 197, 94, 0.4);
   }
   
@@ -376,7 +376,7 @@
   }
   
   .no-sites {
-    color: #999;
+    color: var(--color-text-muted);
     font-style: italic;
   }
   
@@ -388,23 +388,23 @@
     gap: 20px;
     padding: 20px;
     background: #f9f9f9;
-    border-top: 1px solid #e8e8e8;
+    border-top: 1px solid var(--color-border);
   }
   
   .pagination-btn {
     padding: 8px 16px;
-    background: #f5f5f5;
-    border: 1px solid #e8e8e8;
+    background: var(--color-slate-50);
+    border: 1px solid var(--color-border);
     border-radius: 6px;
-    color: #666;
+    color: var(--color-text-secondary);
     font-size: 14px;
     cursor: pointer;
     transition: all 0.2s;
   }
   
   .pagination-btn:hover:not(:disabled) {
-    background: #22c55e;
-    border-color: #22c55e;
+    background: var(--color-success);
+    border-color: var(--color-success);
     color: #ffffff;
   }
   
@@ -415,7 +415,7 @@
   
   .pagination-info {
     font-size: 14px;
-    color: #666;
+    color: var(--color-text-secondary);
     font-weight: 500;
   }
   </style>

@@ -34,16 +34,13 @@
         <span class="value">{{ totalUrlCount }}</span>
       </div>
       <div class="summary-item">
-        <span class="label">Valid Urls</span>
+        <span class="label">Valid</span>
         <span class="value success">{{ successCount }}</span>
       </div>
       <div class="summary-item">
         <span class="label">Issues</span>
         <span class="value failed">{{ failedCount }}</span>
       </div>
-    </div>
-
-    <div class="summary-card">
       <div class="summary-item">
         <span class="label">Indexed</span>
         <span class="value success">{{ indexed }}</span>
@@ -53,17 +50,17 @@
         <span class="value success">{{ deIndexed }}</span>
       </div>
       <div class="summary-item">
-        <span class="label">Index Failed</span>
+        <span class="label">Failed</span>
         <span class="value failed">{{ indexedFailed }}</span>
       </div>
       <div class="summary-item">
-        <span class="label">Total Queued</span>
+        <span class="label">Queued</span>
         <span class="value">{{ indexedQueued }}</span>
       </div>
     </div>
 
     <!-- BULK BUTTON -->
-    <div style="margin-bottom: 15px;">
+    <div class="bulk-action">
       <button
         class="index-btn"
         :disabled="selectedIds.size === 0"
@@ -415,7 +412,7 @@ const indexSelectedUrls = async () => {
     showCancelButton: true,
     confirmButtonText: "Next",
     cancelButtonText: "Cancel",
-    confirmButtonColor: "#22c55e"
+    confirmButtonColor: "#10b981"
   });
 
   if (!priority && priority !== 0) return; // user cancelled
@@ -429,8 +426,8 @@ const indexSelectedUrls = async () => {
     showDenyButton: true,
     confirmButtonText: "📥 Index",
     denyButtonText: "🗑️ Remove Index",
-    confirmButtonColor: "#22c55e",
-    denyButtonColor: "#ef4444",
+    confirmButtonColor: "#10b981",
+    denyButtonColor: "var(--color-error)",
     cancelButtonText: "Cancel"
   });
 
@@ -481,7 +478,7 @@ const indexSingleUrl = async (id: number) => {
       confirmButtonText: "⚡ Index Now",
       denyButtonText: "⏳ Add to Queue",
       cancelButtonText: "Cancel",
-      confirmButtonColor: "#22c55e",
+      confirmButtonColor: "#10b981",
       denyButtonColor: "#3b82f6"
     });
 
@@ -572,7 +569,7 @@ const removeIndexSingleUrl = async (id: number) => {
       confirmButtonText: "⚡ Deindex Now",
       denyButtonText: "⏳ Queue to Deindex",
       cancelButtonText: "Cancel",
-      confirmButtonColor: "#ef4444",
+      confirmButtonColor: "var(--color-error)",
       denyButtonColor: "#dc2626"
     });
 
@@ -675,20 +672,19 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 
  <style scoped>
 .page-container {
-  flex: 1;
-  padding: 30px;
-  overflow-y: auto;
-  background: #f9f9f9;
+  padding: 0;
+  background: var(--color-bg);
 }
 
 .page-header {
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 }
 
 .back-link {
   display: inline-block;
-  margin-bottom: 15px;
-  color: #22c55e;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--color-accent);
   text-decoration: none;
   font-weight: 500;
   cursor: pointer;
@@ -696,55 +692,60 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 }
 
 .back-link:hover {
-  color: #16a34a;
+  color: var(--color-primary);
 }
 
 .summary-card {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .summary-item {
-  background: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  border: 1px solid #e8e8e8;
+  background: var(--color-card);
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 2px;
+  min-width: 80px;
 }
 
 .summary-item .label {
   font-size: 12px;
-  color: #999;
+  color: var(--color-text-muted);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .summary-item .value {
-  font-size: 24px;
-  color: #333;
+  font-size: 20px;
+  color: var(--color-text);
   font-weight: 700;
 }
 
 .summary-item .value.success {
-  color: #22c55e;
+  color: var(--color-success);
 }
 
 .summary-item .value.failed {
-  color: #ef4444;
+  color: var(--color-error);
 }
 
-/* Table Scroll Wrapper */
+.bulk-action {
+  margin-bottom: 16px;
+}
+
+/* Table Wrapper - single page scroll, horizontal scroll for table */
 .table-scroll {
-  overflow-x: auto; /* horizontal scroll for small screens */
+  overflow-x: auto;
   max-width: 100%;
-  display: block;
-  max-height: calc(20 * 48px); /* 48px per row including padding/border */
-  overflow-y: auto;
+  background: var(--color-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
 }
 
 /* Table Styles */
@@ -757,35 +758,38 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 .urls-table thead {
   position: sticky;
   top: 0;
-  background: #f5f5f5;
-  border-bottom: 1px solid #e8e8e8;
+  background: var(--color-slate-800);
   z-index: 1;
 }
 
 .urls-table th {
-  padding: 15px;
+  padding: 10px 12px;
   text-align: left;
   font-weight: 600;
-  font-size: 13px;
-  color: #666;
+  font-size: 11px;
+  color: var(--color-sidebar-text);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .urls-table td {
   padding: 8px 12px;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 14px;
-  color: #333;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 13px;
+  color: var(--color-text);
   vertical-align: middle;
 }
 
+.urls-table tbody tr:nth-child(even) {
+  background: var(--color-slate-50);
+}
+
 .urls-table tbody tr.success {
-  background: #fafafa;
+  background: rgba(16, 185, 129, 0.04);
 }
 
 .urls-table tbody tr.failed {
-  background: #fef2f2;
+  background: rgba(239, 68, 68, 0.04);
 }
 
 .url-cell a {
@@ -806,19 +810,19 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 }
 
 .status-badge.success {
-  background: #e8f5e9;
-  color: #22c55e;
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--color-success);
 }
 
 .status-badge.failed {
-  background: #fef2f2;
-  color: #ef4444;
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--color-error);
 }
 
 /* Buttons */
 .index-btn {
   padding: 8px 14px;
-  background: #22c55e;
+  background: var(--color-success);
   color: #fff;
   border-radius: 6px;
   border: none;
@@ -831,24 +835,24 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 }
 
 .row-index-btn {
-  padding: 6px 12px;
-  font-size: 13px;
-  border-radius: 4px;
-  min-width: 60px;
+  padding: 5px 10px;
+  font-size: 12px;
+  border-radius: var(--radius-sm);
+  min-width: 56px;
   text-align: center;
   border: none;
   cursor: pointer;
   color: #fff;
   margin: 2px;
-  background-color: rgb(126 134 175);
+  background: var(--color-accent);
 }
 
 .row-index-btn.view {
-  background-color: #1cb397;
+  background: var(--color-success);
 }
 
 .row-index-btn.failed {
-  background-color: #f44336;
+  background: var(--color-error);
 }
 
 .urls-table .action-cell {
@@ -869,7 +873,7 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 }
 
 .site-type-chip {
-  background: #22c55e;
+  background: var(--color-success);
   color: white;
   padding: 3px 10px;
   border-radius: 12px;
@@ -878,12 +882,12 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 }
 
 .site-name {
-  color: black;
+  color: var(--color-text);
   font-weight: 600;
 }
 
 .site-url {
-  color: black;
+  color: var(--color-accent);
   text-decoration: none;
   font-weight: 500;
 }
@@ -894,14 +898,14 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 
 /* Schedule Alert */
 .schedule-alert-orange {
-  background: #fff7ed;
-  border: 1px solid #f97316;
-  color: #f97316;
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: 14px;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid var(--color-warning);
+  color: var(--color-warning-hover);
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
   font-weight: 500;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -912,9 +916,9 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  background: #f9f9f9;
-  border-top: 1px solid #e8e8e8;
+  padding: 10px 16px;
+  background: var(--color-slate-50);
+  border-top: 1px solid var(--color-border);
   flex-wrap: wrap;
   gap: 10px;
 }
@@ -923,15 +927,15 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 14px;
-  color: #555;
+  font-size: 13px;
+  color: var(--color-text-secondary);
 }
 
 .page-size-wrapper select {
   padding: 6px 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  background: #fff;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
   cursor: pointer;
 }
 
@@ -943,24 +947,24 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 
 .pagination-info {
   font-size: 14px;
-  color: #666;
+  color: var(--color-text-secondary);
   font-weight: 500;
 }
 
 .pagination-btn {
   padding: 6px 14px;
-  background: #f5f5f5;
-  border: 1px solid #e8e8e8;
+  background: var(--color-slate-50);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
-  color: #666;
+  color: var(--color-text-secondary);
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .pagination-btn:hover:not(:disabled) {
-  background: #22c55e;
-  border-color: #22c55e;
+  background: var(--color-success);
+  border-color: var(--color-success);
   color: #fff;
 }
 
@@ -1037,15 +1041,12 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 }
 
 .table-footer {
-  position: sticky;
-  bottom: 0; /* stick to bottom */
-  background: #f5f5f5;
-  border-top: 1px solid #e8e8e8;
-  z-index: 2; /* higher than table rows */
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  padding: 10px 16px;
+  background: var(--color-slate-50);
+  border-top: 1px solid var(--color-border);
 }
 
 /* Logs Modal */
@@ -1061,12 +1062,13 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 
 .modal {
   position: relative;
-  background: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  width: 500px;
+  background: var(--color-card);
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  width: 480px;
   max-width: 90%;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  box-shadow: var(--box-shadow-hover);
+  border: 1px solid var(--color-border);
 }
 
 .modal-close {
@@ -1079,12 +1081,12 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 .close-icon {
   width: 24px;
   height: 24px;
-  color: #666;
+  color: var(--color-text-secondary);
   transition: color 0.2s;
 }
 
 .close-icon:hover {
-  color: #ef4444;
+  color: var(--color-error);
 }
 
 .logs-table {
@@ -1096,18 +1098,18 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 .logs-table th,
 .logs-table td {
   padding: 8px 12px;
-  border: 1px solid #e8e8e8;
+  border: 1px solid var(--color-border);
   font-size: 13px;
   text-align: left;
 }
 
 .logs-table td.success {
-  color: #22c55e;
+  color: var(--color-success);
   font-weight: 600;
 }
 
 .logs-table td.failed {
-  color: #ef4444;
+  color: var(--color-error);
   font-weight: 600;
 }
 

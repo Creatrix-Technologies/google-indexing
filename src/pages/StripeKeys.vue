@@ -138,7 +138,7 @@
   
   .subtitle {
     font-size: 14px;
-    color: #666;
+    color: var(--color-text-secondary);
   }
   
   .page-content {

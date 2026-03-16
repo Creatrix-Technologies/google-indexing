@@ -95,12 +95,12 @@
 .profile-details h2 {
   margin: 0;
   font-size: 24px;
-  color: #333;
+  color: var(--color-text);
 }
 
 .profile-title {
   margin: 5px 0 0 0;
-  color: #999;
+  color: var(--color-text-muted);
   font-size: 14px;
 }
 
@@ -112,18 +112,18 @@
   background: white;
   padding: 30px;
   border-radius: 4px;
-  border: 1px solid #e8e8e8;
+  border: 1px solid var(--color-border);
 }
 
 .profile-card h3 {
   margin: 0 0 15px 0;
   font-size: 18px;
-  color: #333;
+  color: var(--color-text);
 }
 
 .profile-card p {
   margin: 0 0 20px 0;
-  color: #666;
+  color: var(--color-text-secondary);
   font-size: 14px;
   line-height: 1.6;
 }
@@ -142,7 +142,7 @@
 
 .info-item label {
   font-size: 12px;
-  color: #999;
+  color: var(--color-text-muted);
   font-weight: 600;
   margin-bottom: 8px;
   letter-spacing: 0.5px;
@@ -150,10 +150,10 @@
 
 .info-item input {
   padding: 10px;
-  border: 1px solid #e8e8e8;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   font-size: 14px;
-  color: #333;
+  color: var(--color-text);
   background: #f9f9f9;
 }
 
