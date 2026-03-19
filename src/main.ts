@@ -30,6 +30,7 @@ import { useMenuStore } from './Store/menu';
 import { buildRoutes } from './Router/dynamicRoutes';
 
 import HighchartsVue from 'highcharts-vue'
+import { useUserLimitStore } from './Shared/userLimit'
 
 /* ---------------- ROUTES ---------------- */
 
@@ -81,6 +82,10 @@ router.beforeEach(async (to, _, next) => {
     return next();
   }
 
+  const store = useUserLimitStore()
+  
+  await store.checkLimit()
+  
     try {
       await api.get('/auth-check');
       return next();

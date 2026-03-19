@@ -71,7 +71,6 @@
             <th>URL</th>
             <th>Type</th>
             <th>Status / Progress</th>
-            <th>Indexable</th>
             <th>Crawl Date</th>
             <th>Actions</th>
           </tr>
@@ -128,14 +127,14 @@
                     class="status-badge"
                     :class="getStatusClass(site.crawlStatus)"
                   >
-                    {{ site.crawlStatus || 'Queue' }}
+                    {{ site.crawlStatus }} 
                   </span>
+                  {{ site.crawlFailedReason ? `- ${site.crawlFailedReason}` : '' }}
                 </span>
 
               </div>
             </td>
 
-            <td>{{ site.isIndexable }}</td>
             <td>{{ formatCrawlDate(site.crawlDate) }}</td>
 
             <td class="action-cell">
@@ -192,6 +191,7 @@ interface Site {
   crawlStatus?: 'Success' | 'Failed' | 'Queue' | 'In Progress'
   crawlDate?: Date
   isIndexable: 'Yes' | 'No'
+  crawlFailedReason:string
 }
 
 interface StatusProgress {
@@ -322,6 +322,7 @@ const fetchCrawlSites = async () => {
         status: 'Active',
         crawlStatus: item.crawlStatus,
         isIndexable: item.isIndexable ? 'Yes' : 'No',
+        crawlFailedReason: item.crawlFailedReason || '',
         crawlDate: item.crawlCompletedDate
           ? new Date(item.crawlCompletedDate)
           : undefined

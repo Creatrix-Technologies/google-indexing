@@ -19,13 +19,26 @@
       </div>
     </div>
 
-    <!-- SCHEDULE ALERT -->
-    <div
-      v-if="siteInfo && siteInfo.scheduleMessage && siteInfo.scheduleMessage.trim() !== ''"
-      class="schedule-alert-orange"
-    >
-      ⏰ {{ siteInfo.scheduleMessage }} 
+    <div class="alert-grid">
+  <!-- QUOTA ALERT -->
+  <div v-if="isQuotaExceeded" class="alert-box quota">
+    <div class="alert-title">⚠️ Quota Limit</div>
+    <div class="alert-text">
+      Quota exceeded. Resets daily at midnight (Pacific Time).
     </div>
+  </div>
+
+  <!-- SCHEDULE ALERT -->
+  <div
+    v-if="siteInfo && siteInfo.scheduleMessage && siteInfo.scheduleMessage.trim() !== ''"
+    class="alert-box schedule"
+  >
+    <div class="alert-title">⏰ Queue Schedule</div>
+    <div class="alert-text">
+      {{ siteInfo.scheduleMessage }}
+    </div>
+  </div>
+</div>
 
     <!-- SUMMARY -->
     <div class="summary-card">
@@ -249,6 +262,22 @@ import Swal from "sweetalert2"
 import Loading from "vue-loading-overlay"
 import 'vue-loading-overlay/dist/css/index.css'
 
+const isQuotaExceeded = ref(false)
+
+const fetchIndexLimit = async () => {
+  try {
+    const res = await api.get(`/crawl/index-limit`)
+
+    if (res?.data?.isSuccess) {
+      isQuotaExceeded.value = res.data.data === true
+    } else {
+      isQuotaExceeded.value = false
+    }
+  } catch (err) {
+    console.error("Index limit error:", err)
+    isQuotaExceeded.value = false
+  }
+}
 
 const showLogsModal = ref(false); // controls modal visibility
 const logs = ref<any[]>([]); // store logs
@@ -668,6 +697,7 @@ const previousPage = () => pageInfo.value.hasPreviousPage && pageInfo.value.page
 onMounted(() => {
   fetchCrawlDetails()
   fetchCrawlCounts()
+  fetchIndexLimit()   
 })
 
 watch(() => pageInfo.value.page, fetchCrawlDetails)
@@ -1156,6 +1186,46 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 .modal-leave-to {
   opacity: 0;
   transform: translateY(-20px) scale(0.9);
+}
+
+.alert-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.alert-box {
+  padding: 14px 18px;
+  border-radius: 8px;
+  border: 1px solid;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Quota - warning style */
+.alert-box.quota {
+  background: #fff7ed;
+  border-color: #f97316;
+  color: #ea580c;
+}
+
+/* Schedule - info style */
+.alert-box.schedule {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+}
+
+.alert-title {
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.alert-text {
+  font-size: 14px;
 }
  </style>
   
