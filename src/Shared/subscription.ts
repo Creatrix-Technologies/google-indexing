@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 import api from '../api'
+import { useUserLimitStore } from '../Shared/userLimit'
+
 
 export const useSubscriptionStore = defineStore('subscription', {
   state: () => ({
@@ -20,6 +22,11 @@ export const useSubscriptionStore = defineStore('subscription', {
 
         this.isValid = data?.isValid === true
         this.expiresAt = data?.expiresAt || null
+
+          const store = useUserLimitStore()
+          
+          await store.checkLimit()
+
       } catch (err) {
         this.isValid = false
         this.expiresAt = null
