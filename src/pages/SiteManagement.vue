@@ -5,7 +5,8 @@
         <h1>Site Management</h1>
         <p class="subtitle">Manage and configure your sites</p>
       </div>
-      <button class="btn-primary" @click="openAddModal">+ Add Site</button>
+      
+      <button v-if="googleConfigStore.isValid" class="btn-primary" @click="openAddModal">+ Add Site</button>
     </div>
 
     <!-- Site List Table -->
