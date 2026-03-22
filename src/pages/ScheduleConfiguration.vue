@@ -311,7 +311,8 @@ const openEdit = (item: Schedule) => {
 const saveSchedule = async () => {
   if (!editingId.value) return
 
-  const now = new Date();
+  try{
+    const now = new Date();
   const utcDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
   const dateOnlyUtc = utcDate.toISOString().split('T')[0]; // "yyyy-MM-dd" in UTC
 
@@ -328,6 +329,16 @@ const saveSchedule = async () => {
   toast.success('Schedule updated')
   showModal.value = false
   fetchSchedules()
+  }
+  catch (err: any) {
+  const message = err?.response?.data?.error?.description
+
+  if (message?.includes('being processed')) {
+    toast.error(message)
+  } else {
+    toast.error('Failed to update schedule')
+  }
+}
 }
 
 const closeModal = () => (showModal.value = false)
