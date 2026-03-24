@@ -40,6 +40,8 @@
   </div>
 </div>
 
+
+
     <!-- SUMMARY -->
     <div class="summary-card">
       <div class="summary-item">
@@ -75,6 +77,29 @@
       </div>
     </div>
 
+    <!-- GOOGLE SYNC BUTTON -->
+    <div class="top-action-bar">
+  <button class="sync-btn" @click="startGoogleSync" :disabled="isSyncing">
+    🔄 Google Sync
+  </button>
+</div>
+
+<!-- SYNC PROGRESS -->
+<div v-if="isSyncing" class="sync-progress-card">
+  <div class="sync-header">
+    <span>🔄 Syncing with Google...</span>
+    <span>{{ syncCompleted }} / {{ syncTotal }}</span>
+  </div>
+
+  <div class="progress-bar">
+    <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
+  </div>
+
+  <div class="sync-stats">
+    <span class="success">✔ {{ syncCompleted }}</span>
+    <span class="failed">✖ {{ syncFailed }}</span>
+  </div>
+</div>
     <!-- BULK BUTTON -->
     <div style="margin-bottom: 15px;">
       <button
@@ -85,6 +110,7 @@
         Queue Selected URLs ({{ selectedIds.size }})
       </button>
     </div>
+
 
     <!-- TABLE -->
 
@@ -227,6 +253,7 @@
             <tr>
               <th>Type</th>
               <th>Status</th>
+              <th>Message</th>
               <th>Date</th>
             </tr>
           </thead>
@@ -237,6 +264,7 @@
               <td :class="log.status === 'Success' ? 'success' : 'failed'">
                 {{ log.status }}
               </td>
+              <td>{{ log.message }}</td>
               <td>{{ new Date(log.date).toLocaleDateString() }}</td>
             </tr>
           </tbody>
@@ -262,6 +290,98 @@ import Swal from "sweetalert2"
 import Loading from "vue-loading-overlay"
 import 'vue-loading-overlay/dist/css/index.css'
 
+///google sync
+
+// SYNC STATE
+const isSyncing = ref(false)
+const syncTotal = ref(0)
+const syncCompleted = ref(0)
+const syncFailed = ref(0)
+let eventSource: EventSource|null = null
+
+const progressPercent = computed(() => 
+  syncTotal.value === 0 ? 0 : Math.round((syncCompleted.value / syncTotal.value) * 100)
+)
+
+// START SYNC
+const startGoogleSync = async () => {
+  if (isSyncing.value) return
+
+  const confirm = await Swal.fire({
+  title: 'Confirm Google Sync',
+  text: 'This will start the process.',
+  icon: 'warning',
+  showCancelButton: true,
+  confirmButtonText: 'Yes',
+  cancelButtonText: 'Cancel',
+  confirmButtonColor: '#22c55e',
+  reverseButtons: true // optional: swaps positions of confirm and cancel buttons for UX
+});
+
+  if (!confirm.isConfirmed) return
+
+  isSyncing.value = true
+  syncTotal.value = 0
+  syncCompleted.value = 0
+  syncFailed.value = 0
+
+  // 🔥 START SSE FIRST (no waiting)
+  connectSSE()
+
+  try {
+    await api.post(`/crawl/sync-url-to-google?websiteId=${siteId}`)
+  } catch (err) {
+    console.error(err)
+
+    isSyncing.value = false
+    eventSource?.close()
+    eventSource = null
+
+    Swal.fire("Error", "Failed to start sync", "error")
+  }
+}
+
+const connectSSE = () => {
+  if (eventSource) return // ✅ prevent duplicate connections
+
+  eventSource = new EventSource(
+    `${import.meta.env.VITE_API_BASE_URL}/crawl/get-sync-url-to-google/${siteId}`
+  )
+
+  eventSource.onmessage = (event) => {
+    if (!event.data) return
+
+    const data = JSON.parse(event.data)
+
+    syncTotal.value = data.Total ?? syncTotal.value
+    syncCompleted.value = data.Completed ?? syncCompleted.value
+    syncFailed.value = data.Failed ?? syncFailed.value
+
+    // optional: mark syncing if we get any progress
+    if (!isSyncing.value) isSyncing.value = true
+
+    if (data.status === "completed") {
+      isSyncing.value = false
+
+      eventSource?.close()
+      eventSource = null
+
+      fetchCrawlDetails()
+      fetchCrawlCounts()
+    }
+  }
+
+  eventSource.onerror = () => {
+    eventSource?.close()
+    eventSource = null
+
+    // 🔁 optional auto-reconnect (only if still syncing)
+    if (isSyncing.value) {
+      setTimeout(connectSSE, 3000)
+    }
+  }
+}
+///google sync
 const isQuotaExceeded = ref(false)
 
 const fetchIndexLimit = async () => {
@@ -584,6 +704,8 @@ const indexSingleUrl = async (id: number) => {
     const msg = err?.response?.data?.error?.description || "You are not authorized to perform indexing.";
     Swal.fire("Failed", msg, "error");
     isLoading.value = false;
+     fetchCrawlDetails();
+    fetchCrawlCounts();
   }
 };
 
@@ -697,7 +819,13 @@ const previousPage = () => pageInfo.value.hasPreviousPage && pageInfo.value.page
 onMounted(() => {
   fetchCrawlDetails()
   fetchCrawlCounts()
-  fetchIndexLimit()   
+  fetchIndexLimit()  
+  connectSSE()
+ 
+  // if (counts.value.isSyncing) {
+  //   isSyncing.value = true
+  //   connectSSE()
+  // }
 })
 
 watch(() => pageInfo.value.page, fetchCrawlDetails)
@@ -1227,5 +1355,18 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 .alert-text {
   font-size: 14px;
 }
+
+.top-action-bar { display:flex; justify-content:flex-end; margin-bottom:15px; }
+.sync-btn { background:#1cb397; color:#fff; padding:10px 18px; border-radius:8px; border:none; font-weight:600; cursor:pointer; transition:all 0.2s ease; }
+.sync-btn:hover { background:#1d4ed8; }
+.sync-btn:disabled { opacity:0.6; cursor:not-allowed; }
+
+.sync-progress-card { background:#fff; border:1px solid #e8e8e8; border-left:4px solid #2563eb; border-radius:10px; padding:16px; margin-bottom:20px; }
+.sync-header { display:flex; justify-content:space-between; font-weight:600; margin-bottom:10px; }
+.progress-bar { width:100%; height:10px; background:#e5e7eb; border-radius:6px; overflow:hidden; }
+.progress-fill { height:100%; background:#2563eb; transition:width 0.3s ease; }
+.sync-stats { display:flex; gap:15px; margin-top:10px; font-size:14px; }
+.sync-stats .success { color:#22c55e; font-weight:600; }
+.sync-stats .failed { color:#ef4444; font-weight:600; }
  </style>
   

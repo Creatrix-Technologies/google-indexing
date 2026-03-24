@@ -67,7 +67,7 @@
         <thead>
           <tr>
             <th></th>
-            <th>Site Name</th>
+            <!-- <th>Site Name</th> -->
             <th>URL</th>
             <th>Type</th>
             <th>Status / Progress</th>
@@ -90,12 +90,12 @@
               />
             </td>
 
-            <td class="site-name-cell">
+            <!-- <td class="site-name-cell">
               <div class="site-icon">
                 {{ site.name.charAt(0).toUpperCase() }}
               </div>
               {{ site.name }}
-            </td>
+            </td> -->
 
             <td>{{ site.url }}</td>
             <td>{{ site.type }}</td>
@@ -365,8 +365,12 @@ const startCrawl = async (id: number) => {
       const site = allSites.value.find(s => s.id === id)
     if (site) {
       site.crawlStatus = 'Queue'
+
+      listenToCrawlProgress(site.id)
     }
       toast.success(res.data.message)
+
+
     }
   } catch (err) {
     handleAuthError(err)
@@ -381,7 +385,7 @@ const listenToCrawlProgress = (siteId: number) => {
   )
   eventSources.set(siteId, source)
 
-  source.onmessage = (e) => {
+  source.onmessage = async (e) => {
     if (!e.data) return
 
     const data = JSON.parse(e.data)
@@ -391,6 +395,9 @@ const listenToCrawlProgress = (siteId: number) => {
       source.close()
       eventSources.delete(siteId)
       fetchStats()
+    }
+    if (data.status === 'completed') {
+     await fetchCrawlSites()
     }
   }
 

@@ -81,7 +81,7 @@
 
             <!-- Actions -->
             <td class="action-cell">
-              <button class="action-btn" @click="openEdit(item)">Update</button>
+              <button class="action-btn" @click="openEdit(item)">Edit</button>
 
               <button
                 class="action-btn"

@@ -6,7 +6,7 @@
         <p class="subtitle">Manage and configure your sites</p>
       </div>
       
-      <button v-if="googleConfigStore.isValid" class="btn-primary" @click="openAddModal">+ Add Site</button>
+      <!-- <button v-if="googleConfigStore.isValid" class="btn-primary" @click="openAddModal">+ Add Site</button> -->
     </div>
 
     <!-- Site List Table -->
@@ -14,7 +14,7 @@
       <table class="sites-table">
         <thead>
           <tr>
-            <th>Site Name</th>
+            <!-- <th>Site Name</th> -->
             <th>URL</th>
             <th>Type</th>
             <th>Status</th>
@@ -26,10 +26,10 @@
 
         <tbody>
           <tr v-for="site in sites" :key="site.id">
-            <td class="site-name-cell">
+            <!-- <td class="site-name-cell">
               <div class="site-icon">{{ site.name.charAt(0).toUpperCase() }}</div>
               <span>{{ site.name }}</span>
-            </td>
+            </td> -->
 
             <td>{{ site.url }}</td>
             <td>{{ site.type }}</td>
@@ -240,20 +240,20 @@ const saveSite = async () => {
   }
 }
 
-const openAddModal = async () => {
-  isEditing.value = false
-  editingId.value = null
-  formData.value = {
-    name: '',
-    url: '',
-    type: '',
-    activeStatus: 'Active',
-    description: '',
-    ignoreRobotTxt: false
-  }
-  showModal.value = true
-  fetchAvailableUrls()
-}
+// const openAddModal = async () => {
+//   isEditing.value = false
+//   editingId.value = null
+//   formData.value = {
+//     name: '',
+//     url: '',
+//     type: '',
+//     activeStatus: 'Active',
+//     description: '',
+//     ignoreRobotTxt: false
+//   }
+//   showModal.value = true
+//   fetchAvailableUrls()
+// }
 
 const editSite = async (site: Site) => {
   isEditing.value = true
