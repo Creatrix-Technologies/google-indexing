@@ -38,9 +38,24 @@
             </div>
   
             <div class="form-group">
-              <label>Client Secret</label>
-              <input type="text" v-model="keys.clientSecret" />
-            </div>
+  <label>Client Secret</label>
+
+  <div class="password-wrapper">
+    <input
+      v-model="keys.clientSecret"
+      :type="showClientSecret ? 'text' : 'password'"
+      placeholder="Enter client secret"
+    />
+
+    <button
+      type="button"
+      class="toggle-password"
+      @click="showClientSecret = !showClientSecret"
+    >
+      {{ showClientSecret ? 'Hide' : 'Show' }}
+    </button>
+  </div>
+</div>
   
             <div class="form-group">
               <label>Redirect URI</label>
@@ -65,7 +80,7 @@
   import { reactive, ref, onMounted } from 'vue'
   import api from '../api'
   import { useToast } from 'vue-toastification'
-  
+  const showClientSecret = ref(false)
   const toast = useToast()
   const loading = ref(false)
   
@@ -208,7 +223,51 @@
   .btn.full {
     width: 100%;
   }
-  
+  /* Input base */
+.form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  transition: 0.2s;
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  border-color: #4c6fff;
+  box-shadow: 0 0 0 2px rgba(76, 111, 255, 0.15);
+}
+
+/* Password wrapper */
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 70px;
+}
+
+/* Toggle button */
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: #4c6fff;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.toggle-password:hover {
+  text-decoration: underline;
+}
   @media (max-width: 1024px) {
     .grid {
       grid-template-columns: 1fr;

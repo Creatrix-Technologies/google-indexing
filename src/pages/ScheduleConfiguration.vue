@@ -311,34 +311,46 @@ const openEdit = (item: Schedule) => {
 const saveSchedule = async () => {
   if (!editingId.value) return
 
-  try{
-    const now = new Date();
-  const utcDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
-  const dateOnlyUtc = utcDate.toISOString().split('T')[0]; // "yyyy-MM-dd" in UTC
+  try {
+    const now = new Date()
+    const utcDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()))
+    const dateOnlyUtc = utcDate.toISOString().split('T')[0] // "yyyy-MM-dd" in UTC
 
-  await api.post('/schedule/update', {
-    websiteId: editingId.value,
-    frequency: Number(formData.value.frequency),
-    startTime: formData.value.startTime,
-    endTime: formData.value.endTime,
-    maxUrls: formData.value.maxUrls,
-    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    date: dateOnlyUtc
-  })
+    const response = await api.post('/schedule/update', {
+      websiteId: editingId.value,
+      frequency: Number(formData.value.frequency),
+      startTime: formData.value.startTime,
+      endTime: formData.value.endTime,
+      maxUrls: formData.value.maxUrls,
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      date: dateOnlyUtc
+    })
 
-  toast.success('Schedule updated')
-  showModal.value = false
-  fetchSchedules()
+    if (response.data?.isSuccess) {
+      toast.success('Schedule updated')
+      showModal.value = false
+      fetchSchedules()
+    } else {
+      // Handle validation errors from API
+      const errors = response.data?.error?.validationErrors
+      if (errors && errors.length) {
+        const cleanErrors = errors.map((e: string) => e.replace(/'/g, ""))        
+        toast.error(cleanErrors.join(', '))
+      } else {
+        const description = response.data?.error?.description?.replace(/'/g, "") || 'Failed to update schedule'
+        toast.error(description)
+      }
+    }
+  } catch (err: any) {
+    // Handle network or unexpected errors
+    const errors = err.response?.data?.error?.validationErrors
+    const description = err.response?.data?.error?.description
+    const msg = errors?.map((e: string) => e.replace(/'/g, "")).join(', ') 
+                || description?.replace(/'/g, "") 
+                || err.message 
+                || 'Failed to update schedule'
+    toast.error(msg)
   }
-  catch (err: any) {
-  const message = err?.response?.data?.error?.description
-
-  if (message?.includes('being processed')) {
-    toast.error(message)
-  } else {
-    toast.error('Failed to update schedule')
-  }
-}
 }
 
 const closeModal = () => (showModal.value = false)

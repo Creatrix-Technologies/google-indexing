@@ -49,6 +49,7 @@
             <input
               type="file"
               class="file-input"
+              ref="fileInput"
               @change="handleFileChange"
             />
 
@@ -124,6 +125,7 @@ import api from '../api'
 import { useToast } from 'vue-toastification'
 import { useGoogleConfigStore } from '../Shared/googleConfig'
 import { useSubscriptionStore } from '../Shared/subscription'
+const fileInput = ref<HTMLInputElement | null>(null)
 
 const googleConfigStore = useGoogleConfigStore()
 const subscriptionStore = useSubscriptionStore()
@@ -167,30 +169,48 @@ const handleFileChange = (e: Event) => {
   }
 };
 
+const clearFile = () => {
+  selectedFile.value = null
+  if (fileInput.value) {
+    fileInput.value.value = ''  // clears the <input type="file">
+  }
+}
 
 const uploadKey = async () => {
   if (!selectedFile.value) {
     toast.error('Please select a JSON file')
     return
   }
+
   loading.value = true
   try {
     const fd = new FormData()
     fd.append('file', selectedFile.value)
-    await api.post('/google-config/upload', fd,{
+
+    const response = await api.post('/google-config/upload', fd, {
       headers: {
-      'Content-Type': 'multipart/form-data'
-    }
+        'Content-Type': 'multipart/form-data'
+      }
     })
+
+    // Check if API explicitly returned an error
+    if (response.data?.isSuccess === false) {
+      toast.error(response.data.error?.description || 'Failed to upload key')
+      return
+    }
+
     toast.success('Key uploaded successfully')
     fetchCredentials()
-
     await googleConfigStore.check()
+    
+  } catch (err: any) {
+    // If request fails (network/server error), show a toast
+    toast.error(err.response?.data?.error?.description || 'An error occurred while uploading')
   } finally {
     loading.value = false
+    clearFile()
   }
 }
-
 const removeCredentials = async () => {
   if (!confirm('Remove credentials?')) return
   loading.value = true
@@ -212,14 +232,36 @@ const removeCredentials = async () => {
 const updateCredentials = async () => {
   loading.value = true
   try {
-    await api.post('/google-config/update', {
+    const response = await api.post('/google-config/update', {
       clientId: credentials.clientId,
       projectId: credentials.projectId,
       clientEmail: credentials.serviceAccountEmail,
       privateKey: credentials.privateKey,
       privateKeyId: credentials.privateKeyId
     })
-    toast.success('Credentials updated')
+
+    if (response.data?.isSuccess) {
+      toast.success('Credentials updated')
+    } else {
+      // Handle validation errors from response
+      const errors = response.data?.error?.validationErrors
+      if (errors && errors.length) {
+        const cleanErrors = errors.map((e: string) => e.replace(/'/g, ""))
+        toast.error(cleanErrors.join(', '))
+      } else {
+        const description = response.data?.error?.description?.replace(/'/g, "") || 'An unknown error occurred'
+        toast.error(description)
+      }
+    }
+  } catch (err: any) {
+    // Network or unexpected errors
+    const errors = err.response?.data?.error?.validationErrors
+    const description = err.response?.data?.error?.description
+    const msg = errors?.map((e: string) => e.replace(/'/g, "")).join(', ') 
+                || description?.replace(/'/g, "") 
+                || err.message 
+                || 'An unexpected error occurred'
+    toast.error(msg)
   } finally {
     loading.value = false
   }

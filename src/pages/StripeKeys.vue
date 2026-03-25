@@ -33,14 +33,44 @@
             <h3>Update Stripe Keys</h3>
   
             <div class="form-group">
-              <label>Secret Key</label>
-              <input type="text" v-model="keys.secretKey" />
-            </div>
+  <label>Secret Key</label>
+
+  <div class="password-wrapper">
+    <input
+      v-model="keys.secretKey"
+      :type="showSecretKey ? 'text' : 'password'"
+      placeholder="Enter secret key"
+    />
+
+    <button
+      type="button"
+      class="toggle-password"
+      @click="showSecretKey = !showSecretKey"
+    >
+      {{ showSecretKey ? 'Hide' : 'Show' }}
+    </button>
+  </div>
+</div>
   
-            <div class="form-group">
-              <label>Webhook Secret</label>
-              <input type="text" v-model="keys.webHookSecret" />
-            </div>
+<div class="form-group">
+  <label>Webhook Secret</label>
+
+  <div class="password-wrapper">
+    <input
+      v-model="keys.webHookSecret"
+      :type="showWebhookSecret ? 'text' : 'password'"
+      placeholder="Enter webhook secret"
+    />
+
+    <button
+      type="button"
+      class="toggle-password"
+      @click="showWebhookSecret = !showWebhookSecret"
+    >
+      {{ showWebhookSecret ? 'Hide' : 'Show' }}
+    </button>
+  </div>
+</div>
   
             <button
               class="btn primary full"
@@ -60,7 +90,8 @@
   import { reactive, ref, onMounted } from 'vue'
   import api from '../api'
   import { useToast } from 'vue-toastification'
-  
+  const showSecretKey = ref(false)
+const showWebhookSecret = ref(false)
   const toast = useToast()
   const loading = ref(false)
   
@@ -207,7 +238,52 @@
   .btn.full {
     width: 100%;
   }
-  
+  /* Input base */
+.form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  transition: 0.2s;
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  border-color: #4c6fff;
+  box-shadow: 0 0 0 2px rgba(76, 111, 255, 0.15);
+}
+
+/* Password wrapper (shared for both fields) */
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+/* Input inside wrapper */
+.password-wrapper input {
+  width: 100%;
+  padding-right: 70px; /* space for button */
+}
+
+/* Show/Hide button */
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: #4c6fff;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.toggle-password:hover {
+  text-decoration: underline;
+}
   /* Responsive */
   @media (max-width: 1024px) {
     .grid {
