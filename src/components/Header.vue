@@ -172,8 +172,11 @@ const formatDate = (dateStr: string | null) => {
   text-decoration: none;
 }
 
-/* Header */
 .header {
+  position: sticky;
+  top: 0;
+  z-index: 1000; /* must be higher than other elements */
+
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -181,6 +184,19 @@ const formatDate = (dateStr: string | null) => {
   background: #ffffff;
   border-bottom: 1px solid #e8e8e8;
   height: 70px;
+}
+
+.google-config-bar {
+  position: sticky;
+  top: 70px; /* same as header height */
+  z-index: 999; /* slightly lower than header */
+}
+
+.main-container,
+.page-container,
+body,
+#app {
+  overflow: hidden;  /* ❌ THIS BREAKS STICKY */
 }
 
 .header-right {
