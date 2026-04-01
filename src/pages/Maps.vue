@@ -20,31 +20,31 @@
 
 <style scoped>
 .page-container {
-  padding: 20px 30px;
+  padding: 0;
   overflow-y: auto;
 }
 
 .maps-card {
   background: white;
-  padding: 30px;
-  border-radius: 4px;
+  padding: 16px 18px;
+  border-radius: 8px;
   border: 1px solid #e8e8e8;
 }
 
 .maps-card h3 {
-  margin: 0 0 10px 0;
-  font-size: 24px;
+  margin: 0 0 6px 0;
+  font-size: 20px;
   color: #333;
 }
 
 .subtitle {
-  margin: 0 0 30px 0;
+  margin: 0 0 16px 0;
   color: #999;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .map-placeholder {
-  height: 500px;
+  height: 420px;
   background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
   border-radius: 4px;
   border: 1px solid #e0e0e0;

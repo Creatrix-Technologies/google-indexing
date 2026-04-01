@@ -285,17 +285,17 @@ onMounted(() => {
 
 /* Header */
 .page-header {
-  padding: 30px;
+  padding: 16px 18px;
   flex-shrink: 0;
 }
 
 .page-header h1 {
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 700;
 }
 
 .subtitle {
-  font-size: 14px;
+  font-size: 13px;
   color: #666;
 }
 
@@ -303,27 +303,27 @@ onMounted(() => {
 .page-content {
   flex: 1;
   overflow-y: auto;
-  padding: 0 30px 30px;
+  padding: 0 18px 18px;
 }
 
 /* Grid */
 .grid {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
-  gap: 24px;
+  gap: 16px;
 }
 
 .column {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
 }
 
 /* Card */
 .card {
   background: #fff;
   border-radius: 8px;
-  padding: 20px;
+  padding: 14px 16px;
   border: 1px solid #e5e7eb;
 }
 

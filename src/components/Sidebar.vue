@@ -32,7 +32,7 @@
                 class="submenu-item"
                 active-class="active-sub"
               >
-                <span class="menu-icon" style="margin-right:10px;">
+                <span class="menu-icon">
                   <i :class="child.icon"></i>
                 </span>
                 <span class="menu-label">{{ child.title }}</span>
@@ -96,86 +96,134 @@ onMounted(() => {
   position: fixed;
   top: 0;
   left: 0;
-  width: 260px;
+  width: fit-content;              /* 🔥 auto expand */
+  min-width: 220px;                /* base width */
+  max-width: 400px;                /* prevent too wide */
   height: 100vh;
-  background: #fff;
-  border-right: 1px solid #e8e8e8;
-  padding: 20px;
+  background: var(--color-card-bg);
+  border-right: 1px solid var(--color-border);
+  padding: var(--space-2);
   transition: width 0.3s ease, transform 0.3s ease;
   overflow-y: auto;
+  overflow-x: auto;                /* 🔥 allow horizontal growth */
   z-index: 1000;
 }
 
 .sidebar.collapsed {
-  width: 72px;
+  width: var(--sidebar-collapsed);
+  overflow-x: hidden;              /* keep collapsed clean */
 }
 
+/* Logo */
 .logo {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 30px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.logo-text {
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
 }
 
 .logo-icon {
-  width: 40px;
-  height: 40px;
-  background: #22c55e;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  font-size: 12px;
+  background: var(--color-accent);
   color: #fff;
-  font-weight: bold;
+  font-weight: 700;
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 
+/* Menu */
 .menu {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .menu-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 8px;
-  color: #666;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  color: var(--color-muted);
   text-decoration: none;
   cursor: pointer;
+  font-size: 13px;
+  gap: 8px;
+  white-space: nowrap;             /* 🔥 prevent wrapping */
 }
 
 .menu-item.active {
-  background: #22c55e;
+  background: var(--color-accent);
   color: #fff;
 }
 
-.menu-item:hover {
-  background: #f5f5f5;
+.menu-item:hover:not(.active) {
+  background: var(--color-placeholder);
+  color: var(--color-text);
 }
 
+.menu-icon {
+  flex-shrink: 0;
+  width: 1.25rem;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.menu-label {
+  white-space: nowrap;             /* 🔥 single line */
+  overflow: visible;               /* 🔥 no hiding */
+  text-overflow: unset;            /* 🔥 no ellipsis */
+}
+
+/* Submenu */
 .submenu {
-  margin-left: 20px;
+  margin-left: 8px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 2px;
 }
 
 .submenu-item {
-  padding: 8px 12px;
-  border-radius: 6px;
-  color: #666;
+  display: flex;
+  align-items: center;
+  padding: 6px var(--space-2);
+  border-radius: var(--radius-sm);
+  color: var(--color-muted);
   text-decoration: none;
+  font-size: 12px;
+  gap: 8px;
+  white-space: nowrap;             /* 🔥 no wrap */
+}
+
+.submenu-item .menu-icon {
+  margin-right: 0;
 }
 
 .submenu-item.active-sub {
   font-weight: 600;
-  color: #16a34a;
+  color: var(--color-accent);
+  background: var(--color-accent-muted);
 }
 
+/* Arrow */
 .arrow {
   margin-left: auto;
+  flex-shrink: 0;
+  font-size: 11px;
+  opacity: 0.75;
   transition: transform 0.2s;
 }
 
@@ -183,13 +231,13 @@ onMounted(() => {
   transform: rotate(180deg);
 }
 
-/* Mobile overlay */
+/* Mobile */
 @media (max-width: 768px) {
   .sidebar {
     transform: translateX(-100%);
-    width: 260px;
-    transition: transform 0.3s ease;
+    width: fit-content;
   }
+
   .sidebar:not(.collapsed) {
     transform: translateX(0);
   }

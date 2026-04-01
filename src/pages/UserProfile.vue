@@ -54,54 +54,54 @@
 
 <style scoped>
 .page-container {
-  padding: 20px 30px;
+  padding: 0;
   overflow-y: auto;
 }
 
 .profile-header {
   background: white;
-  border-radius: 4px;
-  margin-bottom: 20px;
+  border-radius: 8px;
+  margin-bottom: 14px;
   overflow: hidden;
 }
 
 .profile-cover {
-  height: 150px;
+  height: 120px;
   background: linear-gradient(135deg, #51cbce 0%, #3ba8ab 100%);
 }
 
 .profile-info {
   display: flex;
   align-items: flex-end;
-  gap: 20px;
-  padding: 20px;
-  margin-top: -40px;
+  gap: 14px;
+  padding: 14px 16px;
+  margin-top: -32px;
   position: relative;
 }
 
 .profile-avatar {
-  width: 80px;
-  height: 80px;
+  width: 64px;
+  height: 64px;
   background: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 40px;
-  border: 4px solid #f4f4f4;
+  font-size: 28px;
+  border: 3px solid #f4f4f4;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .profile-details h2 {
   margin: 0;
-  font-size: 24px;
+  font-size: 20px;
   color: #333;
 }
 
 .profile-title {
-  margin: 5px 0 0 0;
+  margin: 4px 0 0 0;
   color: #999;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .profile-content {
@@ -110,29 +110,29 @@
 
 .profile-card {
   background: white;
-  padding: 30px;
-  border-radius: 4px;
+  padding: 16px 18px;
+  border-radius: 8px;
   border: 1px solid #e8e8e8;
 }
 
 .profile-card h3 {
-  margin: 0 0 15px 0;
-  font-size: 18px;
+  margin: 0 0 10px 0;
+  font-size: 16px;
   color: #333;
 }
 
 .profile-card p {
-  margin: 0 0 20px 0;
+  margin: 0 0 14px 0;
   color: #666;
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 13px;
+  line-height: 1.55;
 }
 
 .info-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin: 30px 0;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin: 18px 0;
 }
 
 .info-item {
@@ -149,10 +149,10 @@
 }
 
 .info-item input {
-  padding: 10px;
+  padding: 8px 10px;
   border: 1px solid #e8e8e8;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 13px;
   color: #333;
   background: #f9f9f9;
 }
@@ -161,10 +161,10 @@
   background: #51cbce;
   color: white;
   border: none;
-  padding: 12px 30px;
+  padding: 9px 18px;
   border-radius: 4px;
   font-weight: 600;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
 }
 </style>

@@ -64,26 +64,26 @@
 
 <style scoped>
 .page-container {
-  padding: 20px 30px;
+  padding: 0;
   overflow-y: auto;
 }
 
 .typography-card {
   background: white;
-  padding: 30px;
-  border-radius: 4px;
+  padding: 16px 18px;
+  border-radius: 8px;
   border: 1px solid #e8e8e8;
 }
 
 .typography-card > h3 {
-  margin: 0 0 30px 0;
-  font-size: 24px;
+  margin: 0 0 16px 0;
+  font-size: 20px;
   color: #333;
 }
 
 .typography-section {
-  margin-bottom: 40px;
-  padding-bottom: 30px;
+  margin-bottom: 24px;
+  padding-bottom: 18px;
   border-bottom: 1px solid #e8e8e8;
 }
 
@@ -94,8 +94,8 @@
 }
 
 .typography-section h4 {
-  margin: 0 0 15px 0;
-  font-size: 18px;
+  margin: 0 0 10px 0;
+  font-size: 16px;
   color: #666;
   font-weight: 600;
 }
@@ -106,44 +106,44 @@
 .typography-section h4,
 .typography-section h5,
 .typography-section h6 {
-  margin: 15px 0;
+  margin: 10px 0;
   color: #333;
 }
 
 .typography-section h1 {
-  font-size: 32px;
-}
-
-.typography-section h2 {
   font-size: 28px;
 }
 
-.typography-section h3 {
+.typography-section h2 {
   font-size: 24px;
 }
 
-.typography-section h4 {
+.typography-section h3 {
   font-size: 20px;
 }
 
+.typography-section h4 {
+  font-size: 17px;
+}
+
 .typography-section h5 {
-  font-size: 18px;
+  font-size: 15px;
 }
 
 .typography-section h6 {
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .typography-section p {
-  margin: 10px 0;
+  margin: 8px 0;
   color: #666;
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 13px;
+  line-height: 1.55;
 }
 
 blockquote {
-  margin: 20px 0;
-  padding: 20px;
+  margin: 14px 0;
+  padding: 12px 14px;
   background: #f9f9f9;
   border-left: 4px solid #51cbce;
   color: #666;
@@ -157,7 +157,7 @@ blockquote p {
 .lists-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 30px;
+  gap: 18px;
 }
 
 ul, ol {

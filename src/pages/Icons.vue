@@ -27,33 +27,33 @@ const icons = ref([
 
 <style scoped>
 .page-container {
-  padding: 20px 30px;
+  padding: 0;
   overflow-y: auto;
 }
 
 .icons-card {
   background: white;
-  padding: 30px;
-  border-radius: 4px;
+  padding: 16px 18px;
+  border-radius: 8px;
   border: 1px solid #e8e8e8;
 }
 
 .icons-card h3 {
-  margin: 0 0 10px 0;
-  font-size: 24px;
+  margin: 0 0 6px 0;
+  font-size: 20px;
   color: #333;
 }
 
 .subtitle {
-  margin: 0 0 30px 0;
+  margin: 0 0 16px 0;
   color: #999;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .icons-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  gap: 10px;
 }
 
 .icon-item {
@@ -61,7 +61,7 @@ const icons = ref([
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 12px 10px;
   background: #f9f9f9;
   border-radius: 4px;
   border: 1px solid #e8e8e8;
@@ -76,8 +76,8 @@ const icons = ref([
 }
 
 .icon {
-  font-size: 32px;
-  margin-bottom: 10px;
+  font-size: 26px;
+  margin-bottom: 6px;
 }
 
 .icon-name {

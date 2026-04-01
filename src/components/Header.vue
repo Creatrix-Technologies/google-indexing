@@ -142,54 +142,53 @@ const formatDate = (dateStr: string | null) => {
 .trial-badge {
   background: linear-gradient(135deg, #3b82f6, #06b6d4);
   color: #ffffff;
-  padding: 5px 10px;
+  padding: 3px 8px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
 }
 
 /* Google Config Warning */
 .google-config-bar {
   position: sticky;
-  top: 70px;
+  top: var(--header-height, 52px);
+  z-index: 999;
   background: #fef3c7;
   color: #92400e;
-  padding: 10px 30px;
+  padding: 6px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   border-bottom: 1px solid #fde68a;
+  gap: 12px;
 }
 
 .config-link {
   background: #f59e0b;
   color: #ffffff;
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: 4px 10px;
+  border-radius: 5px;
   font-weight: 600;
+  font-size: 12px;
   text-decoration: none;
+  flex-shrink: 0;
 }
 
 .header {
   position: sticky;
   top: 0;
-  z-index: 1000; /* must be higher than other elements */
+  z-index: 1000; /* below modals (theme --z-modal-backdrop) */
 
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 30px;
-  background: #ffffff;
-  border-bottom: 1px solid #e8e8e8;
-  height: 70px;
-}
-
-.google-config-bar {
-  position: sticky;
-  top: 70px; /* same as header height */
-  z-index: 999; /* slightly lower than header */
+  padding: 6px 14px;
+  background: var(--color-card-bg);
+  border-bottom: 1px solid var(--color-border);
+  min-height: var(--header-height);
+  box-sizing: border-box;
 }
 
 .main-container,
@@ -202,19 +201,19 @@ body,
 .header-right {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 12px;
 }
 
 .profile-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 /* Subscription */
 .subscription-wrapper {
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: #f9fafb;
   display: flex;
@@ -223,8 +222,8 @@ body,
 }
 
 .subscription-icon {
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
 }
 
 .subscription-icon.valid {
@@ -237,8 +236,8 @@ body,
 
 /* User */
 .user-avatar {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   background: #22c55e;
   border-radius: 50%;
   display: flex;
@@ -246,13 +245,17 @@ body,
   justify-content: center;
   color: #ffffff;
   font-weight: 600;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .user-name {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
-  color: #333;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
 }
 
 .logout-btn {
@@ -262,8 +265,8 @@ body,
 }
 
 .icon-logout {
-  width: 18px;
-  height: 18px;
+  width: 17px;
+  height: 17px;
   stroke: #333;
 }
 

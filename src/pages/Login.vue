@@ -141,31 +141,32 @@ const handleGoogleLogin = () => {
 
 .login-card {
   background: white;
-  width: 380px;
-  padding: 35px;
-  border-radius: 12px;
-  box-shadow: 0px 3px 18px rgba(0, 0, 0, 0.08);
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  padding: 26px 28px;
+  border-radius: 10px;
+  box-shadow: 0px 2px 14px rgba(0, 0, 0, 0.07);
   text-align: center;
 }
 
 /* ---------- Titles ---------- */
 .title {
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 700;
   color: #333;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .subtitle {
-  font-size: 14px;
+  font-size: 13px;
   color: #777;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
 /* ---------- Form Fields ---------- */
 .form-group {
   text-align: left;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 .form-group label {
@@ -177,10 +178,10 @@ const handleGoogleLogin = () => {
 
 .form-group input {
   width: 100%;
-  padding: 10px 12px;
+  padding: 8px 11px;
   border: 1px solid #dedede;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 13px;
   outline: none;
   transition: 0.2s;
 }
@@ -219,15 +220,15 @@ const handleGoogleLogin = () => {
 /* ---------- Buttons ---------- */
 .btn-primary {
   width: 100%;
-  padding: 10px;
+  padding: 9px;
   background: #4c6fff;
   border: none;
   color: white;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   border-radius: 6px;
   cursor: pointer;
-  margin-top: 5px;
+  margin-top: 4px;
   transition: 0.2s;
 }
 
@@ -237,7 +238,7 @@ const handleGoogleLogin = () => {
 
 /* ---------- Divider ---------- */
 .divider {
-  margin: 20px 0;
+  margin: 16px 0;
   display: flex;
   align-items: center;
   text-align: center;

@@ -159,37 +159,37 @@ const showWebhookSecret = ref(false)
   }
   
   .page-header {
-    padding: 30px;
+    padding: 16px 18px;
   }
   
   .page-header h1 {
-    font-size: 28px;
+    font-size: 22px;
     font-weight: 700;
   }
   
   .subtitle {
-    font-size: 14px;
+    font-size: 13px;
     color: #666;
   }
   
   .page-content {
     flex: 1;
     overflow-y: auto;
-    padding: 0 30px 30px;
+    padding: 0 18px 18px;
   }
   
   /* Grid */
   .grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 24px;
+    gap: 16px;
   }
   
   /* Card */
   .card {
     background: #fff;
     border-radius: 8px;
-    padding: 20px;
+    padding: 14px 16px;
     border: 1px solid #e5e7eb;
   }
   
@@ -224,10 +224,11 @@ const showWebhookSecret = ref(false)
   
   /* Button */
   .btn {
-    padding: 10px;
+    padding: 8px 12px;
     border-radius: 6px;
     border: none;
     cursor: pointer;
+    font-size: 13px;
   }
   
   .btn.primary {
@@ -241,10 +242,10 @@ const showWebhookSecret = ref(false)
   /* Input base */
 .form-group input {
   width: 100%;
-  padding: 10px 12px;
+  padding: 8px 10px;
   border: 1px solid #d1d5db;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 13px;
   outline: none;
   transition: 0.2s;
   box-sizing: border-box;

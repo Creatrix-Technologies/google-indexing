@@ -234,11 +234,11 @@
     <transition name="overlay">
   <div
     v-if="showLogsModal"
-    class="modal-overlay"
+    class="modal-backdrop"
     @click.self="showLogsModal = false"
   >
     <transition name="modal">
-      <div class="modal">
+      <div class="modal-box modal-box--logs">
         <!-- Close icon -->
         <span class="modal-close" @click="showLogsModal = false">
           <svg xmlns="http://www.w3.org/2000/svg" class="close-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -314,8 +314,8 @@ const startGoogleSync = async () => {
   showCancelButton: true,
   confirmButtonText: 'Yes',
   cancelButtonText: 'Cancel',
-  confirmButtonColor: '#22c55e',
-  reverseButtons: true // optional: swaps positions of confirm and cancel buttons for UX
+  confirmButtonColor: '#22c55e'
+  // remove reverseButtons
 });
 
   if (!confirm.isConfirmed) return
@@ -834,18 +834,18 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
  <style scoped>
 .page-container {
   flex: 1;
-  padding: 30px;
+  padding: 16px;
   overflow-y: auto;
   background: #f9f9f9;
 }
 
 .page-header {
-  margin-bottom: 30px;
+  margin-bottom: 16px;
 }
 
 .back-link {
   display: inline-block;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
   color: #22c55e;
   text-decoration: none;
   font-weight: 500;
@@ -859,14 +859,14 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 
 .summary-card {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .summary-item {
   background: #fff;
-  padding: 20px;
+  padding: 14px 16px;
   border-radius: 8px;
   border: 1px solid #e8e8e8;
   display: flex;
@@ -883,7 +883,7 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 }
 
 .summary-item .value {
-  font-size: 24px;
+  font-size: 20px;
   color: #333;
   font-weight: 700;
 }
@@ -901,7 +901,7 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   overflow-x: auto; /* horizontal scroll for small screens */
   max-width: 100%;
   display: block;
-  max-height: calc(20 * 48px); /* 48px per row including padding/border */
+  max-height: calc(20 * 42px);
   overflow-y: auto;
 }
 
@@ -921,19 +921,19 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 }
 
 .urls-table th {
-  padding: 15px;
+  padding: 10px 12px;
   text-align: left;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 12px;
   color: #666;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .urls-table td {
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-bottom: 1px solid #f0f0f0;
-  font-size: 14px;
+  font-size: 13px;
   color: #333;
   vertical-align: middle;
 }
@@ -1010,17 +1010,17 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 }
 
 .urls-table .action-cell {
-  gap: 8px;
+  gap: 6px;
   justify-content: center;
   align-items: center;
-  min-height: 40px;
+  min-height: 36px;
   white-space: nowrap;
 }
 
 /* Site Info */
 .site-info {
-  margin-top: 6px;
-  font-size: 14px;
+  margin-top: 4px;
+  font-size: 13px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -1055,11 +1055,11 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   background: #fff7ed;
   border: 1px solid #f97316;
   color: #f97316;
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 13px;
   font-weight: 500;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -1070,18 +1070,18 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  padding: 10px 12px;
   background: #f9f9f9;
   border-top: 1px solid #e8e8e8;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
 .page-size-wrapper {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 14px;
+  font-size: 13px;
   color: #555;
 }
 
@@ -1096,22 +1096,22 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 .pagination-wrapper {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .pagination-info {
-  font-size: 14px;
+  font-size: 13px;
   color: #666;
   font-weight: 500;
 }
 
 .pagination-btn {
-  padding: 6px 14px;
+  padding: 5px 10px;
   background: #f5f5f5;
   border: 1px solid #e8e8e8;
   border-radius: 6px;
   color: #666;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -1203,30 +1203,10 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  padding: 10px 12px;
 }
 
-/* Logs Modal */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal {
-  position: relative;
-  background: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  width: 500px;
-  max-width: 90%;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-}
-
+/* Logs Modal — backdrop/box from theme.css */
 .modal-close {
   position: absolute;
   top: 12px;
@@ -1319,12 +1299,12 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 .alert-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
 .alert-box {
-  padding: 14px 18px;
+  padding: 10px 14px;
   border-radius: 8px;
   border: 1px solid;
   display: flex;
@@ -1353,19 +1333,19 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 }
 
 .alert-text {
-  font-size: 14px;
+  font-size: 13px;
 }
 
-.top-action-bar { display:flex; justify-content:flex-end; margin-bottom:15px; }
-.sync-btn { background:#1cb397; color:#fff; padding:10px 18px; border-radius:8px; border:none; font-weight:600; cursor:pointer; transition:all 0.2s ease; }
+.top-action-bar { display:flex; justify-content:flex-end; margin-bottom:12px; }
+.sync-btn { background:#1cb397; color:#fff; padding:8px 14px; border-radius:6px; border:none; font-weight:600; font-size:13px; cursor:pointer; transition:all 0.2s ease; }
 .sync-btn:hover { background:#1d4ed8; }
 .sync-btn:disabled { opacity:0.6; cursor:not-allowed; }
 
-.sync-progress-card { background:#fff; border:1px solid #e8e8e8; border-left:4px solid #2563eb; border-radius:10px; padding:16px; margin-bottom:20px; }
-.sync-header { display:flex; justify-content:space-between; font-weight:600; margin-bottom:10px; }
-.progress-bar { width:100%; height:10px; background:#e5e7eb; border-radius:6px; overflow:hidden; }
+.sync-progress-card { background:#fff; border:1px solid #e8e8e8; border-left:4px solid #2563eb; border-radius:8px; padding:12px 14px; margin-bottom:14px; }
+.sync-header { display:flex; justify-content:space-between; font-weight:600; margin-bottom:8px; font-size:13px; }
+.progress-bar { width:100%; height:8px; background:#e5e7eb; border-radius:6px; overflow:hidden; }
 .progress-fill { height:100%; background:#2563eb; transition:width 0.3s ease; }
-.sync-stats { display:flex; gap:15px; margin-top:10px; font-size:14px; }
+.sync-stats { display:flex; gap:12px; margin-top:8px; font-size:13px; }
 .sync-stats .success { color:#22c55e; font-weight:600; }
 .sync-stats .failed { color:#ef4444; font-weight:600; }
  </style>

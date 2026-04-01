@@ -132,7 +132,7 @@ const cancelSubscription = async () => {
     showCancelButton: true,
     confirmButtonText: 'Yes, cancel it',
     cancelButtonText: 'No, keep it',
-    reverseButtons: true
+    reverseButtons: false
   })
 
   if (result.isConfirmed) {
@@ -217,17 +217,17 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- CARD MODAL -->
-    <div v-if="subscribingPlan" class="modal">
-      <div class="modal-content">
+    <!-- CARD MODAL (same shell as plans.vue / theme.css) -->
+    <div v-if="subscribingPlan" class="modal-backdrop">
+      <div class="modal-box modal-box--sm">
         <h3>Enter Card Details for {{ subscribingPlan.name }}</h3>
         <div ref="cardElementRef" class="card-element"></div>
 
         <div class="modal-actions">
-          <button class="confirm" @click="confirmSubscription">
+          <button class="modal-btn-primary" @click="confirmSubscription">
             Confirm Payment
           </button>
-          <button class="cancel" @click="closeModal">Cancel</button>
+          <button type="button" class="modal-btn-secondary" @click="closeModal">Cancel</button>
         </div>
       </div>
     </div>
@@ -272,77 +272,118 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.page-container { padding: 30px; background: #f0f2f5; min-height: 100vh; font-family: 'Segoe UI', sans-serif; }
-.page-header h1 { margin: 0; font-size: 28px; }
-.subtitle { font-size: 14px; color: #6b7280; margin-top: 4px; }
 
-.plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
+.page-container {
+  padding: 16px;
+  background: #f0f2f5;
+  min-height: 100vh;
+  font-family: var(--font-family, 'Segoe UI', sans-serif);
+}
+.page-header h1 {
+  margin: 0;
+  font-size: 22px;
+}
+.subtitle {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 2px;
+}
 
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+/* ---------------- PLAN CARD ---------------- */
 .plan-card {
+  position: relative; /* Needed for badge float */
   background: #0f766e;
-  padding: 22px;
-  border-radius: 16px;
-  box-shadow: 0 8px 22px rgba(0,0,0,0.15);
+  padding: 16px 18px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
   color: white;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
 }
 
-.plan-card.inactive { opacity: 0.6; }
-.plan-card.featured { border: 2px solid rgba(255,255,255,0.4); }
+.plan-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.25);
+  background: #065f55;
+}
 
+.plan-card h3 {
+  font-weight: 700;
+  color: #ffffff;
+  font-size: 1.25em;
+}
+
+.plan-card.inactive {
+  opacity: 0.6;
+}
+
+.plan-card.featured {
+  border: 2px solid rgba(255,255,255,0.4);
+}
+
+/* Floating badge */
 .badge {
-  background: rgba(255,255,255,0.25);
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.25);
   padding: 4px 10px;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
 }
 
-.amount { font-size: 20px; font-weight: 700; }
+.amount {
+  font-size: 18px;
+  font-weight: 700;
+}
 
-.actions { display: flex; gap: 10px; }
+.actions {
+  display: flex;
+  gap: 8px;
+}
 
 button {
-  border-radius: 12px;
-  padding: 8px 14px;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   border: none;
 }
 
-.subscribe { background: #3b82f6; color: white; }
-.cancel-sub { background: #f59e0b; color: white; }
-
-.modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.subscribe {
+  background: #3b82f6;
+  color: white;
 }
-
-.modal-content {
-  background: white;
-  padding: 30px;
-  border-radius: 20px;
-  width: 480px;
+.cancel-sub {
+  background: #f59e0b;
+  color: white;
 }
 
 .card-element {
   border: 1px solid #e5e7eb;
-  padding: 16px;
-  border-radius: 12px;
-  margin-bottom: 20px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  margin-bottom: 14px;
 }
+
+/* ---------------- PAYMENT HISTORY ---------------- */
 .payment-history {
-  margin-top: 40px;
+  margin-top: 24px;
   background: white;
-  padding: 24px;
-  border-radius: 16px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  padding: 16px 18px;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);
 }
 
 .history-table {
@@ -359,26 +400,24 @@ button {
 }
 
 .history-table th {
-  padding: 14px;
-  font-size: 14px;
+  padding: 10px 12px;
+  font-size: 13px;
   font-weight: 700;
   color: white;
   border-right: 1px solid rgba(255, 255, 255, 0.2);
 }
-
 .history-table th:last-child {
   border-right: none;
 }
 
 .history-table td {
-  padding: 14px;
-  font-size: 14px;
+  padding: 10px 12px;
+  font-size: 13px;
   color: #374151;
   border-top: 1px solid #e5e7eb;
   border-right: 1px solid #e5e7eb;
   vertical-align: middle;
 }
-
 .history-table td:last-child {
   border-right: none;
 }
@@ -387,7 +426,7 @@ button {
   background: #f9fafb;
 }
 
-/* Status pill alignment */
+/* Status pills */
 .status {
   display: inline-flex;
   align-items: center;
@@ -399,18 +438,21 @@ button {
   font-weight: 600;
   color: white;
 }
-
-.status.success { background: #10b981; }
-.status.failed { background: #ef4444; }
-.status.pending { background: #f59e0b; }
+.status.success {
+  background: #10b981;
+}
+.status.failed {
+  background: #ef4444;
+}
+.status.pending {
+  background: #f59e0b;
+}
 
 .payment-history h2 {
-  margin-bottom: 16px;
-  font-size: 20px;
+  margin-bottom: 12px;
+  font-size: 17px;
   font-weight: 700;
   color: #111827;
 }
-
-
 
 </style>

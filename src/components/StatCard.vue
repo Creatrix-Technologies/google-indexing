@@ -38,30 +38,35 @@ defineProps<{
 .stat-card {
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 20px;
+  gap: 14px;
+  padding: 14px 16px;
   background: #ffffff;
-  border-radius: 12px;
+  border-radius: 10px;
   border: 1px solid #e8e8e8;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
 }
 
 .stat-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
 }
 
 .stat-icon {
-  width: 70px;
-  height: 70px;
-  border-radius: 12px;
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
+  font-size: 24px;
   flex-shrink: 0;
   background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
   color: #ffffff;
+}
+
+.stat-icon svg {
+  width: 26px;
+  height: 26px;
 }
 
 .stat-content {
@@ -69,23 +74,24 @@ defineProps<{
 }
 
 .stat-label {
-  font-size: 12px;
+  font-size: 11px;
   color: #999;
   font-weight: 600;
-  letter-spacing: 0.5px;
-  margin-bottom: 8px;
+  letter-spacing: 0.4px;
+  margin-bottom: 4px;
   text-transform: uppercase;
 }
 
 .stat-value {
-  font-size: 28px;
+  font-size: 24px;
   color: #333;
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
+  line-height: 1.2;
 }
 
 .stat-meta {
-  font-size: 13px;
+  font-size: 12px;
   color: #22c55e;
   font-weight: 500;
 }
@@ -96,16 +102,17 @@ defineProps<{
 
 @media (max-width: 768px) {
   .stat-card {
-    gap: 15px;
+    gap: 12px;
+    padding: 12px 14px;
   }
 
   .stat-icon {
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
   }
 
   .stat-value {
-    font-size: 24px;
+    font-size: 21px;
   }
 }
 </style>
