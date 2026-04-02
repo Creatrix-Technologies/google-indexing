@@ -44,38 +44,57 @@
 
     <!-- SUMMARY -->
     <div class="summary-card">
-      <div class="summary-item">
-        <span class="label">Total URLs</span>
-        <span class="value">{{ totalUrlCount }}</span>
-      </div>
-      <div class="summary-item">
-        <span class="label">Valid Urls</span>
-        <span class="value success">{{ successCount }}</span>
-      </div>
-      <div class="summary-item">
-        <span class="label">Issues</span>
-        <span class="value failed">{{ failedCount }}</span>
-      </div>
-    </div>
+  <div class="summary-item clickable" 
+       :class="{ active: selectedFilter === 'ALL' }"
+       @click="applyFilter('ALL')">
+    <span class="label">Total URLs</span>
+    <span class="value">{{ totalUrlCount }}</span>
+  </div>
 
-    <div class="summary-card">
-      <div class="summary-item">
-        <span class="label">Indexed</span>
-        <span class="value success">{{ indexed }}</span>
-      </div>
-      <div class="summary-item">
-        <span class="label">DeIndexed</span>
-        <span class="value success">{{ deIndexed }}</span>
-      </div>
-      <div class="summary-item">
-        <span class="label">Index Failed</span>
-        <span class="value failed">{{ indexedFailed }}</span>
-      </div>
-      <div class="summary-item">
-        <span class="label">Total Queued</span>
-        <span class="value">{{ indexedQueued }}</span>
-      </div>
-    </div>
+  <div class="summary-item clickable"
+       :class="{ active: selectedFilter === 'SUCCESS' }"
+       @click="applyFilter('SUCCESS')">
+    <span class="label">Valid Urls</span>
+    <span class="value success">{{ successCount }}</span>
+  </div>
+
+  <div class="summary-item clickable"
+       :class="{ active: selectedFilter === 'FAILED' }"
+       @click="applyFilter('FAILED')">
+    <span class="label">Issues</span>
+    <span class="value failed">{{ failedCount }}</span>
+  </div>
+</div>
+
+<div class="summary-card">
+  <div class="summary-item clickable"
+       :class="{ active: selectedFilter === 'INDEXED' }"
+       @click="applyFilter('INDEXED')">
+    <span class="label">Indexed</span>
+    <span class="value success">{{ indexed }}</span>
+  </div>
+
+  <div class="summary-item clickable"
+       :class="{ active: selectedFilter === 'DEINDEXED' }"
+       @click="applyFilter('DEINDEXED')">
+    <span class="label">DeIndexed</span>
+    <span class="value success">{{ deIndexed }}</span>
+  </div>
+
+  <div class="summary-item clickable"
+       :class="{ active: selectedFilter === 'INDEX_FAILED' }"
+       @click="applyFilter('INDEX_FAILED')">
+    <span class="label">Index Failed</span>
+    <span class="value failed">{{ indexedFailed }}</span>
+  </div>
+
+  <div class="summary-item clickable"
+       :class="{ active: selectedFilter === 'QUEUED' }"
+       @click="applyFilter('QUEUED')">
+    <span class="label">Total Queued</span>
+    <span class="value">{{ indexedQueued }}</span>
+  </div>
+</div>
 
     <!-- GOOGLE SYNC BUTTON -->
     <div class="top-action-bar">
@@ -114,7 +133,15 @@
 
     <!-- TABLE -->
 
-    
+      <!-- 🔍 SEARCH BAR -->
+  <div class="search-bar">
+      <input
+        v-model="searchQuery"
+        type="text"
+        placeholder="Search URLs..."
+        class="search-input"
+      />
+    </div>
     <div class="table-scroll">
 
       <table class="urls-table">
@@ -290,6 +317,38 @@ import Swal from "sweetalert2"
 import Loading from "vue-loading-overlay"
 import 'vue-loading-overlay/dist/css/index.css'
 
+const selectedFilter = ref<string | null>(null);
+  const searchQuery = ref("")
+  let debounceTimer: any = null
+
+  watch(searchQuery, () => {
+  clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(() => {
+    pageInfo.value.page = 1
+    fetchCrawlDetails()
+  }, 500)
+})
+//   const fetchCrawlDetails = async () => {
+//   const res = await api.get(
+//     `/crawl/${siteId}/details`,
+//     {
+//       params: {
+//         PageNo: pageInfo.value.page,
+//         PageSize: pageInfo.value.pageSize,
+//         filter: selectedFilter.value // 👈 ADD THIS
+//       }
+//     }
+//   )
+
+//   urls.value = res.data.data
+//   pageInfo.value = res.data.pageInfo
+// }
+
+const applyFilter = (filter: string | null) => {
+  selectedFilter.value = filter
+  pageInfo.value.page = 1
+  fetchCrawlDetails()
+}
 ///google sync
 
 // SYNC STATE
@@ -309,7 +368,7 @@ const startGoogleSync = async () => {
 
   const confirm = await Swal.fire({
   title: 'Confirm Google Sync',
-  text: 'This will start the process.',
+  text: 'This will Syncs and updates the indexing status of URLs in the grid.',
   icon: 'warning',
   showCancelButton: true,
   confirmButtonText: 'Yes',
@@ -515,10 +574,27 @@ const counts = ref<CrawlCount>({
 /* API */
 const fetchCrawlDetails = async () => {
   const res = await api.get(
-    `/crawl/${siteId}/details?PageNo=${pageInfo.value.page}&PageSize=${pageInfo.value.pageSize}`
+    `/crawl/${siteId}/details`,
+    {
+      params: {
+      SearchBy: searchQuery.value,     // ✅ match backend
+      Filter: selectedFilter.value,    // ✅ match backend
+      SortBy: null,                   // or your sorting value
+      PageNo: pageInfo.value.page,
+      PageSize: pageInfo.value.pageSize
+    }
+    }
+
   )
   urls.value = res.data.data
-  pageInfo.value = res.data.pageInfo
+
+  const p = res.data.pageInfo
+
+  pageInfo.value.page = p.page
+  pageInfo.value.pageSize = p.pageSize
+  pageInfo.value.totalCount = p.totalCount
+  pageInfo.value.hasNextPage = p.hasNextPage
+  pageInfo.value.hasPreviousPage = p.hasPreviousPage
 }
 
 const fetchCrawlCounts = async () => {
@@ -810,8 +886,9 @@ const indexed = computed(() => counts.value.indexedSucceed)
 const indexedFailed = computed(() => counts.value.indexedFailed)
 const indexedQueued = computed(() => counts.value.indexedQueued)
 const deIndexed = computed(() => counts.value.deIndexedSucceed)
-const totalPages = computed(() => Math.ceil(counts.value.totalCount / pageInfo.value.pageSize))
-
+const totalPages = computed(() => {
+  return Math.ceil(pageInfo.value.totalCount / pageInfo.value.pageSize) || 1
+})
 /* PAGINATION */
 const nextPage = () => pageInfo.value.hasNextPage && pageInfo.value.page++
 const previousPage = () => pageInfo.value.hasPreviousPage && pageInfo.value.page--
@@ -1348,5 +1425,35 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 .sync-stats { display:flex; gap:12px; margin-top:8px; font-size:13px; }
 .sync-stats .success { color:#22c55e; font-weight:600; }
 .sync-stats .failed { color:#ef4444; font-weight:600; }
+
+.summary-item.clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.summary-item.clickable:hover {
+  transform: translateY(-2px);
+  border-color: #22c55e;
+}
+
+.summary-item.active {
+  border: 2px solid #22c55e;
+  background: #f0fdf4;
+}
+
+.search-bar { margin-bottom: 12px; }
+.search-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+.search-input:focus {
+  outline: none;
+  border-color: #22c55e;
+  box-shadow: 0 0 0 2px rgba(34,197,94,0.2);
+}
+
  </style>
   
