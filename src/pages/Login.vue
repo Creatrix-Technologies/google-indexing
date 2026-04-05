@@ -1,93 +1,112 @@
 <template>
-  <div class="login-wrapper">
-    <div class="login-card">
+  <div class="login-container">
 
-      <h2 class="title">Welcome Back</h2>
-      <p class="subtitle">Sign in to continue</p>
-
-      <!-- Username -->
-      <div class="form-group">
-        <label for="username">Username</label>
-        <input
-          v-model="username"
-          id="username"
-          type="text"
-          placeholder="Enter username"
-        />
+    <!-- LEFT SIDE -->
+    <div class="left-panel">
+      <div class="bubbles">
+    <span class="bubble" style="--i:1;"></span>
+    <span class="bubble" style="--i:2;"></span>
+    <span class="bubble" style="--i:3;"></span>
+    <span class="bubble" style="--i:4;"></span>
+    <span class="bubble" style="--i:5;"></span>
+    <span class="bubble" style="--i:6;"></span>
+    <span class="bubble" style="--i:7;"></span>
+  </div>
+      <div class="left-content">
+        <h1>WELCOME</h1>
+        <p class="tagline">SITE BOOSTER</p>
+        <p class="desc">
+          Easily crawl your website URLs and get them indexed on Google. Monitor your pages, improve SEO, and ensure your content is discoverable all from a single powerful API.
+        </p>
       </div>
-
-      <!-- Password -->
-      <div class="form-group">
-        <label for="password">Password</label>
-
-        <div class="password-wrapper">
-          <input
-            v-model="password"
-            id="password"
-            :type="showPassword ? 'text' : 'password'"
-            placeholder="Enter password"
-             @keyup.enter="handleLogin"
-          />
-
-          <button
-            type="button"
-            class="toggle-password"
-            @click="showPassword = !showPassword"
-          >
-            {{ showPassword ? 'Hide' : 'Show' }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Login Button -->
-      <button class="btn-primary" @click="handleLogin">
-        Login
-      </button>
-
-      <!-- Divider -->
-      <div class="divider">
-        <span>OR</span>
-      </div>
-
-      <!-- Google Login -->
-      <button class="btn-google" @click="handleGoogleLogin">
-        <img src="https://www.svgrepo.com/show/475656/google-color.svg" />
-        Continue with Google
-      </button>
-
-      <button
-        class="btn-secondary"
-        style="margin-top: 15px"
-        @click="showRegister = true"
-      >
-        Create an Account
-      </button>
-
-      <RegisterModal :show="showRegister" @close="showRegister = false" />
-
-      <p v-if="errorMessage" style="color:red; margin-top: 10px;">
-        {{ errorMessage }}
-      </p>
-
     </div>
+
+    <!-- RIGHT SIDE -->
+    <div class="right-panel">
+      <div class="login-card">
+
+        <h2 class="title">Sign in</h2>
+        <p class="subtitle">Please login to continue</p>
+
+        <!-- Username -->
+        <div class="form-group">
+          <label>Username</label>
+          <input v-model="username" type="text" placeholder="Enter username" />
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+          <label>Password</label>
+
+          <div class="password-wrapper">
+            <input
+              v-model="password"
+              :type="showPassword ? 'text' : 'password'"
+              placeholder="Enter password"
+              @keyup.enter="handleLogin"
+            />
+            <span class="toggle" @click="showPassword = !showPassword">
+              {{ showPassword ? 'HIDE' : 'SHOW' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Options -->
+        <div class="options">
+          <label>
+            <input type="checkbox" /> Remember me
+          </label>
+          <!-- <span class="forgot">Forgot Password?</span> -->
+        </div>
+
+        <!-- LOGIN -->
+        <button class="btn-primary" @click="handleLogin">
+          Sign in
+        </button>
+
+        <!-- DIVIDER -->
+        <div class="divider">OR</div>
+
+        <button class="btn-google" @click="handleGoogleLogin">
+  <img class="google-icon" src="https://www.svgrepo.com/show/475656/google-color.svg" />
+  <span>Continue with Google</span>
+</button>
+
+        <!-- SIGNUP -->
+        <p class="signup-text">
+          Don't have an account?
+          <span @click="showRegister = true">Sign up</span>
+        </p>
+
+        <!-- ERROR -->
+        <p v-if="errorMessage" class="error">
+          {{ errorMessage }}
+        </p>
+
+      </div>
+    </div>
+
+    <!-- REGISTER MODAL -->
+    <RegisterModal :show="showRegister" @close="showRegister = false" />
+
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from "vue";
-import api from '../api';
+import api from "../api";
 import { useRouter } from "vue-router";
 import { login as apiLogin, redirectToGoogleLogin } from "../Store/auth";
-import { useMenuStore } from '../Store/menu';
-import { buildRoutes } from '../Router/dynamicRoutes';
+import { useMenuStore } from "../Store/menu";
+import { buildRoutes } from "../Router/dynamicRoutes";
 import RegisterModal from "../pages/Register.vue";
 
 const router = useRouter();
 
-const showRegister = ref(false);
 const username = ref("");
 const password = ref("");
 const showPassword = ref(false);
+const showRegister = ref(false);
 const errorMessage = ref("");
 
 const handleLogin = async () => {
@@ -99,27 +118,25 @@ const handleLogin = async () => {
   };
 
   const success = await apiLogin(payload, router);
+
   if (success) {
     const menuStore = useMenuStore();
 
-// ✅ verify session
-await api.get("/auth-check");
+    await api.get("/auth-check");
 
-// ✅ load menus
-if (!menuStore.loaded  || menuStore.menus.length > 0) {
-  await menuStore.fetchMenus();
-}
+    if (!menuStore.loaded || menuStore.menus.length === 0) {
+      await menuStore.fetchMenus();
+    }
 
-// ✅ register dynamic routes
-const dynamicRoutes = buildRoutes(menuStore.menus);
-dynamicRoutes.forEach(route => {
-  if (!router.hasRoute(route.name!)) {
-    router.addRoute("DefaultLayout", route);
-  }
-});
+    const dynamicRoutes = buildRoutes(menuStore.menus);
+    dynamicRoutes.forEach(route => {
+      if (!router.hasRoute(route.name!)) {
+        router.addRoute("DefaultLayout", route);
+      }
+    });
 
-// ✅ now navigation is safe
-router.push("/dashboard");  } else {
+    router.push("/dashboard");
+  } else {
     errorMessage.value = "Login failed. Please check your credentials.";
   }
 };
@@ -130,178 +147,281 @@ const handleGoogleLogin = () => {
 </script>
 
 <style scoped>
-/* ---------- Layout ---------- */
-.login-wrapper {
-  background: #f5f6fa;
-  height: 100vh;
+/* Layout */
+.login-container {
   display: flex;
-  justify-content: center;
+  height: 100vh;
+  font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+/* LEFT PANEL */
+.left-panel {
+  flex: 1;
+  background: linear-gradient(135deg, #0f3f3c, #14b8a6);
+  display: flex;
   align-items: center;
+  justify-content: center;
+  position: relative;
+  color: white;
+  overflow: hidden;
 }
 
-.login-card {
-  background: white;
-  width: 360px;
-  max-width: calc(100vw - 32px);
-  padding: 26px 28px;
-  border-radius: 10px;
-  box-shadow: 0px 2px 14px rgba(0, 0, 0, 0.07);
-  text-align: center;
+
+
+.left-panel::before {
+  width: 320px;
+  height: 320px;
+  top: -60px;
+  left: -60px;
 }
 
-/* ---------- Titles ---------- */
-.title {
-  font-size: 22px;
+.left-panel::after {
+  width: 220px;
+  height: 220px;
+  bottom: -50px;
+  right: -50px;
+}
+.left-panel h1{
+  color: white;
+}
+
+.left-content {
+  max-width: 360px;
+  z-index: 2;
+  text-align: left;
+}
+
+.left-content h1 {
+  font-size: 42px;
   font-weight: 700;
-  color: #333;
-  margin-bottom: 4px;
+  letter-spacing: 1px;
+}
+
+.tagline {
+  margin: 12px 0;
+  font-weight: 600;
+  font-size: 16px;
+  opacity: 0.9;
+}
+
+.desc {
+  font-size: 14px;
+  opacity: 0.8;
+  line-height: 1.6;
+}
+
+/* RIGHT PANEL */
+.right-panel {
+  flex: 1;
+  background: linear-gradient(135deg, #14b8a6, #0f3f3c);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* CARD */
+.login-card {
+  width: 380px;
+  background: #ffffff;
+  padding: 35px;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  transition: 0.3s ease;
+}
+
+.login-card:hover {
+  transform: translateY(-2px);
+}
+
+/* TEXT */
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 5px;
 }
 
 .subtitle {
   font-size: 13px;
-  color: #777;
-  margin-bottom: 20px;
+  color: #6b7280;
+  margin-bottom: 25px;
 }
 
-/* ---------- Form Fields ---------- */
+/* INPUT */
 .form-group {
-  text-align: left;
-  margin-bottom: 14px;
+  margin-bottom: 18px;
 }
 
 .form-group label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
   display: block;
   margin-bottom: 6px;
-  font-size: 14px;
-  color: #444;
 }
 
 .form-group input {
   width: 100%;
-  padding: 8px 11px;
-  border: 1px solid #dedede;
-  border-radius: 6px;
-  font-size: 13px;
-  outline: none;
+  padding: 11px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
   transition: 0.2s;
 }
 
 .form-group input:focus {
-  border-color: #4c6fff;
-  box-shadow: 0 0 0 2px rgba(76, 111, 255, 0.15);
+  outline: none;
+  border-color: #14b8a6;
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
 }
 
-/* ---------- Password Toggle ---------- */
+/* PASSWORD */
 .password-wrapper {
   position: relative;
-  display: flex;
-  align-items: center;
 }
 
-.password-wrapper input {
-  padding-right: 70px;
-}
-
-.toggle-password {
+.toggle {
   position: absolute;
-  right: 10px;
-  background: none;
-  border: none;
-  font-size: 13px;
-  color: #4c6fff;
+  right: 12px;
+  top: 11px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #14b8a6;
   cursor: pointer;
-  font-weight: 500;
 }
 
-.toggle-password:hover {
-  text-decoration: underline;
+/* OPTIONS */
+.options {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 18px;
+  color: #6b7280;
 }
 
-/* ---------- Buttons ---------- */
+/* PRIMARY BUTTON */
 .btn-primary {
   width: 100%;
-  padding: 9px;
-  background: #4c6fff;
-  border: none;
+  padding: 12px;
+  background: #14b8a6;
   color: white;
-  font-size: 14px;
+  border: none;
+  border-radius: 8px;
   font-weight: 600;
-  border-radius: 6px;
   cursor: pointer;
-  margin-top: 4px;
   transition: 0.2s;
 }
 
 .btn-primary:hover {
-  background: #3f5ae0;
+  background: #0f9f91;
 }
 
-/* ---------- Divider ---------- */
+/* DIVIDER */
 .divider {
-  margin: 16px 0;
-  display: flex;
-  align-items: center;
   text-align: center;
-}
-
-.divider span {
-  flex-grow: 1;
-  max-width: 60px;
-  margin: 0 auto;
+  margin: 18px 0;
   font-size: 12px;
-  color: #666;
+  color: #9ca3af;
+  position: relative;
 }
 
 .divider::before,
 .divider::after {
   content: "";
-  flex: 1;
-  border-bottom: 1px solid #ddd;
+  height: 1px;
+  width: 40%;
+  background: #e5e7eb;
+  position: absolute;
+  top: 50%;
 }
 
-/* ---------- Google Login Button ---------- */
+.divider::before {
+  left: 0;
+}
+
+.divider::after {
+  right: 0;
+}
+
+/* GOOGLE BUTTON */
 .btn-google {
-  margin-top: 10px;
   width: 100%;
-  padding: 9px;
-  border: 1px solid #d3d3d3;
+  padding: 11px;
+  border: 1px solid #e5e7eb;
   display: flex;
-  justify-content: center;
   align-items: center;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 8px;
   cursor: pointer;
-  color: #444;
   background: white;
+  font-size: 14px;
   transition: 0.2s;
-}
-
-.btn-google img {
-  width: 20px;
-  margin-right: 8px;
 }
 
 .btn-google:hover {
-  background: #f3f3f3;
+  background: #f9fafb;
 }
 
-/* ---------- Secondary Button ---------- */
-.btn-secondary {
-  width: 100%;
-  padding: 10px;
-  background: #e6e6e6;
-  border: 1px solid #d3d3d3;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #444;
+/* FIXED ICON */
+.google-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+/* SIGNUP */
+.signup-text {
+  margin-top: 18px;
+  font-size: 13px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.signup-text span {
+  color: #14b8a6;
   cursor: pointer;
-  transition: 0.2s;
-  margin-top: 10px;
+  font-weight: 600;
 }
 
-.btn-secondary:hover {
-  background: #dcdcdc;
+/* ERROR */
+.error {
+  color: #ef4444;
+  margin-top: 10px;
+  font-size: 13px;
+  text-align: center;
+}
+
+/* Bubbles container */
+.left-panel .bubbles {
+  position: absolute;
+  inset: 0;
+  z-index: 0; /* behind text */
+  pointer-events: none;
+}
+
+/* Each bubble */
+.left-panel .bubble {
+  position: absolute;
+  bottom: -60px; /* start below panel */
+  width: calc(30px + var(--i) * 15px);
+  height: calc(30px + var(--i) * 15px);
+  background: rgba(255, 255, 255, 0.15); /* brighter white */
+  border-radius: 50%;
+  left: calc(var(--i) * 12%);
+  animation: floatUp calc(8s + var(--i) * 2s) linear infinite;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); /* optional glow */
+}
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0.5; /* slightly higher */
+  }
+  50% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateY(-120vh) scale(1.3);
+    opacity: 0;
+  }
 }
 </style>
