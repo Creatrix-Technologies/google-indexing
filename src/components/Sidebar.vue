@@ -9,7 +9,6 @@
     <!-- Menu -->
     <nav class="menu">
       <template v-for="menu in menus" :key="menu.id">
-        <!-- Only show menu if showInMenu is true -->
         <div v-if="menu.showInMenu">
           
           <!-- Menu with children -->
@@ -72,7 +71,6 @@ const emit = defineEmits(["update:collapsed"]);
 const menus = ref<any[]>([]);
 const openMenus = ref<number[]>([]);
 
-// Toggle submenu open/close
 const toggleSubmenu = (id: number) => {
   if (openMenus.value.includes(id)) {
     openMenus.value = openMenus.value.filter(mid => mid !== id);
@@ -81,7 +79,6 @@ const toggleSubmenu = (id: number) => {
   }
 };
 
-// Load menu from localStorage (or API later)
 onMounted(() => {
   const menuData = localStorage.getItem("menu");
   if (menuData) {
@@ -92,41 +89,42 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* Sidebar panel */
 .sidebar {
   position: fixed;
   top: 0;
   left: 0;
-  width: fit-content;              /* 🔥 auto expand */
-  min-width: 220px;                /* base width */
-  max-width: 400px;                /* prevent too wide */
+  width: fit-content;
+  min-width: 220px;
+  max-width: 400px;
   height: 100vh;
-  background: var(--color-card-bg);
-  border-right: 1px solid var(--color-border);
-  padding: var(--space-2);
+  background: #0d524c; /* Dark teal green */
+  border-right: 1px solid #12756b;
+  padding: 16px;
   transition: width 0.3s ease, transform 0.3s ease;
   overflow-y: auto;
-  overflow-x: auto;                /* 🔥 allow horizontal growth */
+  overflow-x: auto;
   z-index: 2000;
 }
 
 .sidebar.collapsed {
-  width: var(--sidebar-collapsed);
-  overflow-x: hidden;              /* keep collapsed clean */
+  width: 60px;
+  overflow-x: hidden;
 }
 
 /* Logo */
 .logo {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  margin-bottom: var(--space-3);
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
 .logo-text {
   white-space: nowrap;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
-  color: var(--color-primary);
+  color: #e0f7f4; /* light teal text */
 }
 
 .logo-icon {
@@ -134,13 +132,13 @@ onMounted(() => {
   height: 32px;
   flex-shrink: 0;
   font-size: 12px;
-  background: var(--color-accent);
+  background: #08403a; /* darker teal */
   color: #fff;
   font-weight: 700;
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: var(--radius-sm);
+  border-radius: 8px;
 }
 
 /* Menu */
@@ -148,30 +146,29 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-bottom: 10px;
 }
 
 .menu-item {
   display: flex;
   align-items: center;
   padding: 10px;
-  border-radius: var(--radius-sm);
-  color: var(--color-muted);
+  border-radius: 8px;
+  color: #b2e0dc; /* light teal text */
   text-decoration: none;
   cursor: pointer;
   font-size: 13px;
   gap: 8px;
-  white-space: nowrap;             /* 🔥 prevent wrapping */
+  white-space: nowrap;
 }
 
 .menu-item.active {
-  background: var(--color-accent);
+  background: #08403a; /* active dark teal */
   color: #fff;
 }
 
 .menu-item:hover:not(.active) {
-  background: var(--color-placeholder);
-  color: var(--color-text);
+  background: #0b3b36; /* hover dark teal */
+  color: #fff;
 }
 
 .menu-icon {
@@ -183,9 +180,9 @@ onMounted(() => {
 }
 
 .menu-label {
-  white-space: nowrap;             /* 🔥 single line */
-  overflow: visible;               /* 🔥 no hiding */
-  text-overflow: unset;            /* 🔥 no ellipsis */
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: unset;
 }
 
 /* Submenu */
@@ -199,23 +196,19 @@ onMounted(() => {
 .submenu-item {
   display: flex;
   align-items: center;
-  padding: 6px var(--space-2);
-  border-radius: var(--radius-sm);
-  color: var(--color-muted);
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: #a0d9d5;
   text-decoration: none;
   font-size: 12px;
   gap: 8px;
-  white-space: nowrap;             /* 🔥 no wrap */
-}
-
-.submenu-item .menu-icon {
-  margin-right: 0;
+  white-space: nowrap;
 }
 
 .submenu-item.active-sub {
   font-weight: 600;
-  color: var(--color-accent);
-  background: var(--color-accent-muted);
+  color: #ffffff;
+  background: #08403a;
 }
 
 /* Arrow */
