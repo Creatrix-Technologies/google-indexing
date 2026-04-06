@@ -106,7 +106,7 @@ onMounted(() => {
   transition: width 0.3s ease, transform 0.3s ease;
   overflow-y: auto;
   overflow-x: auto;                /* 🔥 allow horizontal growth */
-  z-index: 1000;
+  z-index: 2000;
 }
 
 .sidebar.collapsed {

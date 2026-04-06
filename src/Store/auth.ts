@@ -143,7 +143,9 @@ export function redirectToGoogleLogin(): void {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   const redirectUri = encodeURIComponent(import.meta.env.VITE_GOOGLE_REDIRECT_URI);
   const scope = encodeURIComponent(import.meta.env.VITE_GOOGLE_SCOPE);
-  const googleUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline&prompt=consent`;
+
+  const googleUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline`;
+
   window.location.href = googleUrl;
 }
 

@@ -41,10 +41,9 @@
 </div>
 
 
-
-    <!-- SUMMARY -->
-    <div class="summary-card">
-  <div class="summary-item clickable" 
+<!-- SINGLE SUMMARY CARD -->
+<div class="summary-card">
+  <div class="summary-item clickable"
        :class="{ active: selectedFilter === 'ALL' }"
        @click="applyFilter('ALL')">
     <span class="label">Total URLs</span>
@@ -54,7 +53,7 @@
   <div class="summary-item clickable"
        :class="{ active: selectedFilter === 'SUCCESS' }"
        @click="applyFilter('SUCCESS')">
-    <span class="label">Valid Urls</span>
+    <span class="label">Valid URLs</span>
     <span class="value success">{{ successCount }}</span>
   </div>
 
@@ -64,9 +63,7 @@
     <span class="label">Issues</span>
     <span class="value failed">{{ failedCount }}</span>
   </div>
-</div>
 
-<div class="summary-card">
   <div class="summary-item clickable"
        :class="{ active: selectedFilter === 'INDEXED' }"
        @click="applyFilter('INDEXED')">
@@ -206,13 +203,14 @@
             <td>{{ item.indexedAt }}</td>
 
             <td class="action-cell">
-              <button title="View Logs" class="row-index-btn view" @click="viewLogs(item.id)">Logs</button>
               <button title="Instant Index" class="row-index-btn" @click="indexSingleUrl(item.id)">
                 ReIndex
               </button>
               <button title="Queue Index" class="row-index-btn failed" @click="removeIndexSingleUrl(item.id)">
                 DeIndex
               </button>
+              <button title="View Logs" class="row-index-btn view" @click="viewLogs(item.id)">Logs</button>
+
             </td>
           </tr>
 
@@ -653,7 +651,7 @@ const indexSelectedUrls = async () => {
     showCancelButton: true,
     showDenyButton: true,
     confirmButtonText: "📥 Index",
-    denyButtonText: "🗑️ Remove Index",
+    denyButtonText: "🗑️ DeIndex",
     confirmButtonColor: "#22c55e",
     denyButtonColor: "#ef4444",
     cancelButtonText: "Cancel"
@@ -723,7 +721,7 @@ const indexSingleUrl = async (id: number) => {
         });
 
         if (res?.data?.isSuccess) {
-          Swal.fire("Indexed", "URL Indexed Instantly", "success");
+          Swal.fire("Submitted", "URL has been successfully submitted for indexing", "success");
         } else {
           Swal.fire("Failed", res?.data?.meta || "Something went wrong", "error");
         }
@@ -762,7 +760,7 @@ const indexSingleUrl = async (id: number) => {
         });
 
         if (resQueue?.data?.isSuccess) {
-          Swal.fire("Queued", "URL queued for indexing", "success");
+          Swal.fire("Queued", "URLs queued for indexing", "success");
         } else {
           Swal.fire("Failed", resQueue?.data?.meta || "Something went wrong", "error");
         }
@@ -816,7 +814,7 @@ const removeIndexSingleUrl = async (id: number) => {
         });
 
         if (res?.data?.isSuccess) {
-          Swal.fire("Removed", "URL deindexed instantly", "success");
+          Swal.fire("Submitted", "URL has been successfully submitted for deindexing", "success");
         } else {
           Swal.fire("Failed", res?.data?.meta || "Something went wrong", "error");
         }
@@ -855,7 +853,7 @@ const removeIndexSingleUrl = async (id: number) => {
         });
 
         if (resQueue?.data?.isSuccess) {
-          Swal.fire("Queued", "URL queued for deindexing", "success");
+          Swal.fire("Queued", "URLs queued for deindexing", "success");
         } else {
           Swal.fire("Failed", resQueue?.data?.meta || "Something went wrong", "error");
         }
@@ -936,9 +934,17 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 
 .summary-card {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(7, 1fr); /* 7 boxes in a row */
   gap: 12px;
   margin-bottom: 16px;
+}
+
+@media (max-width: 1280px) {
+  /* fallback for smaller screens: scroll horizontally */
+  .summary-card {
+    grid-template-columns: repeat(7, minmax(140px, 1fr));
+    overflow-x: auto;
+  }
 }
 
 .summary-item {
