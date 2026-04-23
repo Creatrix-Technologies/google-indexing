@@ -1,12 +1,18 @@
 <template>
   <div class="page-container">
+    <div v-if="loading" class="page-loader">
+  <div class="loader-box">
+    <span class="spinner"></span>
+    <p>Syncing sites from Google...</p>
+  </div>
+</div>
     <div class="page-header">
       <div>
         <h1>Site Management</h1>
         <p class="subtitle">Manage and configure your sites</p>
       </div>
       
-      <!-- <button v-if="googleConfigStore.isValid" class="btn-primary" @click="openAddModal">+ Add Site</button> -->
+      <button v-if="googleConfigStore.isValid" class="btn-primary" @click="syncsites" :disabled="loading">Sync Sites</button>
     </div>
 
     <!-- Site List Table -->
@@ -167,6 +173,9 @@ import api from '../api'
 import { useToast } from 'vue-toastification'
 import { useGoogleConfigStore } from '../Shared/googleConfig'
 import { useSubscriptionStore } from '../Shared/subscription'
+import Swal from 'sweetalert2'
+
+const loading = ref(false)
 
 const toast = useToast()
 const googleConfigStore = useGoogleConfigStore()
@@ -218,6 +227,45 @@ const fetchSites = async () => {
     created: new Date(i.createdDate),
     ignoreRobotTxt: i.ignoreRobotTxt ?? false
   }))
+}
+
+
+
+const syncsites = async () => {
+  const result = await Swal.fire({
+    text: 'This will sync all available sites from your Google account.',
+    title: `Do you want to continue?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes',
+    cancelButtonText: 'No'
+  })
+
+  if (!result.isConfirmed) return
+
+  loading.value = true
+
+  try {
+    const response = await api.post('site/sync', {})
+
+    if (response.data?.isSuccess === false) {
+      toast.error(response.data.error?.description || 'Failed to sync Google Sites')
+      return
+    }
+
+    toast.success(response.data?.message || 'Google Sites synced successfully.')
+    await fetchSites()
+
+  } catch (err: any) {
+    toast.error(
+      err?.response?.data?.error?.description ||
+      err?.response?.data?.message ||
+      err?.message ||
+      'An error occurred while syncing'
+    )
+  } finally {
+    loading.value = false
+  }
 }
 
 const saveSite = async () => {
@@ -623,6 +671,29 @@ form {
     width: 95%;
     max-height: 95vh;
   }
+}
+
+.page-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255,255,255,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.loader-box {
+  background: #fff;
+  padding: 20px 30px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
     </style>

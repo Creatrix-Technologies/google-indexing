@@ -49,6 +49,13 @@
       </div>
     </div>
 
+
+  <div class="alert-box schedule">
+    <div class="alert-title">🕷️ Crawl</div>
+    <div class="alert-text">
+      Crawl runs on a one-minute queue interval. Each crawl process is locked while in progress and will be released upon completion.
+    </div>
+  </div>
     <!-- Table -->
     <div class="grid-card">
       <div class="grid-header">
@@ -669,6 +676,38 @@ onMounted(async () => {
   to {
     transform: rotate(360deg);
   }
+}
+.alert-box {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Quota - warning style */
+.alert-box.quota {
+  background: #fff7ed;
+  border-color: #f97316;
+  color: #ea580c;
+}
+
+/* Schedule - info style */
+.alert-box.schedule {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+}
+
+.alert-title {
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.alert-text {
+  font-size: 13px;
 }
 
   
