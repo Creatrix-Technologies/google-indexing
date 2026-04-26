@@ -78,7 +78,7 @@ const cards = ref<DashboardCard[]>([])
 const charts = ref<DashboardChart[]>([])
 
 const chartOptions = ref<any>({
-  chart: { type: "area", height: 320 },
+  chart: { type: "area", height: 280 },
   title: { text: "" },
   xAxis: { categories: [] },
   yAxis: { title: { text: "Index Count" } },
@@ -137,7 +137,7 @@ const buildChart = () => {
   const failed = last12.map(x => x.failedIndex || 0)
 
   chartOptions.value = {
-    chart: { type: "area", height: 320 },
+    chart: { type: "area", height: 280 },
     title: { text: "" },
     xAxis: { categories },
     yAxis: { title: { text: "Index Count" } },
@@ -197,56 +197,56 @@ onMounted(() => {
 <style scoped>
 .dashboard {
   flex: 1;
-  padding: 30px;
+  padding: 0;
   overflow-y: auto;
-  background: #f9f9f9;
+  background: var(--color-background, #f4f7fb);
 }
 
 .page-header {
-  margin-bottom: 30px;
+  margin-bottom: 16px;
 }
 
 .page-header h1 {
-  font-size: 32px;
+  font-size: 22px;
   color: #333;
-  margin: 0 0 10px 0;
+  margin: 0 0 4px 0;
   font-weight: 700;
 }
 
 .subtitle {
-  font-size: 14px;
+  font-size: 13px;
   color: #999;
 }
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .charts-container {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 12px;
 }
 
 .chart-card {
   background: #fff;
-  border-radius: 12px;
+  border-radius: 10px;
   border: 1px solid #e8e8e8;
-  padding: 20px;
+  padding: 14px 16px;
 }
 
 .chart-content {
   width: 100%;
-  height: 350px;
+  height: 300px;
 }
 
 .empty-message {
   text-align: center;
   color: #666;
-  font-size: 16px;
-  padding: 30px 0;
+  font-size: 14px;
+  padding: 20px 0;
 }
 </style>

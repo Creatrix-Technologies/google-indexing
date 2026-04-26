@@ -9,7 +9,6 @@
     <!-- Menu -->
     <nav class="menu">
       <template v-for="menu in menus" :key="menu.id">
-        <!-- Only show menu if showInMenu is true -->
         <div v-if="menu.showInMenu">
           
           <!-- Menu with children -->
@@ -32,7 +31,7 @@
                 class="submenu-item"
                 active-class="active-sub"
               >
-                <span class="menu-icon" style="margin-right:10px;">
+                <span class="menu-icon">
                   <i :class="child.icon"></i>
                 </span>
                 <span class="menu-label">{{ child.title }}</span>
@@ -72,7 +71,6 @@ const emit = defineEmits(["update:collapsed"]);
 const menus = ref<any[]>([]);
 const openMenus = ref<number[]>([]);
 
-// Toggle submenu open/close
 const toggleSubmenu = (id: number) => {
   if (openMenus.value.includes(id)) {
     openMenus.value = openMenus.value.filter(mid => mid !== id);
@@ -81,7 +79,6 @@ const toggleSubmenu = (id: number) => {
   }
 };
 
-// Load menu from localStorage (or API later)
 onMounted(() => {
   const menuData = localStorage.getItem("menu");
   if (menuData) {
@@ -92,90 +89,134 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* Sidebar panel */
 .sidebar {
   position: fixed;
   top: 0;
   left: 0;
-  width: 260px;
+  width: fit-content;
+  min-width: 220px;
+  max-width: 400px;
   height: 100vh;
-  background: #fff;
-  border-right: 1px solid #e8e8e8;
-  padding: 20px;
+  background: #0d524c; /* Dark teal green */
+  border-right: 1px solid #12756b;
+  padding: 16px;
   transition: width 0.3s ease, transform 0.3s ease;
   overflow-y: auto;
-  z-index: 1000;
+  overflow-x: auto;
+  z-index: 2000;
 }
 
 .sidebar.collapsed {
-  width: 72px;
+  width: 60px;
+  overflow-x: hidden;
 }
 
+/* Logo */
 .logo {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 30px;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.logo-text {
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;
+  color: #e0f7f4; /* light teal text */
 }
 
 .logo-icon {
-  width: 40px;
-  height: 40px;
-  background: #22c55e;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  font-size: 12px;
+  background: #08403a; /* darker teal */
   color: #fff;
-  font-weight: bold;
+  font-weight: 700;
   display: flex;
   justify-content: center;
   align-items: center;
   border-radius: 8px;
 }
 
+/* Menu */
 .menu {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .menu-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
+  padding: 10px;
   border-radius: 8px;
-  color: #666;
+  color: #b2e0dc; /* light teal text */
   text-decoration: none;
   cursor: pointer;
+  font-size: 13px;
+  gap: 8px;
+  white-space: nowrap;
 }
 
 .menu-item.active {
-  background: #22c55e;
+  background: #08403a; /* active dark teal */
   color: #fff;
 }
 
-.menu-item:hover {
-  background: #f5f5f5;
+.menu-item:hover:not(.active) {
+  background: #0b3b36; /* hover dark teal */
+  color: #fff;
 }
 
+.menu-icon {
+  flex-shrink: 0;
+  width: 1.25rem;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.menu-label {
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: unset;
+}
+
+/* Submenu */
 .submenu {
-  margin-left: 20px;
+  margin-left: 8px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 2px;
 }
 
 .submenu-item {
-  padding: 8px 12px;
-  border-radius: 6px;
-  color: #666;
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: #a0d9d5;
   text-decoration: none;
+  font-size: 12px;
+  gap: 8px;
+  white-space: nowrap;
 }
 
 .submenu-item.active-sub {
   font-weight: 600;
-  color: #16a34a;
+  color: #ffffff;
+  background: #08403a;
 }
 
+/* Arrow */
 .arrow {
   margin-left: auto;
+  flex-shrink: 0;
+  font-size: 11px;
+  opacity: 0.75;
   transition: transform 0.2s;
 }
 
@@ -183,13 +224,13 @@ onMounted(() => {
   transform: rotate(180deg);
 }
 
-/* Mobile overlay */
+/* Mobile */
 @media (max-width: 768px) {
   .sidebar {
     transform: translateX(-100%);
-    width: 260px;
-    transition: transform 0.3s ease;
+    width: fit-content;
   }
+
   .sidebar:not(.collapsed) {
     transform: translateX(0);
   }

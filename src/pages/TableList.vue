@@ -61,20 +61,20 @@
 
 <style scoped>
 .page-container {
-  padding: 20px 30px;
+  padding: 0;
   overflow-y: auto;
 }
 
 .table-card {
   background: white;
-  padding: 20px;
-  border-radius: 4px;
+  padding: 14px 16px;
+  border-radius: 8px;
   border: 1px solid #e8e8e8;
 }
 
 .table-card h3 {
-  margin: 0 0 20px 0;
-  font-size: 18px;
+  margin: 0 0 12px 0;
+  font-size: 16px;
   color: #333;
 }
 
@@ -93,7 +93,7 @@
 }
 
 .styled-table th {
-  padding: 15px;
+  padding: 10px 12px;
   text-align: left;
   font-size: 12px;
   font-weight: 600;
@@ -102,9 +102,9 @@
 }
 
 .styled-table td {
-  padding: 15px;
+  padding: 10px 12px;
   border-bottom: 1px solid #f0f0f0;
-  font-size: 14px;
+  font-size: 13px;
   color: #666;
 }
 

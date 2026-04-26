@@ -19,49 +19,103 @@
       </div>
     </div>
 
-    <!-- SCHEDULE ALERT -->
-    <div
-      v-if="siteInfo && siteInfo.scheduleMessage && siteInfo.scheduleMessage.trim() !== ''"
-      class="schedule-alert-orange"
-    >
-      ⏰ {{ siteInfo.scheduleMessage }} 
+    <div class="alert-grid">
+  <!-- QUOTA ALERT -->
+  <div v-if="isQuotaExceeded" class="alert-box quota">
+    <div class="alert-title">⚠️ Quota Limit</div>
+    <div class="alert-text">
+      Quota exceeded. Resets daily at midnight (Pacific Time).
     </div>
+  </div>
 
-    <!-- SUMMARY -->
-    <div class="summary-card">
-      <div class="summary-item">
-        <span class="label">Total URLs</span>
-        <span class="value">{{ totalUrlCount }}</span>
-      </div>
-      <div class="summary-item">
-        <span class="label">Valid Urls</span>
-        <span class="value success">{{ successCount }}</span>
-      </div>
-      <div class="summary-item">
-        <span class="label">Issues</span>
-        <span class="value failed">{{ failedCount }}</span>
-      </div>
+  <!-- SCHEDULE ALERT -->
+  <div
+    v-if="siteInfo && siteInfo.scheduleMessage && siteInfo.scheduleMessage.trim() !== ''"
+    class="alert-box schedule"
+  >
+    <div class="alert-title">⏰ Queue Schedule</div>
+    <div class="alert-text">
+      {{ siteInfo.scheduleMessage }}
     </div>
+  </div>
+</div>
 
-    <div class="summary-card">
-      <div class="summary-item">
-        <span class="label">Indexed</span>
-        <span class="value success">{{ indexed }}</span>
-      </div>
-      <div class="summary-item">
-        <span class="label">DeIndexed</span>
-        <span class="value success">{{ deIndexed }}</span>
-      </div>
-      <div class="summary-item">
-        <span class="label">Index Failed</span>
-        <span class="value failed">{{ indexedFailed }}</span>
-      </div>
-      <div class="summary-item">
-        <span class="label">Total Queued</span>
-        <span class="value">{{ indexedQueued }}</span>
-      </div>
-    </div>
 
+<!-- SINGLE SUMMARY CARD -->
+<div class="summary-card">
+  <div class="summary-item clickable"
+       :class="{ active: selectedFilter === 'ALL' }"
+       @click="applyFilter('ALL')">
+    <span class="label">Total URLs</span>
+    <span class="value">{{ totalUrlCount }}</span>
+  </div>
+
+  <div class="summary-item clickable"
+       :class="{ active: selectedFilter === 'SUCCESS' }"
+       @click="applyFilter('SUCCESS')">
+    <span class="label">Valid URLs</span>
+    <span class="value success">{{ successCount }}</span>
+  </div>
+
+  <div class="summary-item clickable"
+       :class="{ active: selectedFilter === 'FAILED' }"
+       @click="applyFilter('FAILED')">
+    <span class="label">Issues</span>
+    <span class="value failed">{{ failedCount }}</span>
+  </div>
+
+  <div class="summary-item clickable"
+       :class="{ active: selectedFilter === 'INDEXED' }"
+       @click="applyFilter('INDEXED')">
+    <span class="label">Indexed</span>
+    <span class="value success">{{ indexed }}</span>
+  </div>
+
+  <div class="summary-item clickable"
+       :class="{ active: selectedFilter === 'DEINDEXED' }"
+       @click="applyFilter('DEINDEXED')">
+    <span class="label">DeIndexed</span>
+    <span class="value success">{{ deIndexed }}</span>
+  </div>
+
+  <div class="summary-item clickable"
+       :class="{ active: selectedFilter === 'INDEX_FAILED' }"
+       @click="applyFilter('INDEX_FAILED')">
+    <span class="label">Index Failed</span>
+    <span class="value failed">{{ indexedFailed }}</span>
+  </div>
+
+  <div class="summary-item clickable"
+       :class="{ active: selectedFilter === 'QUEUED' }"
+       @click="applyFilter('QUEUED')">
+    <span class="label">Total Queued</span>
+    <span class="value">{{ indexedQueued }}</span>
+  </div>
+</div>
+
+    <!-- GOOGLE SYNC BUTTON -->
+    <div class="top-action-bar">
+  <button class="sync-btn" @click="startGoogleSync" :disabled="isSyncing">
+    🔄 Google Sync
+  </button>
+</div>
+
+<!-- SYNC PROGRESS -->
+<div v-if="isSyncing" class="sync-progress-card">
+  <div class="sync-header">
+    <span>🔄 Syncing with Google...</span>
+    <span>{{ syncCompleted }} / {{ syncTotal }}</span>
+  </div>
+
+  <div class="progress-bar">
+    <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
+  </div>
+
+  <div class="sync-stats">
+    <span class="success">✔ {{ syncCompleted }}</span>
+    <span class="failed">✖ {{ syncFailed }}</span>
+  </div>
+</div>
     <!-- BULK BUTTON -->
     <div style="margin-bottom: 15px;">
       <button
@@ -73,9 +127,18 @@
       </button>
     </div>
 
+
     <!-- TABLE -->
 
-    
+      <!-- 🔍 SEARCH BAR -->
+  <div class="search-bar">
+      <input
+        v-model="searchQuery"
+        type="text"
+        placeholder="Search URLs..."
+        class="search-input"
+      />
+    </div>
     <div class="table-scroll">
 
       <table class="urls-table">
@@ -140,13 +203,14 @@
             <td>{{ item.indexedAt }}</td>
 
             <td class="action-cell">
-              <button title="View Logs" class="row-index-btn view" @click="viewLogs(item.id)">Logs</button>
               <button title="Instant Index" class="row-index-btn" @click="indexSingleUrl(item.id)">
                 ReIndex
               </button>
               <button title="Queue Index" class="row-index-btn failed" @click="removeIndexSingleUrl(item.id)">
                 DeIndex
               </button>
+              <button title="View Logs" class="row-index-btn view" @click="viewLogs(item.id)">Logs</button>
+
             </td>
           </tr>
 
@@ -195,11 +259,11 @@
     <transition name="overlay">
   <div
     v-if="showLogsModal"
-    class="modal-overlay"
+    class="modal-backdrop"
     @click.self="showLogsModal = false"
   >
     <transition name="modal">
-      <div class="modal">
+      <div class="modal-box modal-box--logs">
         <!-- Close icon -->
         <span class="modal-close" @click="showLogsModal = false">
           <svg xmlns="http://www.w3.org/2000/svg" class="close-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -214,6 +278,7 @@
             <tr>
               <th>Type</th>
               <th>Status</th>
+              <th>Message</th>
               <th>Date</th>
             </tr>
           </thead>
@@ -224,6 +289,7 @@
               <td :class="log.status === 'Success' ? 'success' : 'failed'">
                 {{ log.status }}
               </td>
+              <td>{{ log.message }}</td>
               <td>{{ new Date(log.date).toLocaleDateString() }}</td>
             </tr>
           </tbody>
@@ -249,6 +315,146 @@ import Swal from "sweetalert2"
 import Loading from "vue-loading-overlay"
 import 'vue-loading-overlay/dist/css/index.css'
 
+const selectedFilter = ref<string | null>(null);
+  const searchQuery = ref("")
+  let debounceTimer: any = null
+
+  watch(searchQuery, () => {
+  clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(() => {
+    pageInfo.value.page = 1
+    fetchCrawlDetails()
+  }, 500)
+})
+//   const fetchCrawlDetails = async () => {
+//   const res = await api.get(
+//     `/crawl/${siteId}/details`,
+//     {
+//       params: {
+//         PageNo: pageInfo.value.page,
+//         PageSize: pageInfo.value.pageSize,
+//         filter: selectedFilter.value // 👈 ADD THIS
+//       }
+//     }
+//   )
+
+//   urls.value = res.data.data
+//   pageInfo.value = res.data.pageInfo
+// }
+
+const applyFilter = (filter: string | null) => {
+  selectedFilter.value = filter
+  pageInfo.value.page = 1
+  fetchCrawlDetails()
+}
+///google sync
+
+// SYNC STATE
+const isSyncing = ref(false)
+const syncTotal = ref(0)
+const syncCompleted = ref(0)
+const syncFailed = ref(0)
+let eventSource: EventSource|null = null
+
+const progressPercent = computed(() => 
+  syncTotal.value === 0 ? 0 : Math.round((syncCompleted.value / syncTotal.value) * 100)
+)
+
+// START SYNC
+const startGoogleSync = async () => {
+  if (isSyncing.value) return
+
+  const confirm = await Swal.fire({
+  title: 'Confirm Google Sync',
+  text: 'This will Syncs and updates the indexing status of URLs in the grid.',
+  icon: 'warning',
+  showCancelButton: true,
+  confirmButtonText: 'Yes',
+  cancelButtonText: 'Cancel',
+  confirmButtonColor: '#22c55e'
+  // remove reverseButtons
+});
+
+  if (!confirm.isConfirmed) return
+
+  isSyncing.value = true
+  syncTotal.value = 0
+  syncCompleted.value = 0
+  syncFailed.value = 0
+
+  // 🔥 START SSE FIRST (no waiting)
+  connectSSE()
+
+  try {
+    await api.post(`/crawl/sync-url-to-google?websiteId=${siteId}`)
+  } catch (err) {
+    console.error(err)
+
+    isSyncing.value = false
+    eventSource?.close()
+    eventSource = null
+
+    Swal.fire("Error", "Failed to start sync", "error")
+  }
+}
+
+const connectSSE = () => {
+  if (eventSource) return // ✅ prevent duplicate connections
+
+  eventSource = new EventSource(
+    `${import.meta.env.VITE_API_BASE_URL}/crawl/get-sync-url-to-google/${siteId}`
+  )
+
+  eventSource.onmessage = (event) => {
+    if (!event.data) return
+
+    const data = JSON.parse(event.data)
+
+    syncTotal.value = data.Total ?? syncTotal.value
+    syncCompleted.value = data.Completed ?? syncCompleted.value
+    syncFailed.value = data.Failed ?? syncFailed.value
+
+    // optional: mark syncing if we get any progress
+    if (!isSyncing.value) isSyncing.value = true
+
+    if (data.status === "completed") {
+      isSyncing.value = false
+
+      eventSource?.close()
+      eventSource = null
+
+      fetchCrawlDetails()
+      fetchCrawlCounts()
+    }
+  }
+
+  eventSource.onerror = () => {
+    eventSource?.close()
+    eventSource = null
+
+    // 🔁 optional auto-reconnect (only if still syncing)
+    if (isSyncing.value) {
+      setTimeout(connectSSE, 3000)
+    }
+  }
+}
+///google sync
+const isQuotaExceeded = ref(false)
+
+const fetchIndexLimit = async () => {
+  try {
+    const res = await api.get(`/crawl/index-limit`)
+
+    if (res?.data?.isSuccess) {
+      isQuotaExceeded.value = res.data.data === true
+    } else {
+      isQuotaExceeded.value = false
+    }
+  } catch (err) {
+    console.error("Index limit error:", err)
+    isQuotaExceeded.value = false
+  }
+}
 
 const showLogsModal = ref(false); // controls modal visibility
 const logs = ref<any[]>([]); // store logs
@@ -366,10 +572,27 @@ const counts = ref<CrawlCount>({
 /* API */
 const fetchCrawlDetails = async () => {
   const res = await api.get(
-    `/crawl/${siteId}/details?PageNo=${pageInfo.value.page}&PageSize=${pageInfo.value.pageSize}`
+    `/crawl/${siteId}/details`,
+    {
+      params: {
+      SearchBy: searchQuery.value,     // ✅ match backend
+      Filter: selectedFilter.value,    // ✅ match backend
+      SortBy: null,                   // or your sorting value
+      PageNo: pageInfo.value.page,
+      PageSize: pageInfo.value.pageSize
+    }
+    }
+
   )
   urls.value = res.data.data
-  pageInfo.value = res.data.pageInfo
+
+  const p = res.data.pageInfo
+
+  pageInfo.value.page = p.page
+  pageInfo.value.pageSize = p.pageSize
+  pageInfo.value.totalCount = p.totalCount
+  pageInfo.value.hasNextPage = p.hasNextPage
+  pageInfo.value.hasPreviousPage = p.hasPreviousPage
 }
 
 const fetchCrawlCounts = async () => {
@@ -428,7 +651,7 @@ const indexSelectedUrls = async () => {
     showCancelButton: true,
     showDenyButton: true,
     confirmButtonText: "📥 Index",
-    denyButtonText: "🗑️ Remove Index",
+    denyButtonText: "🗑️ DeIndex",
     confirmButtonColor: "#22c55e",
     denyButtonColor: "#ef4444",
     cancelButtonText: "Cancel"
@@ -498,7 +721,7 @@ const indexSingleUrl = async (id: number) => {
         });
 
         if (res?.data?.isSuccess) {
-          Swal.fire("Indexed", "URL Indexed Instantly", "success");
+          Swal.fire("Submitted", "URL has been successfully submitted for indexing", "success");
         } else {
           Swal.fire("Failed", res?.data?.meta || "Something went wrong", "error");
         }
@@ -537,7 +760,7 @@ const indexSingleUrl = async (id: number) => {
         });
 
         if (resQueue?.data?.isSuccess) {
-          Swal.fire("Queued", "URL queued for indexing", "success");
+          Swal.fire("Queued", "URLs queued for indexing", "success");
         } else {
           Swal.fire("Failed", resQueue?.data?.meta || "Something went wrong", "error");
         }
@@ -555,6 +778,8 @@ const indexSingleUrl = async (id: number) => {
     const msg = err?.response?.data?.error?.description || "You are not authorized to perform indexing.";
     Swal.fire("Failed", msg, "error");
     isLoading.value = false;
+     fetchCrawlDetails();
+    fetchCrawlCounts();
   }
 };
 
@@ -589,7 +814,7 @@ const removeIndexSingleUrl = async (id: number) => {
         });
 
         if (res?.data?.isSuccess) {
-          Swal.fire("Removed", "URL deindexed instantly", "success");
+          Swal.fire("Submitted", "URL has been successfully submitted for deindexing", "success");
         } else {
           Swal.fire("Failed", res?.data?.meta || "Something went wrong", "error");
         }
@@ -628,7 +853,7 @@ const removeIndexSingleUrl = async (id: number) => {
         });
 
         if (resQueue?.data?.isSuccess) {
-          Swal.fire("Queued", "URL queued for deindexing", "success");
+          Swal.fire("Queued", "URLs queued for deindexing", "success");
         } else {
           Swal.fire("Failed", resQueue?.data?.meta || "Something went wrong", "error");
         }
@@ -659,8 +884,9 @@ const indexed = computed(() => counts.value.indexedSucceed)
 const indexedFailed = computed(() => counts.value.indexedFailed)
 const indexedQueued = computed(() => counts.value.indexedQueued)
 const deIndexed = computed(() => counts.value.deIndexedSucceed)
-const totalPages = computed(() => Math.ceil(counts.value.totalCount / pageInfo.value.pageSize))
-
+const totalPages = computed(() => {
+  return Math.ceil(pageInfo.value.totalCount / pageInfo.value.pageSize) || 1
+})
 /* PAGINATION */
 const nextPage = () => pageInfo.value.hasNextPage && pageInfo.value.page++
 const previousPage = () => pageInfo.value.hasPreviousPage && pageInfo.value.page--
@@ -668,6 +894,13 @@ const previousPage = () => pageInfo.value.hasPreviousPage && pageInfo.value.page
 onMounted(() => {
   fetchCrawlDetails()
   fetchCrawlCounts()
+  fetchIndexLimit()  
+  connectSSE()
+ 
+  // if (counts.value.isSyncing) {
+  //   isSyncing.value = true
+  //   connectSSE()
+  // }
 })
 
 watch(() => pageInfo.value.page, fetchCrawlDetails)
@@ -676,18 +909,18 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
  <style scoped>
 .page-container {
   flex: 1;
-  padding: 30px;
+  padding: 16px;
   overflow-y: auto;
   background: #f9f9f9;
 }
 
 .page-header {
-  margin-bottom: 30px;
+  margin-bottom: 16px;
 }
 
 .back-link {
   display: inline-block;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
   color: #22c55e;
   text-decoration: none;
   font-weight: 500;
@@ -701,14 +934,22 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 
 .summary-card {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
+  grid-template-columns: repeat(7, 1fr); /* 7 boxes in a row */
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 1280px) {
+  /* fallback for smaller screens: scroll horizontally */
+  .summary-card {
+    grid-template-columns: repeat(7, minmax(140px, 1fr));
+    overflow-x: auto;
+  }
 }
 
 .summary-item {
   background: #fff;
-  padding: 20px;
+  padding: 14px 16px;
   border-radius: 8px;
   border: 1px solid #e8e8e8;
   display: flex;
@@ -725,7 +966,7 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 }
 
 .summary-item .value {
-  font-size: 24px;
+  font-size: 20px;
   color: #333;
   font-weight: 700;
 }
@@ -743,7 +984,7 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   overflow-x: auto; /* horizontal scroll for small screens */
   max-width: 100%;
   display: block;
-  max-height: calc(20 * 48px); /* 48px per row including padding/border */
+  max-height: calc(20 * 42px);
   overflow-y: auto;
 }
 
@@ -763,19 +1004,19 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 }
 
 .urls-table th {
-  padding: 15px;
+  padding: 10px 12px;
   text-align: left;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 12px;
   color: #666;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .urls-table td {
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-bottom: 1px solid #f0f0f0;
-  font-size: 14px;
+  font-size: 13px;
   color: #333;
   vertical-align: middle;
 }
@@ -852,17 +1093,17 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 }
 
 .urls-table .action-cell {
-  gap: 8px;
+  gap: 6px;
   justify-content: center;
   align-items: center;
-  min-height: 40px;
+  min-height: 36px;
   white-space: nowrap;
 }
 
 /* Site Info */
 .site-info {
-  margin-top: 6px;
-  font-size: 14px;
+  margin-top: 4px;
+  font-size: 13px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -897,11 +1138,11 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   background: #fff7ed;
   border: 1px solid #f97316;
   color: #f97316;
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 13px;
   font-weight: 500;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -912,18 +1153,18 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  padding: 10px 12px;
   background: #f9f9f9;
   border-top: 1px solid #e8e8e8;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
 .page-size-wrapper {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 14px;
+  font-size: 13px;
   color: #555;
 }
 
@@ -938,22 +1179,22 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 .pagination-wrapper {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .pagination-info {
-  font-size: 14px;
+  font-size: 13px;
   color: #666;
   font-weight: 500;
 }
 
 .pagination-btn {
-  padding: 6px 14px;
+  padding: 5px 10px;
   background: #f5f5f5;
   border: 1px solid #e8e8e8;
   border-radius: 6px;
   color: #666;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -1045,30 +1286,10 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  padding: 10px 12px;
 }
 
-/* Logs Modal */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal {
-  position: relative;
-  background: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  width: 500px;
-  max-width: 90%;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-}
-
+/* Logs Modal — backdrop/box from theme.css */
 .modal-close {
   position: absolute;
   top: 12px;
@@ -1157,5 +1378,88 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   opacity: 0;
   transform: translateY(-20px) scale(0.9);
 }
+
+.alert-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.alert-box {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Quota - warning style */
+.alert-box.quota {
+  background: #fff7ed;
+  border-color: #f97316;
+  color: #ea580c;
+}
+
+/* Schedule - info style */
+.alert-box.schedule {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+}
+
+.alert-title {
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.alert-text {
+  font-size: 13px;
+}
+
+.top-action-bar { display:flex; justify-content:flex-end; margin-bottom:12px; }
+.sync-btn { background:#1cb397; color:#fff; padding:8px 14px; border-radius:6px; border:none; font-weight:600; font-size:13px; cursor:pointer; transition:all 0.2s ease; }
+.sync-btn:hover { background:#1d4ed8; }
+.sync-btn:disabled { opacity:0.6; cursor:not-allowed; }
+
+.sync-progress-card { background:#fff; border:1px solid #e8e8e8; border-left:4px solid #2563eb; border-radius:8px; padding:12px 14px; margin-bottom:14px; }
+.sync-header { display:flex; justify-content:space-between; font-weight:600; margin-bottom:8px; font-size:13px; }
+.progress-bar { width:100%; height:8px; background:#e5e7eb; border-radius:6px; overflow:hidden; }
+.progress-fill { height:100%; background:#2563eb; transition:width 0.3s ease; }
+.sync-stats { display:flex; gap:12px; margin-top:8px; font-size:13px; }
+.sync-stats .success { color:#22c55e; font-weight:600; }
+.sync-stats .failed { color:#ef4444; font-weight:600; }
+
+.summary-item.clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.summary-item.clickable:hover {
+  transform: translateY(-2px);
+  border-color: #22c55e;
+}
+
+.summary-item.active {
+  border: 2px solid #22c55e;
+  background: #f0fdf4;
+}
+
+.search-bar { margin-bottom: 12px; }
+.search-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+.search-input:focus {
+  outline: none;
+  border-color: #22c55e;
+  box-shadow: 0 0 0 2px rgba(34,197,94,0.2);
+}
+
  </style>
   

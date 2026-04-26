@@ -41,26 +41,26 @@
 
 /* Header (Fixed) */
 .settings-header {
-  padding: 24px;
-  padding-bottom: 0;
+  padding: 14px 16px 0;
   flex-shrink: 0;
 }
 
 .settings-header h1 {
-  margin-bottom: 16px;
-  font-size: 28px;
+  margin-bottom: 10px;
+  font-size: 22px;
   font-weight: 700;
 }
 
 /* Menu */
 .settings-menu {
   display: flex;
-  gap: 16px;
+  gap: 8px;
   border-bottom: 1px solid #e5e7eb;
 }
 
 .menu-item {
-  padding: 12px 14px;
+  padding: 8px 12px;
+  font-size: 13px;
   text-decoration: none;
   color: #6b7280;
   font-weight: 500;
@@ -76,7 +76,7 @@
 .settings-content {
   flex: 1;
   overflow-y: auto;
-  padding: 24px;
+  padding: 16px;
 }
 
 /* Optional: smooth scrolling */

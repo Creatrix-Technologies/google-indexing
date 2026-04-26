@@ -1,7 +1,7 @@
 <template>
   <transition name="modal">
     <div v-if="show" class="modal-backdrop">
-      <div class="modal-container">
+      <div class="modal-box modal-box--xs">
 
         <!-- Close Icon -->
         <button class="close-btn" @click="close">✕</button>
@@ -177,26 +177,8 @@ watch(password, () => {
 </script>
 
 <style scoped>
-/* ------------------ Modal Backdrop ------------------ */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  backdrop-filter: blur(4px);
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-}
-
-/* ------------------ Modal Container ------------------ */
-.modal-container {
-  width: 420px;
-  position: relative;
-  background: #fff;
-  padding: 32px;
-  border-radius: 16px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+/* Shell: theme.css (.modal-backdrop, .modal-box) */
+.modal-box.modal-box--xs {
   animation: scaleIn 0.25s ease;
 }
 
@@ -221,18 +203,19 @@ watch(password, () => {
 .close-btn:hover { color: #d22; }
 
 /* ------------------ Typography ------------------ */
-.title { font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 4px; }
-.subtitle { text-align: center; font-size: 14px; color: #666; margin-bottom: 24px; }
+.title { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 4px; }
+.subtitle { text-align: center; font-size: 13px; color: #666; margin-bottom: 18px; }
 
 /* ------------------ Form Styles ------------------ */
-.form-group { margin-bottom: 18px; }
-.form-label { display: block; text-align: left; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: #333; }
+.form-group { margin-bottom: 14px; }
+.form-label { display: block; text-align: left; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #333; }
 .form-group input {
   width: 100%;
-  padding: 12px;
-  border-radius: 8px;
+  padding: 9px 11px;
+  border-radius: 6px;
   border: 1px solid #d6d6d6;
   transition: all 0.2s;
+  font-size: 13px;
 }
 .form-group input:focus {
   border-color: #4c6fff;
@@ -241,10 +224,10 @@ watch(password, () => {
 }
 
 /* ------------------ Buttons ------------------ */
-.btn-primary { width: 100%; padding: 12px; background: #4c6fff; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: 0.2s; }
+.btn-primary { width: 100%; padding: 10px; background: #4c6fff; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 6px; transition: 0.2s; font-size: 14px; }
 .btn-primary:hover { background: #3b57d8; }
 .btn-primary:disabled { background: #a0b0ff; cursor: not-allowed; }
-.btn-secondary { width: 100%; padding: 12px; background: #efefef; border: none; border-radius: 8px; margin-top: 10px; cursor: pointer; transition: 0.2s; }
+.btn-secondary { width: 100%; padding: 10px; background: #efefef; border: none; border-radius: 6px; margin-top: 8px; cursor: pointer; transition: 0.2s; font-size: 14px; }
 .btn-secondary:hover { background: #dedede; }
 
 /* ------------------ Transition ------------------ */

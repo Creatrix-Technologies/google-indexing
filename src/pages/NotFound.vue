@@ -23,18 +23,18 @@
 }
 
 .error-page h1 {
-  font-size: 48px;
+  font-size: 36px;
   font-weight: bold;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .error-page p {
-  font-size: 18px;
-  margin-bottom: 30px;
+  font-size: 15px;
+  margin-bottom: 20px;
 }
 
 .error-page .btn {
-  padding: 10px 20px;
+  padding: 8px 16px;
   background-color: #4c6fff;
   color: #fff;
   text-decoration: none;
@@ -48,9 +48,9 @@
 
 .btn {
   display: inline-block;
-  padding: 12px 24px;
-  margin: 0 10px;         /* space between buttons */
-  border-radius: 8px;
+  padding: 8px 16px;
+  margin: 0 8px;
+  border-radius: 6px;
   font-weight: 600;
   text-decoration: none;
   transition: all 0.3s ease;

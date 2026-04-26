@@ -6,44 +6,54 @@
 
     <div class="header-right">
       <div class="profile-actions">
-       <!-- Subscription Status Icon -->
-<span
-  v-if="!subscriptionStore.isChecking"
-  class="subscription-wrapper"
-  :title="subscriptionStore.isValid
-    ? `Subscription Active (Expire Date: ${formatDate(subscriptionStore.expiresAt)})`
-    : 'Subscription Expired'"
->
-  <!-- ACTIVE -->
-  <svg
-    v-if="subscriptionStore.isValid"
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    class="subscription-icon valid"
-    fill="currentColor"
-  >
-    <path
-      fill-rule="evenodd"
-      d="M12 2l7 4v6c0 5-3.5 9.74-7 10-3.5-.26-7-5-7-10V6l7-4zm3.53 7.47a.75.75 0 00-1.06-1.06L11 11.88 9.53 10.4a.75.75 0 10-1.06 1.06l2 2a.75.75 0 001.06 0l4-4z"
-      clip-rule="evenodd"
-    />
-  </svg>
 
-  <!-- INACTIVE -->
-  <svg
-    v-else
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    class="subscription-icon invalid"
-    fill="currentColor"
-  >
-    <path
-      fill-rule="evenodd"
-      d="M12 2l7 4v6c0 5-3.5 9.74-7 10-3.5-.26-7-5-7-10V6l7-4zm3 7.5a.75.75 0 00-1.06-1.06L12 10.38l-1.94-1.94a.75.75 0 10-1.06 1.06L10.94 11.5l-1.94 1.94a.75.75 0 101.06 1.06L12 12.62l1.94 1.94a.75.75 0 101.06-1.06L13.06 11.5l1.94-1.94z"
-      clip-rule="evenodd"
-    />
-  </svg>
-</span>
+        <!-- Trial Badge -->
+        <span
+          v-if="userLimitStore.hasLimit && !userLimitStore.isChecking"
+          class="trial-badge"
+          title="Trial Account"
+        >
+          Trial
+        </span>
+
+        <!-- Subscription Status Icon -->
+        <span
+          v-if="!subscriptionStore.isChecking && !userLimitStore.hasLimit"
+          class="subscription-wrapper"
+          :title="subscriptionStore.isValid
+            ? `Subscription Active (Expire Date: ${formatDate(subscriptionStore.expiresAt)})`
+            : 'Subscription Expired'"
+        >
+          <!-- ACTIVE -->
+          <svg
+            v-if="subscriptionStore.isValid"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            class="subscription-icon valid"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M12 2l7 4v6c0 5-3.5 9.74-7 10-3.5-.26-7-5-7-10V6l7-4zm3.53 7.47a.75.75 0 00-1.06-1.06L11 11.88 9.53 10.4a.75.75 0 10-1.06 1.06l2 2a.75.75 0 001.06 0l4-4z"
+              clip-rule="evenodd"
+            />
+          </svg>
+
+          <!-- INACTIVE -->
+          <svg
+            v-else
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            class="subscription-icon invalid"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M12 2l7 4v6c0 5-3.5 9.74-7 10-3.5-.26-7-5-7-10V6l7-4zm3 7.5a.75.75 0 00-1.06-1.06L12 10.38l-1.94-1.94a.75.75 0 10-1.06 1.06L10.94 11.5l-1.94 1.94a.75.75 0 101.06 1.06L12 12.62l1.94 1.94a.75.75 0 101.06-1.06L13.06 11.5l1.94-1.94z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </span>
 
         <!-- User Avatar -->
         <span class="user-avatar" :title="authStore.userEmail">
@@ -72,19 +82,19 @@
             />
           </svg>
         </button>
+
       </div>
     </div>
   </header>
 
-    <!-- Google Config Warning -->
-    <div
+  <!-- Google Config Warning -->
+  <div
     v-if="!googleConfigStore.isValid && !googleConfigStore.isChecking"
     class="google-config-bar"
   >
     <span>
       ⚠️ Google configuration is missing or invalid, which may result in missing
-      or incomplete data. Please update your Google configuration to access all
-      features.
+      or incomplete data.
     </span>
     <router-link to="/settings/google-configuration" class="config-link">
       Connect Now
@@ -98,14 +108,17 @@ import { onMounted } from 'vue'
 import { logout, useAuthStore } from '../Store/auth'
 import { useGoogleConfigStore } from '../Shared/googleConfig'
 import { useSubscriptionStore } from '../Shared/subscription'
+import { useUserLimitStore } from '../Shared/userLimit'
 
 const authStore = useAuthStore()
 const googleConfigStore = useGoogleConfigStore()
 const subscriptionStore = useSubscriptionStore()
+const userLimitStore = useUserLimitStore()
 
 onMounted(() => {
   googleConfigStore.check()
   subscriptionStore.checkSubscription()
+  userLimitStore.checkLimit()
 })
 
 const handleLogout = () => {
@@ -115,68 +128,92 @@ const handleLogout = () => {
 const formatDate = (dateStr: string | null) => {
   if (!dateStr) return '-'
   const date = new Date(dateStr)
-  return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+  return date.toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  })
 }
-
 </script>
 
 <style scoped>
-/* Google Config Warning Bar */
+
+/* Trial Badge */
+.trial-badge {
+  background: linear-gradient(135deg, #3b82f6, #06b6d4);
+  color: #ffffff;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Google Config Warning */
 .google-config-bar {
   position: sticky;
-  top: 70px; /* match header height */
- 
+  top: var(--header-height, 52px);
+  z-index: 999;
   background: #fef3c7;
   color: #92400e;
-  padding: 10px 30px;
+  padding: 6px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   border-bottom: 1px solid #fde68a;
+  gap: 12px;
 }
 
 .config-link {
   background: #f59e0b;
   color: #ffffff;
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: 4px 10px;
+  border-radius: 5px;
   font-weight: 600;
+  font-size: 12px;
   text-decoration: none;
+  flex-shrink: 0;
 }
 
-.config-link:hover {
-  background: #d97706;
-}
-
-/* Header Styles */
 .header {
+  position: sticky;
+  top: 0;
+  z-index: 1000; /* below modals (theme --z-modal-backdrop) */
+
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 30px;
-  background: #ffffff;
-  border-bottom: 1px solid #e8e8e8;
-  height: 70px;
+  padding: 6px 14px;
+  background: var(--color-card-bg);
+  border-bottom: 1px solid var(--color-border);
+  min-height: var(--header-height);
+  box-sizing: border-box;
+}
+
+.main-container,
+.page-container,
+body,
+#app {
+  overflow: hidden;  /* ❌ THIS BREAKS STICKY */
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 12px;
 }
 
 .profile-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
-/* Subscription Wrapper (Large Icon) */
+/* Subscription */
 .subscription-wrapper {
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: #f9fafb;
   display: flex;
@@ -184,10 +221,9 @@ const formatDate = (dateStr: string | null) => {
   justify-content: center;
 }
 
-/* Subscription Icon (Large SVG) */
 .subscription-icon {
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
 }
 
 .subscription-icon.valid {
@@ -198,10 +234,10 @@ const formatDate = (dateStr: string | null) => {
   color: #ef4444;
 }
 
-/* User Avatar */
+/* User */
 .user-avatar {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   background: #22c55e;
   border-radius: 50%;
   display: flex;
@@ -209,17 +245,19 @@ const formatDate = (dateStr: string | null) => {
   justify-content: center;
   color: #ffffff;
   font-weight: 600;
-  font-size: 12px;
+  font-size: 11px;
 }
 
-/* User Name */
 .user-name {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
-  color: #333;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
 }
 
-/* Logout */
 .logout-btn {
   background: none;
   border: none;
@@ -227,8 +265,8 @@ const formatDate = (dateStr: string | null) => {
 }
 
 .icon-logout {
-  width: 18px;
-  height: 18px;
+  width: 17px;
+  height: 17px;
   stroke: #333;
 }
 
@@ -237,4 +275,5 @@ const formatDate = (dateStr: string | null) => {
     display: none;
   }
 }
+
 </style>

@@ -60,16 +60,16 @@ const toggleSidebar = () => {
 /* Main content margin according to sidebar */
 .main-content {
   flex: 1;
-  margin-left: 260px;
+  margin-left: var(--sidebar-width, 220px);
   transition: margin-left 0.3s ease;
 }
 
 .sidebar.collapsed + .main-content {
-  margin-left: 72px;
+  margin-left: var(--sidebar-collapsed, 60px);
 }
 
 .main-content .page-wrapper {
-  padding: 20px;
+  padding: var(--page-padding, 16px);
   min-height: 100vh;
   box-sizing: border-box;
 }
@@ -90,4 +90,5 @@ const toggleSidebar = () => {
     z-index: 999;
   }
 }
+
 </style>

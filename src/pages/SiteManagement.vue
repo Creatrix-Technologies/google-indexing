@@ -1,11 +1,18 @@
 <template>
   <div class="page-container">
+    <div v-if="loading" class="page-loader">
+  <div class="loader-box">
+    <span class="spinner"></span>
+    <p>Syncing sites from Google...</p>
+  </div>
+</div>
     <div class="page-header">
       <div>
         <h1>Site Management</h1>
         <p class="subtitle">Manage and configure your sites</p>
       </div>
-      <button class="btn-primary" @click="openAddModal">+ Add Site</button>
+      
+      <button v-if="googleConfigStore.isValid" class="btn-primary" @click="syncsites" :disabled="loading">Sync Sites</button>
     </div>
 
     <!-- Site List Table -->
@@ -13,7 +20,7 @@
       <table class="sites-table">
         <thead>
           <tr>
-            <th>Site Name</th>
+            <!-- <th>Site Name</th> -->
             <th>URL</th>
             <th>Type</th>
             <th>Status</th>
@@ -25,10 +32,10 @@
 
         <tbody>
           <tr v-for="site in sites" :key="site.id">
-            <td class="site-name-cell">
+            <!-- <td class="site-name-cell">
               <div class="site-icon">{{ site.name.charAt(0).toUpperCase() }}</div>
               <span>{{ site.name }}</span>
-            </td>
+            </td> -->
 
             <td>{{ site.url }}</td>
             <td>{{ site.type }}</td>
@@ -62,8 +69,8 @@
     </div>
 
     <!-- Add/Edit Modal -->
-    <div v-if="showModal" class="modal-overlay" @click="closeModal">
-      <div class="modal-content" @click.stop>
+    <div v-if="showModal" class="modal-backdrop" @click.self="closeModal">
+      <div class="modal-box modal-box--lg" @click.stop>
         <div class="modal-header">
           <h2>{{ isEditing ? 'Edit Site' : 'Add New Site' }}</h2>
           <button class="close-btn" @click="closeModal">&times;</button>
@@ -166,6 +173,9 @@ import api from '../api'
 import { useToast } from 'vue-toastification'
 import { useGoogleConfigStore } from '../Shared/googleConfig'
 import { useSubscriptionStore } from '../Shared/subscription'
+import Swal from 'sweetalert2'
+
+const loading = ref(false)
 
 const toast = useToast()
 const googleConfigStore = useGoogleConfigStore()
@@ -219,6 +229,45 @@ const fetchSites = async () => {
   }))
 }
 
+
+
+const syncsites = async () => {
+  const result = await Swal.fire({
+    text: 'This will sync all available sites from your Google account.',
+    title: `Do you want to continue?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes',
+    cancelButtonText: 'No'
+  })
+
+  if (!result.isConfirmed) return
+
+  loading.value = true
+
+  try {
+    const response = await api.post('site/sync', {})
+
+    if (response.data?.isSuccess === false) {
+      toast.error(response.data.error?.description || 'Failed to sync Google Sites')
+      return
+    }
+
+    toast.success(response.data?.message || 'Google Sites synced successfully.')
+    await fetchSites()
+
+  } catch (err: any) {
+    toast.error(
+      err?.response?.data?.error?.description ||
+      err?.response?.data?.message ||
+      err?.message ||
+      'An error occurred while syncing'
+    )
+  } finally {
+    loading.value = false
+  }
+}
+
 const saveSite = async () => {
   try {
     await api.post('/site', {
@@ -239,20 +288,20 @@ const saveSite = async () => {
   }
 }
 
-const openAddModal = async () => {
-  isEditing.value = false
-  editingId.value = null
-  formData.value = {
-    name: '',
-    url: '',
-    type: '',
-    activeStatus: 'Active',
-    description: '',
-    ignoreRobotTxt: false
-  }
-  showModal.value = true
-  fetchAvailableUrls()
-}
+// const openAddModal = async () => {
+//   isEditing.value = false
+//   editingId.value = null
+//   formData.value = {
+//     name: '',
+//     url: '',
+//     type: '',
+//     activeStatus: 'Active',
+//     description: '',
+//     ignoreRobotTxt: false
+//   }
+//   showModal.value = true
+//   fetchAvailableUrls()
+// }
 
 const editSite = async (site: Site) => {
   isEditing.value = true
@@ -295,7 +344,7 @@ onMounted(() => {
     <style scoped>
       .page-container {
   flex: 1;
-  padding: 30px;
+  padding: 16px;
   overflow-y: auto;
   background: #f9f9f9;
 }
@@ -304,29 +353,30 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 16px;
 }
 
 .page-header h1 {
-  font-size: 32px;
+  font-size: 24px;
   color: #333;
-  margin: 0 0 10px 0;
+  margin: 0 0 6px 0;
   font-weight: 700;
 }
 
 .subtitle {
-  font-size: 14px;
+  font-size: 13px;
   color: #999;
   margin: 0;
 }
 
 .btn-primary {
-  padding: 10px 20px;
+  padding: 8px 16px;
   background: #22c55e;
   color: #ffffff;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   font-weight: 600;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.3s;
 }
@@ -336,12 +386,13 @@ onMounted(() => {
 }
 
 .btn-secondary {
-  padding: 10px 20px;
+  padding: 8px 16px;
   background: #e8e8e8;
   color: #333;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   font-weight: 600;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.3s;
 }
@@ -352,10 +403,10 @@ onMounted(() => {
 
 .table-card {
   background: #ffffff;
-  border-radius: 12px;
+  border-radius: 10px;
   border: 1px solid #e8e8e8;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .sites-table {
@@ -369,19 +420,19 @@ onMounted(() => {
 }
 
 .sites-table th {
-  padding: 15px;
+  padding: 10px 12px;
   text-align: left;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 12px;
   color: #666;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .sites-table td {
-  padding: 15px;
+  padding: 10px 12px;
   border-bottom: 1px solid #f0f0f0;
-  font-size: 14px;
+  font-size: 13px;
   color: #333;
 }
 
@@ -397,16 +448,16 @@ onMounted(() => {
 }
 
 .site-icon {
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-  border-radius: 8px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 14px;
   flex-shrink: 0;
 }
 
@@ -456,48 +507,25 @@ onMounted(() => {
   color: #ffffff;
 }
 
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  width: 90%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
+/* Modal — shell from theme.css; header/footer local */
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 25px;
+  padding: 14px 18px;
   border-bottom: 1px solid #e8e8e8;
 }
 
 .modal-header h2 {
   margin: 0;
-  font-size: 20px;
+  font-size: 18px;
   color: #333;
 }
 
 .close-btn {
   background: none;
   border: none;
-  font-size: 28px;
+  font-size: 22px;
   cursor: pointer;
   color: #999;
   transition: color 0.2s;
@@ -510,43 +538,43 @@ onMounted(() => {
 .modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  padding: 20px 25px;
+  gap: 8px;
+  padding: 12px 18px;
   border-top: 1px solid #e8e8e8;
   background: #f9f9f9;
 }
 
 form {
-  padding: 25px;
+  padding: 16px 18px;
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 15px;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   font-weight: 600;
   color: #333;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
   width: 100%;
-  padding: 10px 12px;
+  padding: 8px 10px;
   border: 1px solid #e8e8e8;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 13px;
   font-family: inherit;
   transition: border-color 0.2s;
 }
@@ -610,19 +638,19 @@ form {
 }
 
 .toggle-text {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: #666;
 }
 
 @media (max-width: 768px) {
   .page-container {
-    padding: 20px;
+    padding: 14px;
   }
 
   .page-header {
     flex-direction: column;
-    gap: 15px;
+    gap: 12px;
     align-items: flex-start;
   }
 
@@ -639,10 +667,33 @@ form {
     grid-template-columns: 1fr;
   }
 
-  .modal-content {
+  .modal-box.modal-box--lg {
     width: 95%;
     max-height: 95vh;
   }
+}
+
+.page-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255,255,255,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.loader-box {
+  background: #fff;
+  padding: 20px 30px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
     </style>

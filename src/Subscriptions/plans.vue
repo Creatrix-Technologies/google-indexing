@@ -169,7 +169,7 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- MODAL -->
+    <!-- MODAL (styles: theme.css) -->
     <div v-if="showModal" class="modal-backdrop">
       <div class="modal-box">
 
@@ -214,9 +214,9 @@ onMounted(() => {
           <label>Active</label>
         </div>
 
-        <div class="actions">
-          <button class="save" @click="savePlan">Save</button>
-          <button class="cancel" @click="showModal = false">Cancel</button>
+        <div class="modal-actions">
+          <button type="button" class="modal-btn-primary" @click="savePlan">Save</button>
+          <button type="button" class="modal-btn-secondary" @click="showModal = false">Cancel</button>
         </div>
 
       </div>
@@ -226,10 +226,10 @@ onMounted(() => {
 
 <style scoped>
 .page-container {
-  padding: 32px;
+  padding: 16px 18px;
   background: linear-gradient(135deg, #f8fafc, #eef2ff);
   min-height: 100vh;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: var(--font-family, 'Segoe UI', sans-serif);
 }
 
 /* HEADER */
@@ -237,14 +237,15 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 16px;
 }
 
 .add-btn {
   background: linear-gradient(135deg, #3b82f6, #6366f1);
   color: #fff;
-  padding: 10px 22px;
-  border-radius: 10px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
   border: none;
   font-weight: 600;
   cursor: pointer;   /* ✅ pointer */
@@ -253,40 +254,20 @@ onMounted(() => {
 /* GRID */
 .plans-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
 }
 
 /* ❗ CARD CSS NOT CHANGED */
 .plan-card {
   background: white;
-  padding: 18px;
-  border-radius: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
   cursor: pointer;
   box-shadow: 0 6px 18px rgba(0,0,0,0.06);
 }
 .plan-card.inactive {
   opacity: 0.6;
-}
-
-/* MODAL */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  backdrop-filter: blur(3px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-}
-
-.modal-box {
-  background: white;
-  padding: 28px;
-  width: 560px;
-  border-radius: 16px;
-  box-shadow: 0 10px 35px rgba(0,0,0,0.2);
 }
 
 /* FORM */
@@ -297,10 +278,10 @@ onMounted(() => {
 }
 
 input, select {
-  padding: 11px;
-  border-radius: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
   border: 1px solid #d1d5db;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 /* ERROR */
@@ -328,8 +309,8 @@ input, select {
 }
 
 .editor :deep(.ql-editor) {
-  min-height: 260px;
-  font-size: 14px;
+  min-height: 220px;
+  font-size: 13px;
 }
 
 /* CHECKBOX */
@@ -339,33 +320,6 @@ input, select {
   gap: 6px;
 }
 
-/* ACTIONS */
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 20px;
-}
-
-button.save {
-  background: #22c55e;
-  color: white;
-  padding: 10px 22px;
-  border-radius: 10px;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;  /* ✅ pointer */
-}
-
-button.cancel {
-  background: #9ca3af;
-  color: white;
-  padding: 10px 22px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;  /* ✅ pointer */
-}
-
 .loading {
   font-weight: 600;
 }
@@ -373,14 +327,14 @@ button.cancel {
 /* CARD */
 .plan-card {
   background: #0f766e; /* teal green */
-  padding: 22px;
-  border-radius: 16px;
+  padding: 16px 18px;
+  border-radius: 12px;
   cursor: pointer;
-  box-shadow: 0 8px 22px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
   color: #ffffff; /* all text white */
   display: flex;
   flex-direction: column;
-  gap: 14px; /* ✅ correct spacing */
+  gap: 10px;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -402,7 +356,7 @@ button.cancel {
 
 .card-header h3 {
   margin: 0;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: white;
 }
@@ -419,8 +373,8 @@ button.cancel {
 
 /* DESCRIPTION */
 .description {
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 13px;
+  line-height: 1.5;
   color: white;
 }
 
@@ -431,7 +385,7 @@ button.cancel {
 /* AMOUNT */
 .amount {
   margin-top: auto;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   color: white;
 }

@@ -27,7 +27,6 @@
         <tbody>
           <tr v-for="item in schedules" :key="item.websiteId">
             <td class="site-name-cell">
-              <div class="site-icon">{{ item.url.charAt(0).toUpperCase() }}</div>
               <span>{{ item.url }}</span>
             </td>
             <td>
@@ -81,7 +80,7 @@
 
             <!-- Actions -->
             <td class="action-cell">
-              <button class="action-btn" @click="openEdit(item)">Update</button>
+              <button class="action-btn" @click="openEdit(item)">Edit</button>
 
               <button
                 class="action-btn"
@@ -101,8 +100,8 @@
     </div>
 
     <!-- Edit Modal -->
-    <div v-if="showModal" class="modal-overlay">
-      <div class="modal-content">
+    <div v-if="showModal" class="modal-backdrop" @click.self="closeModal">
+      <div class="modal-box modal-box--schedule" @click.stop>
         <div class="modal-header">
           <h2>Update Schedule</h2>
           <button class="close-btn" @click="closeModal">×</button>
@@ -311,23 +310,46 @@ const openEdit = (item: Schedule) => {
 const saveSchedule = async () => {
   if (!editingId.value) return
 
-  const now = new Date();
-  const utcDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
-  const dateOnlyUtc = utcDate.toISOString().split('T')[0]; // "yyyy-MM-dd" in UTC
+  try {
+    const now = new Date()
+    const utcDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()))
+    const dateOnlyUtc = utcDate.toISOString().split('T')[0] // "yyyy-MM-dd" in UTC
 
-  await api.post('/schedule/update', {
-    websiteId: editingId.value,
-    frequency: Number(formData.value.frequency),
-    startTime: formData.value.startTime,
-    endTime: formData.value.endTime,
-    maxUrls: formData.value.maxUrls,
-    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    date: dateOnlyUtc
-  })
+    const response = await api.post('/schedule/update', {
+      websiteId: editingId.value,
+      frequency: Number(formData.value.frequency),
+      startTime: formData.value.startTime,
+      endTime: formData.value.endTime,
+      maxUrls: formData.value.maxUrls,
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      date: dateOnlyUtc
+    })
 
-  toast.success('Schedule updated')
-  showModal.value = false
-  fetchSchedules()
+    if (response.data?.isSuccess) {
+      toast.success('Schedule updated')
+      showModal.value = false
+      fetchSchedules()
+    } else {
+      // Handle validation errors from API
+      const errors = response.data?.error?.validationErrors
+      if (errors && errors.length) {
+        const cleanErrors = errors.map((e: string) => e.replace(/'/g, ""))        
+        toast.error(cleanErrors.join(', '))
+      } else {
+        const description = response.data?.error?.description?.replace(/'/g, "") || 'Failed to update schedule'
+        toast.error(description)
+      }
+    }
+  } catch (err: any) {
+    // Handle network or unexpected errors
+    const errors = err.response?.data?.error?.validationErrors
+    const description = err.response?.data?.error?.description
+    const msg = errors?.map((e: string) => e.replace(/'/g, "")).join(', ') 
+                || description?.replace(/'/g, "") 
+                || err.message 
+                || 'Failed to update schedule'
+    toast.error(msg)
+  }
 }
 
 const closeModal = () => (showModal.value = false)
@@ -355,34 +377,32 @@ onMounted(fetchSchedules)
 </script>
 
 <style scoped>
-.page-container { flex: 1; padding: 30px; overflow-y:auto; background:#f9f9f9; }
-.page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; }
-.page-header h1 { font-size:32px; color:#333; margin:0 0 10px 0; font-weight:700; }
-.subtitle { font-size:14px; color:#999; margin:0; }
-.table-card { background:#fff; border-radius:12px; border:1px solid #e8e8e8; overflow:hidden; box-shadow:0 2px 4px rgba(0,0,0,0.05); }
+.page-container { flex: 1; padding: 16px; overflow-y:auto; background:#f9f9f9; }
+.page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+.page-header h1 { font-size:24px; color:#333; margin:0 0 6px 0; font-weight:700; }
+.subtitle { font-size:13px; color:#999; margin:0; }
+.table-card { background:#fff; border-radius:10px; border:1px solid #e8e8e8; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
 .sites-table { width:100%; border-collapse:collapse; }
 .sites-table thead { background:#f5f5f5; border-bottom:1px solid #e8e8e8; }
-.sites-table th { padding:15px; text-align:left; font-weight:600; font-size:13px; color:#666; text-transform:uppercase; letter-spacing:0.5px; }
-.sites-table td { padding:15px; border-bottom:1px solid #f0f0f0; font-size:14px; color:#333; }
+.sites-table th { padding:10px 12px; text-align:left; font-weight:600; font-size:12px; color:#666; text-transform:uppercase; letter-spacing:0.4px; }
+.sites-table td { padding:10px 12px; border-bottom:1px solid #f0f0f0; font-size:13px; color:#333; }
 .sites-table tbody tr:last-child td { border-bottom:none; }
-.site-name-cell { display:flex; align-items:center; gap:10px; }
-.site-icon { width:40px; height:40px; background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%); border-radius:8px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:600; font-size:16px; flex-shrink:0; }
-.status-badge { padding:4px 12px; border-radius:20px; font-size:12px; font-weight:500; background:#e8f5e9; color:#22c55e; }
-.action-cell { display:flex; gap:8px; align-items:center; }
-.action-btn { padding:6px 12px; background:#f5f5f5; border:1px solid #e8e8e8; border-radius:6px; color:#666; font-size:12px; cursor:pointer; transition:all 0.2s; }
+.site-name-cell { display:flex; align-items:center; gap:8px; }
+.site-icon { width:34px; height:34px; background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%); border-radius:6px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:600; font-size:14px; flex-shrink:0; }
+.status-badge { padding:3px 10px; border-radius:20px; font-size:11px; font-weight:500; background:#e8f5e9; color:#22c55e; }
+.action-cell { display:flex; gap:6px; align-items:center; }
+.action-btn { padding:5px 10px; background:#f5f5f5; border:1px solid #e8e8e8; border-radius:6px; color:#666; font-size:11px; cursor:pointer; transition:all 0.2s; }
 .action-btn:hover { background:#22c55e; border-color:#22c55e; color:#fff; }
-.modal-overlay { position:fixed; inset:0; background: rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; }
-.modal-content { background:#fff; border-radius:12px; width:90%; max-width:450px; }
-.modal-header { display:flex; justify-content:space-between; padding:20px; border-bottom:1px solid #e8e8e8; }
-.close-btn { background:none; border:none; font-size:26px; cursor:pointer; color:#999; }
+.modal-header { display:flex; justify-content:space-between; align-items:center; padding:12px 14px; border-bottom:1px solid var(--color-border); }
+.close-btn { background:none; border:none; font-size:22px; cursor:pointer; color:#999; }
 .close-btn:hover { color:#333; }
-form { padding:20px; }
-.site-info { background:#eff6ff; padding:10px; border-radius:8px; margin-bottom:16px; text-align:center; font-weight:600; color:#1d4ed8; }
-.form-group { margin-bottom:20px; }
-.form-group label { display:block; margin-bottom:8px; font-weight:600; }
-.form-group input, .form-group select { width:100%; padding:10px 12px; border:1px solid #e8e8e8; border-radius:6px; }
+form { padding:16px; }
+.site-info { background:#eff6ff; padding:8px 10px; border-radius:6px; margin-bottom:12px; text-align:center; font-weight:600; font-size:13px; color:#1d4ed8; }
+.form-group { margin-bottom:14px; }
+.form-group label { display:block; margin-bottom:6px; font-weight:600; font-size:13px; }
+.form-group input, .form-group select { width:100%; padding:8px 10px; border:1px solid #e8e8e8; border-radius:6px; font-size:13px; }
 .modal-footer { display:flex; justify-content:flex-end; }
-.btn-primary { padding:10px 20px; background:#22c55e; color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer; }
+.btn-primary { padding:8px 16px; background:#22c55e; color:white; border:none; border-radius:6px; font-weight:600; cursor:pointer; font-size:13px; }
 .btn-primary:hover { background:#16a34a; }
 
 .switch {

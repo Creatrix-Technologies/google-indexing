@@ -224,30 +224,30 @@
   <style scoped>
   .page-container {
     flex: 1;
-    padding: 30px;
+    padding: 16px;
     overflow-y: auto;
     background: #f9f9f9;
   }
   
   .page-header h1 {
-    font-size: 32px;
+    font-size: 24px;
     color: #333;
-    margin: 0 0 10px 0;
+    margin: 0 0 6px 0;
     font-weight: 700;
   }
   
   .subtitle {
-    font-size: 14px;
+    font-size: 13px;
     color: #999;
   }
   
   .table-card {
     background: #fff;
-    border-radius: 12px;
+    border-radius: 10px;
     border: 1px solid #e8e8e8;
     overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    margin-bottom: 14px;
   }
   
   .users-table {
@@ -256,19 +256,19 @@
   }
   
   .users-table th {
-    padding: 15px;
+    padding: 10px 12px;
     text-align: left;
     font-weight: 600;
-    font-size: 13px;
+    font-size: 12px;
     color: #666;
     background: #f5f5f5;
     text-transform: uppercase;
   }
   
   .users-table td {
-    padding: 15px;
+    padding: 10px 12px;
     border-bottom: 1px solid #f0f0f0;
-    font-size: 14px;
+    font-size: 13px;
     color: #333;
     vertical-align: top;
   }
@@ -385,19 +385,19 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 20px;
-    padding: 20px;
+    gap: 12px;
+    padding: 12px 14px;
     background: #f9f9f9;
     border-top: 1px solid #e8e8e8;
   }
   
   .pagination-btn {
-    padding: 8px 16px;
+    padding: 6px 12px;
     background: #f5f5f5;
     border: 1px solid #e8e8e8;
     border-radius: 6px;
     color: #666;
-    font-size: 14px;
+    font-size: 13px;
     cursor: pointer;
     transition: all 0.2s;
   }
@@ -414,7 +414,7 @@
   }
   
   .pagination-info {
-    font-size: 14px;
+    font-size: 13px;
     color: #666;
     font-weight: 500;
   }
