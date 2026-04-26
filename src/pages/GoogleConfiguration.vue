@@ -1,13 +1,5 @@
 <template>
-  <div class="page-container">
-    <!-- Header (Fixed) -->
-    <div class="page-header">
-      <p class="subtitle">
-        Configure credentials for Google Search Console and Indexing API
-      </p>
-    </div>
-
-    <!-- Scrollable Content -->
+  <SettingsLayout>
     <div class="page-content">
       <div class="grid">
         <!-- Left Column -->
@@ -116,7 +108,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </SettingsLayout>
 </template>
 
 <script setup lang="ts">
@@ -125,6 +117,7 @@ import api from '../api'
 import { useToast } from 'vue-toastification'
 import { useGoogleConfigStore } from '../Shared/googleConfig'
 import { useSubscriptionStore } from '../Shared/subscription'
+import SettingsLayout from '../components/SettingsLayout.vue'
 const fileInput = ref<HTMLInputElement | null>(null)
 
 const googleConfigStore = useGoogleConfigStore()
@@ -275,120 +268,191 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ===== Layout ===== */
-.page-container {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: #f5f6f8;
-}
-
-/* Header */
-.page-header {
-  padding: 16px 18px;
-  flex-shrink: 0;
-}
-
-.page-header h1 {
-  font-size: 22px;
-  font-weight: 700;
-}
-
-.subtitle {
-  font-size: 13px;
-  color: #666;
-}
-
-/* Scroll Area */
 .page-content {
   flex: 1;
-  overflow-y: auto;
-  padding: 0 18px 18px;
 }
 
-/* Grid */
 .grid {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: var(--space-4);
 }
 
 .column {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
-/* Card */
 .card {
-  background: #fff;
-  border-radius: 8px;
-  padding: 14px 16px;
-  border: 1px solid #e5e7eb;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-xs);
 }
 
-/* Status */
+.card h3 {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semi);
+  letter-spacing: var(--letter-tight);
+  color: var(--color-text);
+  margin: 0 0 var(--space-4) 0;
+}
+
+.hint {
+  font-size: var(--fs-sm);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-3);
+  line-height: 1.55;
+}
+
 .status-box {
-  padding: 12px;
-  border-radius: 6px;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--neutral-50);
+  border: 1px solid var(--color-border);
+  font-size: var(--fs-sm);
+  color: var(--color-text);
+  line-height: 1.55;
+}
+
+.status-box strong {
+  font-weight: var(--fw-semi);
+  color: var(--color-text);
 }
 
 .status-box.success {
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
+  background: var(--success-50);
+  border: 1px solid var(--success-100);
+  color: var(--success-700);
 }
 
 .mono {
-  font-family: monospace;
+  font-family: var(--font-mono);
+  font-size: 12px;
   word-break: break-all;
+  color: var(--color-text);
 }
 
-/* Buttons */
 .actions {
-  margin-top: 14px;
+  margin-top: var(--space-4);
   display: flex;
-  gap: 10px;
+  gap: var(--space-2);
 }
 
 .btn {
   padding: 8px 14px;
-  border-radius: 6px;
-  border: none;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
   cursor: pointer;
+  font-family: inherit;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-medium);
+  transition: background 140ms ease, border-color 140ms ease;
 }
 
 .btn.primary {
-  background: #2563eb;
-  color: white;
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+}
+.btn.primary:hover:not(:disabled) {
+  background: var(--color-accent-hover);
 }
 
 .btn.danger {
-  background: #dc2626;
-  color: white;
+  background: var(--color-card-bg);
+  color: var(--color-danger);
+  border-color: var(--danger-100);
+}
+.btn.danger:hover:not(:disabled) {
+  background: var(--danger-50);
+  border-color: var(--color-danger);
 }
 
 .btn.full {
   width: 100%;
 }
 
-/* Forms */
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .form-group {
-  margin-bottom: 14px;
+  margin-bottom: var(--space-4);
   display: flex;
   flex-direction: column;
 }
 
-input,
-textarea {
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #d1d5db;
+.form-group label {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--color-text);
+  margin-bottom: 6px;
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
+input,
+textarea {
+  padding: 8px 11px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-strong);
+  font-size: var(--fs-base);
+  font-family: inherit;
+  background: var(--color-card-bg);
+  color: var(--color-text);
+  transition: border-color 140ms ease, box-shadow 140ms ease;
 }
+textarea {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  resize: vertical;
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: var(--ring-accent);
+}
+
+.file-input {
+  font-family: inherit;
+  font-size: var(--fs-sm);
+}
+.file-input::file-selector-button {
+  margin-right: var(--space-3);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-card-bg);
+  color: var(--color-text);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+}
+.file-input::file-selector-button:hover {
+  background: var(--color-surface-2);
+}
+
+.info {
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--info-50);
+  border: 1px solid var(--info-100);
+}
+.info h4 {
+  margin: 0 0 var(--space-2) 0;
+  font-size: var(--fs-sm);
+  color: var(--info-700);
+  font-weight: var(--fw-semi);
+}
+.info ol {
+  margin: 0;
+  padding-left: 18px;
+  font-size: var(--fs-sm);
+  color: var(--info-700);
+  line-height: 1.7;
+}
+
 </style>

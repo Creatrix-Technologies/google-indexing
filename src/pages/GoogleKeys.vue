@@ -1,14 +1,5 @@
 <template>
-    <div class="page-container">
-      <!-- Header -->
-      <div class="page-header">
-        <h1>Google Application Keys</h1>
-        <p class="subtitle">
-          Configure Google OAuth Client credentials used for authentication
-        </p>
-      </div>
-  
-      <!-- Scrollable Content -->
+    <SettingsLayout>
       <div class="page-content">
         <div class="grid">
           
@@ -73,13 +64,14 @@
   
         </div>
       </div>
-    </div>
+    </SettingsLayout>
   </template>
   
   <script setup lang="ts">
   import { reactive, ref, onMounted } from 'vue'
   import api from '../api'
   import { useToast } from 'vue-toastification'
+  import SettingsLayout from '../components/SettingsLayout.vue'
   const showClientSecret = ref(false)
   const toast = useToast()
   const loading = ref(false)
@@ -140,139 +132,129 @@
   </script>
   
   <style scoped>
-  
-  .page-container {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background: #f5f6f8;
-  }
-  
-  .page-header {
-    padding: 16px 18px;
-  }
-  
-  .page-header h1 {
-    font-size: 22px;
-    font-weight: 700;
-  }
-  
-  .subtitle {
-    font-size: 13px;
-    color: #666;
-  }
-  
-  .page-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 0 18px 18px;
-  }
-  
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
-  
-  .card {
-    background: #fff;
-    border-radius: 8px;
-    padding: 14px 16px;
-    border: 1px solid #e5e7eb;
-  }
-  
-  .status-box {
-    padding: 12px;
-    border-radius: 6px;
-  }
-  
-  .status-box.success {
-    background: #ecfdf5;
-    border: 1px solid #a7f3d0;
-  }
-  
-  .mono {
-    font-family: monospace;
-    word-break: break-all;
-  }
-  
-  .form-group {
-    margin-bottom: 14px;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  input {
-    padding: 8px;
-    border-radius: 6px;
-    border: 1px solid #d1d5db;
-  }
-  
-  .btn {
-    padding: 8px 12px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    font-size: 13px;
-  }
-  
-  .btn.primary {
-    background: #2563eb;
-    color: white;
-  }
-  
-  .btn.full {
-    width: 100%;
-  }
-  /* Input base */
+.page-content {
+  flex: 1;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: var(--space-4);
+}
+
+.card {
+  background: var(--color-card-bg);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-xs);
+}
+.card h3 {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semi);
+  letter-spacing: var(--letter-tight);
+  margin: 0 0 var(--space-4) 0;
+  color: var(--color-text);
+}
+
+.status-box {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--neutral-50);
+  border: 1px solid var(--color-border);
+  font-size: var(--fs-sm);
+  color: var(--color-text);
+}
+.status-box.success {
+  background: var(--success-50);
+  border-color: var(--success-100);
+  color: var(--success-700);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.form-group {
+  margin-bottom: var(--space-4);
+  display: flex;
+  flex-direction: column;
+}
+.form-group label {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--color-text);
+  margin-bottom: 6px;
+}
+
+.btn {
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-medium);
+  font-family: inherit;
+  transition: background 140ms ease;
+}
+.btn.primary {
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+}
+.btn.primary:hover { background: var(--color-accent-hover); }
+.btn.full { width: 100%; }
+
 .form-group input {
   width: 100%;
-  padding: 8px 10px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 13px;
+  padding: 8px 11px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-base);
+  font-family: inherit;
+  background: var(--color-card-bg);
+  color: var(--color-text);
   outline: none;
-  transition: 0.2s;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
   box-sizing: border-box;
 }
-
+.form-group input::placeholder {
+  color: var(--color-placeholder);
+}
 .form-group input:focus {
-  border-color: #4c6fff;
-  box-shadow: 0 0 0 2px rgba(76, 111, 255, 0.15);
+  border-color: var(--color-accent);
+  box-shadow: var(--ring-accent);
 }
 
-/* Password wrapper */
 .password-wrapper {
   position: relative;
   display: flex;
   align-items: center;
   width: 100%;
 }
-
 .password-wrapper input {
   width: 100%;
   padding-right: 70px;
 }
 
-/* Toggle button */
 .toggle-password {
   position: absolute;
-  right: 10px;
-  background: none;
-  border: none;
-  font-size: 13px;
-  color: #4c6fff;
+  right: 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semi);
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary);
   cursor: pointer;
-  font-weight: 500;
+  transition: color 140ms ease, background 140ms ease;
+}
+.toggle-password:hover {
+  color: var(--color-text);
+  background: var(--color-surface-2);
 }
 
-.toggle-password:hover {
-  text-decoration: underline;
-}
-  @media (max-width: 1024px) {
-    .grid {
-      grid-template-columns: 1fr;
-    }
-  }
-  
   </style>

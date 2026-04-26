@@ -137,143 +137,165 @@ const formatDate = (dateStr: string | null) => {
 </script>
 
 <style scoped>
-
-/* Trial Badge */
-.trial-badge {
-  background: linear-gradient(135deg, #3b82f6, #06b6d4);
-  color: #ffffff;
-  padding: 3px 8px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 600;
-}
-
-/* Google Config Warning */
-.google-config-bar {
-  position: sticky;
-  top: var(--header-height, 52px);
-  z-index: 999;
-  background: #fef3c7;
-  color: #92400e;
-  padding: 6px 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
-  font-weight: 500;
-  border-bottom: 1px solid #fde68a;
-  gap: 12px;
-}
-
-.config-link {
-  background: #f59e0b;
-  color: #ffffff;
-  padding: 4px 10px;
-  border-radius: 5px;
-  font-weight: 600;
-  font-size: 12px;
-  text-decoration: none;
-  flex-shrink: 0;
-}
-
+/* ----------------- Header shell ----------------- */
 .header {
   position: sticky;
   top: 0;
-  z-index: 1000; /* below modals (theme --z-modal-backdrop) */
+  z-index: var(--z-header, 100);
 
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 14px;
-  background: var(--color-card-bg);
+  padding: 0 var(--space-5);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: saturate(180%) blur(8px);
+  -webkit-backdrop-filter: saturate(180%) blur(8px);
   border-bottom: 1px solid var(--color-border);
   min-height: var(--header-height);
   box-sizing: border-box;
-}
-
-.main-container,
-.page-container,
-body,
-#app {
-  overflow: hidden;  /* ❌ THIS BREAKS STICKY */
+  font-family: var(--font-family);
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-4);
 }
 
 .profile-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-3);
 }
 
-/* Subscription */
+/* ----------------- Trial Badge ----------------- */
+.trial-badge {
+  display: inline-flex;
+  align-items: center;
+  background: var(--neutral-100);
+  color: var(--neutral-700);
+  padding: 3px 9px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+}
+
+/* ----------------- Google Config Warning ----------------- */
+.google-config-bar {
+  position: sticky;
+  top: var(--header-height, 56px);
+  z-index: var(--z-config-bar, 99);
+  background: var(--warning-50);
+  color: var(--warning-700);
+  padding: 8px var(--space-5);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-medium);
+  border-bottom: 1px solid var(--warning-100);
+  gap: var(--space-3);
+}
+
+.config-link {
+  background: var(--neutral-900);
+  color: #ffffff;
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-sm);
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: background 140ms ease;
+}
+.config-link:hover {
+  background: var(--neutral-800);
+}
+
+/* ----------------- Subscription ----------------- */
 .subscription-wrapper {
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background: #f9fafb;
+  background: var(--neutral-100);
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1px solid var(--color-border);
 }
 
 .subscription-icon {
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
 }
 
 .subscription-icon.valid {
-  color: #22c55e;
+  color: var(--color-success);
 }
 
 .subscription-icon.invalid {
-  color: #ef4444;
+  color: var(--color-danger);
 }
 
-/* User */
+/* ----------------- User ----------------- */
 .user-avatar {
   width: 28px;
   height: 28px;
-  background: #22c55e;
+  background: var(--neutral-900);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  font-weight: 600;
-  font-size: 11px;
+  font-weight: var(--fw-semi);
+  font-size: var(--fs-xs);
+  letter-spacing: 0;
 }
 
 .user-name {
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-medium);
   color: var(--color-text);
+  letter-spacing: -0.005em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 160px;
+  max-width: 180px;
 }
 
 .logout-btn {
-  background: none;
-  border: none;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
   cursor: pointer;
+  padding: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  transition: background 140ms ease, color 140ms ease,
+              border-color 140ms ease;
+}
+.logout-btn:hover {
+  background: var(--color-surface-2);
+  color: var(--color-text);
 }
 
 .icon-logout {
-  width: 17px;
-  height: 17px;
-  stroke: #333;
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
 }
 
 @media (max-width: 768px) {
+  .header {
+    padding: 0 var(--space-4);
+  }
   .user-name {
     display: none;
   }
 }
-
 </style>

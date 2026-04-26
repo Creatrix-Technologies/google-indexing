@@ -177,7 +177,7 @@
             </td>
 
             <td class="url-cell">
-              <a :href="item.url" target="_blank">{{ item.url }}</a>
+              <a :href="item.url" target="_blank" :title="item.url">{{ item.url }}</a>
             </td>
 
             <td>
@@ -257,50 +257,65 @@
     <Loading :active.sync="logsLoading" :is-full-page="false" />
 
     <transition name="overlay">
-  <div
-    v-if="showLogsModal"
-    class="modal-backdrop"
-    @click.self="showLogsModal = false"
-  >
-    <transition name="modal">
-      <div class="modal-box modal-box--logs">
-        <!-- Close icon -->
-        <span class="modal-close" @click="showLogsModal = false">
-          <svg xmlns="http://www.w3.org/2000/svg" class="close-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </span>
+      <div
+        v-if="showLogsModal"
+        class="modal-backdrop"
+        @click.self="showLogsModal = false"
+      >
+        <transition name="modal">
+          <div class="modal-box modal-box--xl" role="dialog" aria-modal="true">
+            <header class="modal-header">
+              <div>
+                <h3 class="modal-title">Queue logs</h3>
+                <p class="modal-subtitle">Indexing attempts recorded for this URL.</p>
+              </div>
+              <button type="button" class="modal-close" aria-label="Close" @click="showLogsModal = false">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </header>
 
-        <h3>Queue Logs</h3>
+            <div class="modal-body modal-body--flush">
+              <table v-if="logs.length > 0" class="logs-table">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Message</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(log, index) in logs" :key="index">
+                    <td>{{ log.type }}</td>
+                    <td :class="log.status === 'Success' ? 'success' : 'failed'">
+                      {{ log.status }}
+                    </td>
+                    <td>{{ log.message }}</td>
+                    <td>{{ new Date(log.date).toLocaleDateString() }}</td>
+                  </tr>
+                </tbody>
+              </table>
 
-        <table v-if="logs.length > 0" class="logs-table">
-          <thead>
-            <tr>
-              <th>Type</th>
-              <th>Status</th>
-              <th>Message</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr v-for="(log, index) in logs" :key="index">
-              <td>{{ log.type }}</td>
-              <td :class="log.status === 'Success' ? 'success' : 'failed'">
-                {{ log.status }}
-              </td>
-              <td>{{ log.message }}</td>
-              <td>{{ new Date(log.date).toLocaleDateString() }}</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div v-else style="padding:10px;">No logs found</div>
-
+              <div v-else class="logs-empty">
+                <div class="logs-empty-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="9" y1="13" x2="15" y2="13"/>
+                    <line x1="9" y1="17" x2="13" y2="17"/>
+                  </svg>
+                </div>
+                <p class="logs-empty-title">No logs yet</p>
+                <p class="logs-empty-desc">No indexing attempts have been recorded for this URL.</p>
+              </div>
+            </div>
+          </div>
+        </transition>
       </div>
     </transition>
-  </div>
-</transition>
 
 
 
@@ -921,11 +936,14 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 .back-link {
   display: inline-block;
   margin-bottom: 10px;
-  color: #22c55e;
+  color: var(--color-text-secondary);
   text-decoration: none;
   font-weight: 500;
   cursor: pointer;
   transition: color 0.2s;
+}
+.back-link:hover {
+  color: var(--color-text);
 }
 
 .back-link:hover {
@@ -972,98 +990,195 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 }
 
 .summary-item .value.success {
-  color: #22c55e;
+  color: var(--color-text);
 }
 
 .summary-item .value.failed {
-  color: #ef4444;
+  color: var(--color-text);
 }
 
-/* Table Scroll Wrapper */
+/* =====================================================================
+   Table Scroll Wrapper
+   - horizontal scroll handled with sticky leading/trailing columns and
+     edge shadows that only render while content is clipped
+   ===================================================================== */
 .table-scroll {
-  overflow-x: auto; /* horizontal scroll for small screens */
-  max-width: 100%;
+  position: relative;
   display: block;
+  max-width: 100%;
+  overflow: auto;
   max-height: calc(20 * 42px);
-  overflow-y: auto;
+
+  /* Edge-shadow technique: two transparent gradient masks pinned to the
+     viewport (scroll background-attachment), and two solid white covers
+     pinned to the content (local background-attachment). When fully
+     scrolled to an edge the cover hides the shadow on that side. */
+  background:
+    /* left cover (hides left shadow when at start) */
+    linear-gradient(to right, var(--color-card-bg) 30%, rgba(255, 255, 255, 0)) left center / 24px 100% no-repeat,
+    /* right cover (hides right shadow when at end) */
+    linear-gradient(to left,  var(--color-card-bg) 30%, rgba(255, 255, 255, 0)) right center / 24px 100% no-repeat,
+    /* left scroll-shadow */
+    radial-gradient(ellipse at left, rgba(17, 24, 39, 0.08), rgba(17, 24, 39, 0) 70%) left center / 14px 100% no-repeat,
+    /* right scroll-shadow */
+    radial-gradient(ellipse at right, rgba(17, 24, 39, 0.08), rgba(17, 24, 39, 0) 70%) right center / 14px 100% no-repeat;
+  background-attachment: local, local, scroll, scroll;
 }
 
 /* Table Styles */
 .urls-table {
   width: 100%;
-  border-collapse: collapse;
-  min-width: 900px; /* ensures horizontal scroll triggers on small screens */
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 1080px;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
 }
 
 .urls-table thead {
   position: sticky;
   top: 0;
-  background: #f5f5f5;
-  border-bottom: 1px solid #e8e8e8;
-  z-index: 1;
+  z-index: 3;
 }
 
 .urls-table th {
-  padding: 10px 12px;
+  padding: var(--space-3) var(--space-4);
   text-align: left;
-  font-weight: 600;
-  font-size: 12px;
-  color: #666;
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-xs);
+  color: var(--color-text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.06em;
+  background: var(--neutral-50);
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
 }
 
 .urls-table td {
-  padding: 6px 10px;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 13px;
-  color: #333;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-divider);
+  font-size: var(--fs-base);
+  color: var(--color-text);
   vertical-align: middle;
+  background: var(--color-card-bg);
 }
 
-.urls-table tbody tr.success {
-  background: #fafafa;
+.urls-table tbody tr {
+  transition: background 120ms ease;
+}
+.urls-table tbody tr:hover td {
+  background: var(--neutral-50);
+}
+.urls-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
-.urls-table tbody tr.failed {
-  background: #fef2f2;
-}
+/* Status-row tints applied to td so sticky columns still receive them */
+.urls-table tbody tr.success td  { background: var(--color-card-bg); }
+.urls-table tbody tr.failed td   { background: var(--color-card-bg); }
+.urls-table tbody tr.failed:hover td { background: var(--danger-50); }
 
+/* ----------------- Sticky leading + trailing columns -------------------
+   Columns 1 (checkbox), 2 (URL) freeze on the left.
+   Last column (Action) freezes on the right.
+   This keeps row identity + actions reachable when scrolling horizontally.
+   ----------------------------------------------------------------------- */
+.urls-table th:nth-child(1),
+.urls-table td:nth-child(1) {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  width: 40px;
+  min-width: 40px;
+}
+.urls-table thead th:nth-child(1) { z-index: 4; }
+
+.urls-table th:nth-child(2),
+.urls-table td:nth-child(2) {
+  position: sticky;
+  left: 40px;
+  z-index: 2;
+  /* divider that visually separates frozen column from scrolling area */
+  box-shadow: inset -1px 0 0 var(--color-divider);
+}
+.urls-table thead th:nth-child(2) { z-index: 4; }
+
+.urls-table th:last-child,
+.urls-table td:last-child {
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  box-shadow: inset 1px 0 0 var(--color-divider);
+}
+.urls-table thead th:last-child { z-index: 4; }
+
+/* URL cell: cap width and truncate with ellipsis (full URL stays in tooltip) */
+.url-cell {
+  max-width: 320px;
+}
 .url-cell a {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
   text-decoration: none;
+  color: var(--color-text);
+  font-weight: var(--fw-medium);
 }
-
 .url-cell a:hover {
+  color: var(--color-accent);
   text-decoration: underline;
 }
 
 /* Status Badges */
 .status-badge {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.005em;
+  font-variant-numeric: tabular-nums;
+}
+.status-badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
   display: inline-block;
 }
 
 .status-badge.success {
-  background: #e8f5e9;
-  color: #22c55e;
+  background: var(--success-50);
+  color: var(--success-700);
+  border: 1px solid var(--success-100);
 }
 
 .status-badge.failed {
-  background: #fef2f2;
-  color: #ef4444;
+  background: var(--danger-50);
+  color: var(--danger-700);
+  border: 1px solid var(--danger-100);
 }
 
 /* Buttons */
 .index-btn {
   padding: 8px 14px;
-  background: #22c55e;
-  color: #fff;
-  border-radius: 6px;
-  border: none;
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
   cursor: pointer;
+  font-weight: var(--fw-medium);
+  font-family: inherit;
+  transition: background 140ms ease;
+}
+.index-btn:hover:not(:disabled) {
+  background: var(--color-accent-hover);
 }
 
 .index-btn:disabled {
@@ -1072,24 +1187,45 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 }
 
 .row-index-btn {
-  padding: 6px 12px;
-  font-size: 13px;
-  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: var(--fs-sm);
+  border-radius: var(--radius-sm);
   min-width: 60px;
   text-align: center;
-  border: none;
   cursor: pointer;
-  color: #fff;
   margin: 2px;
-  background-color: rgb(126 134 175);
+  font-family: inherit;
+  font-weight: var(--fw-medium);
+  background: var(--color-card-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border-strong);
+  transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+.row-index-btn:hover {
+  background: var(--neutral-50);
+  border-color: var(--neutral-400);
 }
 
 .row-index-btn.view {
-  background-color: #1cb397;
+  background: var(--color-card-bg);
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
+}
+.row-index-btn.view:hover {
+  background: var(--neutral-900);
+  border-color: var(--neutral-900);
+  color: #fff;
 }
 
 .row-index-btn.failed {
-  background-color: #f44336;
+  background: var(--color-card-bg);
+  color: var(--color-danger);
+  border-color: var(--danger-100);
+}
+.row-index-btn.failed:hover {
+  background: var(--danger-50);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
 }
 
 .urls-table .action-cell {
@@ -1110,10 +1246,11 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 }
 
 .site-type-chip {
-  background: #22c55e;
-  color: white;
+  background: var(--neutral-100);
+  color: var(--neutral-700);
+  border: 1px solid var(--color-border);
   padding: 3px 10px;
-  border-radius: 12px;
+  border-radius: var(--radius-pill);
   font-size: 12px;
   font-weight: 500;
 }
@@ -1135,11 +1272,11 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 
 /* Schedule Alert */
 .schedule-alert-orange {
-  background: #fff7ed;
-  border: 1px solid #f97316;
-  color: #f97316;
+  background: var(--warning-50);
+  border: 1px solid var(--warning-100);
+  color: var(--warning-700);
   padding: 10px 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: 13px;
   font-weight: 500;
   margin-bottom: 14px;
@@ -1169,39 +1306,52 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 }
 
 .page-size-wrapper select {
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  background: #fff;
+  padding: 5px 26px 5px 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-card-bg);
+  color: var(--color-text);
+  font-size: var(--fs-sm);
+  font-family: inherit;
   cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%2364748b' stroke-width='1.5'/%3E%3C/svg%3E%0A");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 10px 6px;
 }
 
 .pagination-wrapper {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .pagination-info {
-  font-size: 13px;
-  color: #666;
-  font-weight: 500;
+  font-size: var(--fs-sm);
+  color: var(--color-text-secondary);
+  font-weight: var(--fw-medium);
+  font-variant-numeric: tabular-nums;
 }
 
 .pagination-btn {
-  padding: 5px 10px;
-  background: #f5f5f5;
-  border: 1px solid #e8e8e8;
-  border-radius: 6px;
-  color: #666;
-  font-size: 13px;
+  padding: 5px 12px;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  font-family: inherit;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
 }
 
 .pagination-btn:hover:not(:disabled) {
-  background: #22c55e;
-  border-color: #22c55e;
+  background: var(--neutral-900);
+  border-color: var(--neutral-900);
   color: #fff;
 }
 
@@ -1212,58 +1362,78 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 
 /* Chips */
 .indexing-chip {
-  padding: 5px 12px;
-  border-radius: 16px;
-  font-size: 12px;
-  font-weight: 600;
-  display: inline-block;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   text-transform: capitalize;
+  letter-spacing: 0.005em;
+  border: 1px solid transparent;
+}
+.indexing-chip::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  display: inline-block;
 }
 
 .indexing-chip.green {
-  background-color: rgba(41, 145, 69, 0.12);
-  color: #299145;
+  background-color: var(--success-50);
+  color: var(--success-700);
+  border-color: var(--success-100);
 }
 
 .indexing-chip.orange {
-  background-color: #ffedd5;
-  color: #ea580c;
+  background-color: var(--warning-50);
+  color: var(--warning-700);
+  border-color: var(--warning-100);
 }
 
 .indexing-chip.red {
-  background-color: #fee2e2;
-  color: #dc2626;
+  background-color: var(--danger-50);
+  color: var(--danger-700);
+  border-color: var(--danger-100);
 }
 
 /* Responsive */
 @media (max-width: 1024px) {
-  .table-scroll {
-    overflow-x: auto; /* horizontal scroll for medium screens */
-  }
-
   .urls-table {
-    min-width: 900px; /* force scroll if table is too wide */
+    min-width: 1080px;
   }
-
   .urls-table th,
   .urls-table td {
-    padding: 6px 8px;
-    font-size: 12px;
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--fs-sm);
   }
-
+  .url-cell { max-width: 220px; }
   .row-index-btn {
     padding: 4px 8px;
-    font-size: 11px;
+    font-size: var(--fs-xs);
     min-width: 50px;
   }
-
   .index-btn {
     padding: 6px 10px;
-    font-size: 12px;
+    font-size: var(--fs-sm);
   }
 }
 
 @media (max-width: 640px) {
+  .url-cell { max-width: 180px; }
+  /* On mobile, drop sticky leading column to give content more room.
+     Action column stays sticky for quick access. */
+  .urls-table th:nth-child(1),
+  .urls-table td:nth-child(1),
+  .urls-table th:nth-child(2),
+  .urls-table td:nth-child(2) {
+    position: static;
+    box-shadow: none;
+  }
+
   .summary-card {
     grid-template-columns: 1fr;
     gap: 12px;
@@ -1290,46 +1460,89 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 }
 
 /* Logs Modal — backdrop/box from theme.css */
-.modal-close {
-  position: absolute;
-  top: 12px;
-  right: 16px;
-  cursor: pointer;
-}
+/* Modal close button styling comes from theme.css (.modal-close) */
 
-.close-icon {
-  width: 24px;
-  height: 24px;
-  color: #666;
-  transition: color 0.2s;
-}
-
-.close-icon:hover {
-  color: #ef4444;
-}
+.modal-body--flush { padding: 0 !important; }
 
 .logs-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 15px;
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
 }
 
-.logs-table th,
-.logs-table td {
-  padding: 8px 12px;
-  border: 1px solid #e8e8e8;
-  font-size: 13px;
+.logs-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--neutral-50);
+  border-bottom: 1px solid var(--color-divider);
+  padding: 10px var(--space-6);
   text-align: left;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary);
+  z-index: 1;
 }
+
+.logs-table tbody td {
+  padding: 12px var(--space-6);
+  border-bottom: 1px solid var(--color-divider);
+  color: var(--color-text);
+  vertical-align: top;
+}
+
+.logs-table tbody tr:last-child td { border-bottom: none; }
+.logs-table tbody tr:hover td { background: var(--neutral-50); }
 
 .logs-table td.success {
-  color: #22c55e;
-  font-weight: 600;
+  color: var(--success-700);
+  font-weight: var(--fw-medium);
 }
 
 .logs-table td.failed {
-  color: #ef4444;
-  font-weight: 600;
+  color: var(--danger-700);
+  font-weight: var(--fw-medium);
+}
+
+.logs-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-7) var(--space-6);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+.logs-empty-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--neutral-100);
+  border: 1px solid var(--color-border);
+  margin-bottom: var(--space-3);
+  color: var(--neutral-500);
+}
+.logs-empty-icon svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+}
+.logs-empty-title {
+  margin: 0;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semi);
+  color: var(--color-text);
+}
+.logs-empty-desc {
+  margin: 4px 0 0 0;
+  font-size: var(--fs-sm);
 }
 
 /* Overlay animation */
@@ -1397,16 +1610,16 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 
 /* Quota - warning style */
 .alert-box.quota {
-  background: #fff7ed;
-  border-color: #f97316;
-  color: #ea580c;
+  background: var(--warning-50);
+  border-color: var(--warning-100);
+  color: var(--warning-700);
 }
 
 /* Schedule - info style */
 .alert-box.schedule {
-  background: #eff6ff;
-  border-color: #3b82f6;
-  color: #1d4ed8;
+  background: var(--info-50);
+  border-color: var(--info-100);
+  color: var(--info-700);
 }
 
 .alert-title {
@@ -1420,17 +1633,35 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 }
 
 .top-action-bar { display:flex; justify-content:flex-end; margin-bottom:12px; }
-.sync-btn { background:#1cb397; color:#fff; padding:8px 14px; border-radius:6px; border:none; font-weight:600; font-size:13px; cursor:pointer; transition:all 0.2s ease; }
-.sync-btn:hover { background:#1d4ed8; }
-.sync-btn:disabled { opacity:0.6; cursor:not-allowed; }
+.sync-btn {
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-base);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 140ms ease;
+}
+.sync-btn:hover { background: var(--color-accent-hover); }
+.sync-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-.sync-progress-card { background:#fff; border:1px solid #e8e8e8; border-left:4px solid #2563eb; border-radius:8px; padding:12px 14px; margin-bottom:14px; }
+.sync-progress-card {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
 .sync-header { display:flex; justify-content:space-between; font-weight:600; margin-bottom:8px; font-size:13px; }
-.progress-bar { width:100%; height:8px; background:#e5e7eb; border-radius:6px; overflow:hidden; }
-.progress-fill { height:100%; background:#2563eb; transition:width 0.3s ease; }
+.progress-bar { width:100%; height:6px; background: var(--neutral-200); border-radius:6px; overflow:hidden; }
+.progress-fill { height:100%; background: var(--color-accent); transition:width 0.3s ease; }
 .sync-stats { display:flex; gap:12px; margin-top:8px; font-size:13px; }
-.sync-stats .success { color:#22c55e; font-weight:600; }
-.sync-stats .failed { color:#ef4444; font-weight:600; }
+.sync-stats .success { color: var(--success-700); font-weight: 600; }
+.sync-stats .failed  { color: var(--danger-700);  font-weight: 600; }
 
 .summary-item.clickable {
   cursor: pointer;
@@ -1439,25 +1670,29 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 
 .summary-item.clickable:hover {
   transform: translateY(-2px);
-  border-color: #22c55e;
+  border-color: var(--color-border-strong);
 }
 
 .summary-item.active {
-  border: 2px solid #22c55e;
-  background: #f0fdf4;
+  border: 1px solid var(--color-text);
+  background: var(--neutral-50);
 }
 
 .search-bar { margin-bottom: 12px; }
 .search-input {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
   font-size: 14px;
+  background: var(--color-card-bg);
+  color: var(--color-text);
+  transition: border-color 140ms ease, box-shadow 140ms ease;
 }
 .search-input:focus {
   outline: none;
-  border-color: #22c55e;
+  border-color: var(--color-accent);
+  box-shadow: var(--ring-accent);
   box-shadow: 0 0 0 2px rgba(34,197,94,0.2);
 }
 

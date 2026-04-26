@@ -1,15 +1,12 @@
 @import "./assets/theme.css";
 
+/* =====================================================================
+   Reset
+   ===================================================================== */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-}
-
-body {
-  font-family: var(--font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 html,
@@ -18,28 +15,263 @@ body,
   height: 100%;
 }
 
+body {
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
 a {
   color: inherit;
   text-decoration: none;
 }
 
-button {
-  font-family: inherit;
-}
-
+button,
 input,
 textarea,
 select {
   font-family: inherit;
 }
 
-/* Compact vue-toastification (library CSS loads after this file in main.ts) */
+/* =====================================================================
+   Numerals — tabular figures wherever numbers carry meaning
+   ===================================================================== */
+table,
+.tabular-nums,
+.stat-value,
+.metric,
+.metric-value,
+.count,
+.page-info,
+td,
+th {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+/* =====================================================================
+   Selection
+   ===================================================================== */
+::selection {
+  background: rgba(99, 102, 241, 0.18);
+  color: var(--neutral-900);
+}
+
+/* =====================================================================
+   Scrollbar — quiet, modern
+   ===================================================================== */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--neutral-300) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--neutral-200);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--neutral-300);
+  background-clip: padding-box;
+}
+
+/* =====================================================================
+   Default focus ring on interactive elements that opt-in via :focus-visible
+   ===================================================================== */
+:focus-visible {
+  outline: none;
+}
+
+button:focus-visible,
+[role="button"]:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-accent);
+  border-radius: var(--radius-sm);
+}
+
+/* =====================================================================
+   vue-toastification — quieter, narrower
+   ===================================================================== */
 .Vue-Toastification__toast {
   min-height: auto !important;
   padding: 10px 14px !important;
   margin-bottom: 8px !important;
+  border-radius: var(--radius-md) !important;
+  font-family: var(--font-family) !important;
+  box-shadow: var(--shadow-md) !important;
 }
 .Vue-Toastification__toast-body {
-  font-size: 13px !important;
+  font-size: var(--fs-base) !important;
   line-height: 1.4 !important;
+  font-weight: var(--fw-medium) !important;
+}
+
+/* =====================================================================
+   SweetAlert2 — match in-app dialog system
+   ===================================================================== */
+.swal2-container.swal2-backdrop-show {
+  background: rgba(17, 24, 39, 0.55) !important;
+  backdrop-filter: blur(6px) saturate(140%);
+  -webkit-backdrop-filter: blur(6px) saturate(140%);
+}
+
+.swal2-popup {
+  font-family: var(--font-family) !important;
+  border-radius: var(--radius-lg) !important;
+  border: 1px solid var(--color-border) !important;
+  box-shadow: var(--modal-shadow) !important;
+  background: var(--color-card-bg) !important;
+  padding: var(--space-6) !important;
+  width: 460px !important;
+  max-width: calc(100vw - 32px) !important;
+  color: var(--color-text) !important;
+}
+
+.swal2-title {
+  font-weight: var(--fw-semi) !important;
+  letter-spacing: var(--letter-tight);
+  color: var(--color-text) !important;
+  font-size: var(--fs-lg) !important;
+  line-height: var(--lh-snug) !important;
+  padding: 0 !important;
+  margin: 0 0 var(--space-3) 0 !important;
+}
+
+.swal2-html-container {
+  font-size: var(--fs-base) !important;
+  color: var(--color-text-secondary) !important;
+  line-height: var(--lh-base) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.swal2-icon {
+  margin: 0 auto var(--space-4) !important;
+  width: 56px !important;
+  height: 56px !important;
+  border-width: 2px !important;
+}
+.swal2-icon .swal2-icon-content { font-size: 28px !important; }
+
+.swal2-icon.swal2-success            { border-color: var(--success-200) !important; color: var(--color-success) !important; }
+.swal2-icon.swal2-success [class^='swal2-success-line'] { background-color: var(--color-success) !important; }
+.swal2-icon.swal2-success .swal2-success-ring           { border-color: var(--success-200) !important; }
+.swal2-icon.swal2-error              { border-color: var(--danger-200)  !important; color: var(--color-danger)  !important; }
+.swal2-icon.swal2-error [class^='swal2-x-mark-line']    { background-color: var(--color-danger)  !important; }
+.swal2-icon.swal2-warning            { border-color: var(--warning-200) !important; color: var(--color-warning) !important; }
+.swal2-icon.swal2-info               { border-color: var(--info-200)    !important; color: var(--color-info)    !important; }
+.swal2-icon.swal2-question           { border-color: var(--neutral-300) !important; color: var(--neutral-600)   !important; }
+
+.swal2-actions {
+  margin: var(--space-5) 0 0 0 !important;
+  gap: var(--space-2) !important;
+  justify-content: flex-end !important;
+  width: 100% !important;
+}
+
+.swal2-styled {
+  margin: 0 !important;
+  font-family: inherit !important;
+}
+.swal2-styled.swal2-confirm,
+.swal2-styled.swal2-cancel,
+.swal2-styled.swal2-deny {
+  font-weight: var(--fw-medium) !important;
+  border-radius: var(--radius-md) !important;
+  font-size: var(--fs-base) !important;
+  padding: 8px 14px !important;
+  box-shadow: none !important;
+  border: 1px solid transparent !important;
+  transition: background 140ms ease, border-color 140ms ease,
+              box-shadow 140ms ease;
+}
+.swal2-styled.swal2-confirm {
+  background: var(--color-accent) !important;
+  color: var(--color-accent-fg) !important;
+}
+.swal2-styled.swal2-confirm:hover { background: var(--color-accent-hover) !important; }
+.swal2-styled.swal2-confirm:focus,
+.swal2-styled.swal2-confirm:focus-visible {
+  outline: none !important;
+  box-shadow: var(--ring-accent) !important;
+}
+.swal2-styled.swal2-deny {
+  background: var(--color-danger) !important;
+  color: var(--neutral-0) !important;
+}
+.swal2-styled.swal2-deny:hover { background: var(--danger-700) !important; }
+.swal2-styled.swal2-deny:focus,
+.swal2-styled.swal2-deny:focus-visible {
+  outline: none !important;
+  box-shadow: var(--ring-danger) !important;
+}
+.swal2-styled.swal2-cancel {
+  background: var(--color-card-bg) !important;
+  color: var(--color-text) !important;
+  border-color: var(--color-border-strong) !important;
+}
+.swal2-styled.swal2-cancel:hover {
+  background: var(--color-surface-2) !important;
+  border-color: var(--neutral-400) !important;
+}
+.swal2-styled.swal2-cancel:focus,
+.swal2-styled.swal2-cancel:focus-visible {
+  outline: none !important;
+  box-shadow: var(--ring-neutral) !important;
+}
+
+.swal2-close {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: var(--radius-sm) !important;
+  color: var(--color-text-secondary) !important;
+  font-size: 24px !important;
+  font-weight: 400 !important;
+  transition: background 140ms ease, color 140ms ease !important;
+}
+.swal2-close:hover {
+  background: var(--color-surface-2) !important;
+  color: var(--color-text) !important;
+}
+
+.swal2-input,
+.swal2-textarea,
+.swal2-select {
+  font-family: inherit !important;
+  font-size: var(--fs-base) !important;
+  border: 1px solid var(--color-border-strong) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 8px 11px !important;
+  box-shadow: none !important;
+  color: var(--color-text) !important;
+  background: var(--color-card-bg) !important;
+}
+.swal2-input:focus,
+.swal2-textarea:focus,
+.swal2-select:focus {
+  outline: none !important;
+  border-color: var(--color-accent) !important;
+  box-shadow: var(--ring-accent) !important;
+}
+
+.swal2-validation-message {
+  background: var(--danger-50) !important;
+  color: var(--danger-700) !important;
+  border-radius: var(--radius-md) !important;
+  font-size: var(--fs-sm) !important;
+  margin: var(--space-3) 0 0 !important;
+  padding: 8px 12px !important;
 }

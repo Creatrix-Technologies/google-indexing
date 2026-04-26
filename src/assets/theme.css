@@ -1,149 +1,453 @@
-/* Global Theme — compact density (semantic tokens) */
-:root {
-  --font-family: "Inter", system-ui, -apple-system, sans-serif;
-  --color-primary: #0f172a;
-  --color-secondary: #64748b;
-  --color-accent: #16a34a;
-  --color-accent-muted: #dcfce7;
-  --color-background: #f1f5f9;
-  --color-card-bg: #ffffff;
-  --color-border: #e2e8f0;
-  --color-placeholder: #f1f5f9;
-  --color-text: #1e293b;
-  --color-muted: #64748b;
-  --box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+/* =====================================================================
+   Design System — admin dashboard
+   Linear / Vercel / Stripe lineage: monochrome neutrals + single accent.
+   This file defines tokens; legacy token names are preserved so existing
+   pages that consume them automatically pick up the refined values.
+   ===================================================================== */
 
+:root {
+  /* ----------------------- Typography --------------------------------- */
+  --font-family: "Inter", "Geist", system-ui, -apple-system, "Segoe UI",
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas,
+    monospace;
+
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-base: 13px;
+  --fs-md: 14px;
+  --fs-lg: 16px;
+  --fs-xl: 20px;
+  --fs-2xl: 24px;
+  --fs-3xl: 30px;
+
+  --lh-tight: 1.2;
+  --lh-snug: 1.35;
+  --lh-base: 1.5;
+
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semi: 600;
+  --fw-bold: 700;
+
+  --letter-tight: -0.01em;
+  --letter-tighter: -0.02em;
+
+  /* ----------------------- Neutral scale (cool slate) ----------------- */
+  --neutral-0: #ffffff;
+  --neutral-50: #f9fafb;
+  --neutral-100: #f3f4f6;
+  --neutral-150: #eceef2;
+  --neutral-200: #e5e7eb;
+  --neutral-250: #d9dde3;
+  --neutral-300: #cbd0d9;
+  --neutral-400: #94a0b3;
+  --neutral-500: #64748b;
+  --neutral-600: #475569;
+  --neutral-700: #334155;
+  --neutral-800: #1f2937;
+  --neutral-900: #111827;
+  --neutral-950: #0a0f1c;
+
+  /* ----------------------- Primary accent (indigo) -------------------- */
+  --accent-50:  #eef2ff;
+  --accent-100: #e0e7ff;
+  --accent-200: #c7d2fe;
+  --accent-300: #a5b4fc;
+  --accent-400: #818cf8;
+  --accent-500: #6366f1;
+  --accent-600: #4f46e5;
+  --accent-700: #4338ca;
+  --accent-800: #3730a3;
+
+  /* ----------------------- Semantic state colors ---------------------- */
+  --success-50:  #ecfdf5;
+  --success-100: #d1fae5;
+  --success-500: #10b981;
+  --success-600: #059669;
+  --success-700: #047857;
+
+  --warning-50:  #fffbeb;
+  --warning-100: #fef3c7;
+  --warning-500: #f59e0b;
+  --warning-600: #d97706;
+  --warning-700: #b45309;
+
+  --danger-50:  #fef2f2;
+  --danger-100: #fee2e2;
+  --danger-500: #ef4444;
+  --danger-600: #dc2626;
+  --danger-700: #b91c1c;
+
+  --info-50:  #eff6ff;
+  --info-100: #dbeafe;
+  --info-500: #3b82f6;
+  --info-600: #2563eb;
+  --info-700: #1d4ed8;
+
+  /* ----------------------- Semantic tokens ---------------------------- */
+  --color-background: var(--neutral-50);
+  --color-card-bg: var(--neutral-0);
+  --color-surface-2: var(--neutral-100);
+  --color-border: var(--neutral-200);
+  --color-border-strong: var(--neutral-300);
+  --color-divider: var(--neutral-150);
+
+  --color-text: var(--neutral-900);
+  --color-text-secondary: var(--neutral-600);
+  --color-muted: var(--neutral-500);
+  --color-placeholder: var(--neutral-400);
+  --color-subtle: var(--neutral-400);
+
+  --color-primary: var(--neutral-900);
+  --color-secondary: var(--neutral-500);
+
+  --color-accent: var(--accent-600);
+  --color-accent-hover: var(--accent-700);
+  --color-accent-muted: var(--accent-50);
+  --color-accent-fg: var(--neutral-0);
+
+  --color-danger: var(--danger-600);
+  --color-danger-soft: var(--danger-50);
+  --color-warning: var(--warning-600);
+  --color-warning-soft: var(--warning-50);
+  --color-success: var(--success-600);
+  --color-success-soft: var(--success-50);
+  --color-info: var(--info-600);
+  --color-info-soft: var(--info-50);
+
+  /* ----------------------- Sidebar palette ---------------------------- */
+  --sidebar-bg: #0b1020;
+  --sidebar-bg-elev: #131a2e;
+  --sidebar-border: #1c2440;
+  --sidebar-text: #a6afc2;
+  --sidebar-text-strong: #f1f3f9;
+  --sidebar-text-muted: #6a7388;
+  --sidebar-active-bg: rgba(99, 102, 241, 0.12);
+  --sidebar-active-fg: #ffffff;
+  --sidebar-active-bar: var(--accent-500);
+
+  /* ----------------------- Radii / shadows ---------------------------- */
+  --radius-xs: 4px;
   --radius-sm: 6px;
   --radius-md: 8px;
-  --radius-lg: 10px;
-  --radius-xl: 12px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 999px;
 
+  --box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04);
+  --shadow-xs: 0 1px 0 rgba(17, 24, 39, 0.04);
+  --shadow-sm: 0 1px 2px rgba(17, 24, 39, 0.06);
+  --shadow-md: 0 4px 12px rgba(17, 24, 39, 0.06),
+               0 0 0 1px rgba(17, 24, 39, 0.04);
+  --shadow-lg: 0 16px 40px rgba(17, 24, 39, 0.10);
+  --modal-shadow: 0 20px 50px rgba(17, 24, 39, 0.18),
+                  0 0 0 1px rgba(17, 24, 39, 0.04);
+
+  /* ----------------------- Spacing scale ------------------------------ */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
-  --space-4: 14px;
-  --space-5: 18px;
-  --space-6: 22px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+  --space-9: 48px;
 
-  --header-height: 48px;
-  --sidebar-width: 242px;
-  --sidebar-collapsed: 56px;
-  --page-padding: 12px;
+  /* ----------------------- Layout ------------------------------------- */
+  --header-height: 56px;
+  --sidebar-width: 240px;
+  --sidebar-collapsed: 64px;
+  /* page width: fluid full-screen with responsive padding (see layout). */
+  --page-padding: clamp(16px, 2.4vw, 40px);
 
+  /* ----------------------- Focus rings -------------------------------- */
+  --ring-accent:  0 0 0 3px rgba(99, 102, 241, 0.20);
+  --ring-danger:  0 0 0 3px rgba(220, 38, 38, 0.16);
+  --ring-success: 0 0 0 3px rgba(16, 185, 129, 0.18);
+  --ring-neutral: 0 0 0 3px rgba(17, 24, 39, 0.08);
+
+  /* ----------------------- Z-stack ------------------------------------ */
+  --z-header: 100;
+  --z-sidebar: 200;
+  --z-config-bar: 150;
   --z-modal-backdrop: 1050;
-  --modal-shadow: 0 10px 35px rgba(15, 23, 42, 0.18);
+  --z-toast: 1100;
 }
 
+/* =====================================================================
+   Base typography
+   ===================================================================== */
 body {
   font-family: var(--font-family);
   background-color: var(--color-background);
   color: var(--color-text);
   margin: 0;
   padding: 0;
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: var(--fs-base);
+  line-height: var(--lh-base);
+  font-weight: var(--fw-regular);
+  font-feature-settings: "cv11", "ss01", "ss03";
+  text-rendering: optimizeLegibility;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+h1, h2, h3, h4, h5, h6 {
   color: var(--color-primary);
-  line-height: 1.25;
+  line-height: var(--lh-tight);
+  letter-spacing: var(--letter-tight);
+  font-weight: var(--fw-semi);
 }
 
+h1 { font-size: var(--fs-2xl); letter-spacing: var(--letter-tighter); }
+h2 { font-size: var(--fs-xl); }
+h3 { font-size: var(--fs-lg); }
+
+/* =====================================================================
+   Card primitive
+   ===================================================================== */
 .card {
   background: var(--color-card-bg);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--box-shadow);
-  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  padding: var(--space-5);
 }
 
-/* Modals — same pattern as Subscription Plans (plans.vue) */
+/* =====================================================================
+   Dialog / Modal system
+   ---------------------------------------------------------------------
+   Anatomy:
+     .modal-backdrop
+       └─ .modal-box                    (flex column shell, no padding)
+            ├─ .modal-header            (title row + close button)
+            │     ├─ .modal-title       (h-tag content; small subtitle ok)
+            │     └─ .modal-close       (icon-only X button)
+            ├─ .modal-body              (scrollable region; form lives here)
+            └─ .modal-footer            (right-aligned action row)
+
+   Pattern follows shadcn/ui + Stripe Dashboard + Linear:
+     - Sticky header / footer; only body scrolls
+     - Title weight = semibold, size = lg; subtitle is muted body
+     - Footer actions right-aligned; primary on right; danger replaces
+       primary when destructive
+   ===================================================================== */
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.45);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
+  background: rgba(17, 24, 39, 0.55);
+  backdrop-filter: blur(6px) saturate(140%);
+  -webkit-backdrop-filter: blur(6px) saturate(140%);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: var(--z-modal-backdrop);
-  padding: var(--space-3);
+  padding: var(--space-4);
   box-sizing: border-box;
+  animation: modal-fade-in 160ms ease-out;
 }
 
 .modal-box {
   position: relative;
+  display: flex;
+  flex-direction: column;
   background: var(--color-card-bg);
-  padding: var(--space-5) var(--space-6);
   width: 520px;
   max-width: min(520px, calc(100vw - 32px));
   max-height: min(90vh, 900px);
-  overflow-y: auto;
-  border-radius: var(--radius-xl);
+  overflow: hidden;            /* body owns scroll */
+  border-radius: var(--radius-lg);
   box-shadow: var(--modal-shadow);
   border: 1px solid var(--color-border);
   color: var(--color-text);
+  animation: modal-pop-in 180ms cubic-bezier(0.2, 0.9, 0.3, 1);
 }
 
-.modal-box--sm {
-  width: 460px;
-  max-width: min(460px, calc(100vw - 32px));
+.modal-box--xs       { width: 400px; max-width: min(400px, calc(100vw - 32px)); }
+.modal-box--sm,
+.modal-box--schedule { width: 460px; max-width: min(460px, calc(100vw - 32px)); }
+.modal-box--logs     { width: 560px; max-width: min(560px, calc(100vw - 32px)); }
+.modal-box--lg       { width: 640px; max-width: min(640px, calc(100vw - 32px)); }
+.modal-box--xl       { width: 760px; max-width: min(760px, calc(100vw - 32px)); }
+
+/* ----- Header --------------------------------------------------------- */
+.modal-header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-6) var(--space-4);
+  border-bottom: 1px solid var(--color-divider);
 }
 
-.modal-box--xs {
-  width: 400px;
-  max-width: min(400px, calc(100vw - 32px));
+.modal-header > div { min-width: 0; }
+
+.modal-title {
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semi);
+  letter-spacing: var(--letter-tight);
+  color: var(--color-text);
+  line-height: var(--lh-snug);
 }
 
-.modal-box--schedule {
-  width: 450px;
-  max-width: min(450px, calc(100vw - 32px));
+.modal-subtitle {
+  margin: 4px 0 0 0;
+  font-size: var(--fs-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--lh-base);
 }
 
-.modal-box--lg {
-  width: 600px;
-  max-width: min(600px, calc(100vw - 32px));
+/* ----- Close button (icon-only) -------------------------------------- */
+.modal-close {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  margin: -4px -6px 0 0;       /* visual nudge into the corner */
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0;                /* hide any inline text fallback */
+  transition: background 140ms ease, color 140ms ease,
+              border-color 140ms ease;
+}
+.modal-close:hover {
+  background: var(--color-surface-2);
+  color: var(--color-text);
+}
+.modal-close:focus-visible {
+  outline: none;
+  border-color: var(--color-border-strong);
+  box-shadow: var(--ring-neutral);
+}
+.modal-close > svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
 }
 
-.modal-box--logs {
-  width: 480px;
-  max-width: min(480px, calc(100vw - 32px));
+/* ----- Body ----------------------------------------------------------- */
+.modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-5) var(--space-6);
 }
 
+/* ----- Footer --------------------------------------------------------- */
+.modal-footer,
 .modal-actions {
+  flex: 0 0 auto;
   display: flex;
   justify-content: flex-end;
   flex-wrap: wrap;
   gap: var(--space-2);
-  margin-top: var(--space-4);
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--color-divider);
+  background: var(--color-card-bg);
 }
 
-button.modal-btn-primary {
+/* ----- Buttons (modal-context, also reusable) ------------------------ */
+button.modal-btn-primary,
+.modal-box .btn-primary,
+.modal-box button.btn-primary {
   background: var(--color-accent);
-  color: #fff;
-  padding: var(--space-2) var(--space-4);
+  color: var(--color-accent-fg);
+  padding: 8px 14px;
   border-radius: var(--radius-md);
-  font-size: 13px;
-  border: none;
-  font-weight: 600;
+  font-size: var(--fs-base);
+  border: 1px solid transparent;
+  font-weight: var(--fw-medium);
   cursor: pointer;
   font-family: inherit;
+  transition: background 140ms ease, box-shadow 140ms ease;
+}
+button.modal-btn-primary:hover,
+.modal-box .btn-primary:hover:not(:disabled),
+.modal-box button.btn-primary:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+}
+button.modal-btn-primary:focus-visible,
+.modal-box .btn-primary:focus-visible,
+.modal-box button.btn-primary:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-accent);
+}
+button.modal-btn-primary:disabled,
+.modal-box .btn-primary:disabled,
+.modal-box button.btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
-button.modal-btn-secondary {
-  background: #94a3b8;
-  color: #fff;
-  padding: var(--space-2) var(--space-4);
+button.modal-btn-secondary,
+.modal-box .btn-secondary,
+.modal-box button.btn-secondary {
+  background: var(--color-card-bg);
+  color: var(--color-text);
+  padding: 8px 14px;
   border-radius: var(--radius-md);
-  font-size: 13px;
-  border: none;
-  font-weight: 600;
+  font-size: var(--fs-base);
+  border: 1px solid var(--color-border-strong);
+  font-weight: var(--fw-medium);
   cursor: pointer;
   font-family: inherit;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+button.modal-btn-secondary:hover,
+.modal-box .btn-secondary:hover:not(:disabled),
+.modal-box button.btn-secondary:hover:not(:disabled) {
+  background: var(--color-surface-2);
+  border-color: var(--neutral-400);
+}
+button.modal-btn-secondary:focus-visible,
+.modal-box .btn-secondary:focus-visible,
+.modal-box button.btn-secondary:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-neutral);
+}
+
+button.modal-btn-danger,
+.modal-box .btn-danger,
+.modal-box button.btn-danger {
+  background: var(--color-danger);
+  color: var(--neutral-0);
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  font-size: var(--fs-base);
+  border: 1px solid transparent;
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 140ms ease, box-shadow 140ms ease;
+}
+button.modal-btn-danger:hover,
+.modal-box .btn-danger:hover:not(:disabled),
+.modal-box button.btn-danger:hover:not(:disabled) {
+  background: var(--danger-700);
+}
+button.modal-btn-danger:focus-visible,
+.modal-box .btn-danger:focus-visible,
+.modal-box button.btn-danger:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-danger);
+}
+
+@keyframes modal-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes modal-pop-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }

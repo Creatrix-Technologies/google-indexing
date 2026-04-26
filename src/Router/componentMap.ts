@@ -1,7 +1,9 @@
 export const componentMap: Record<string, any> = {
     Dashboard: () => import('../pages/Dashboard.vue'),
+    AdminDashboard: () => import('../pages/AdminDashboard.vue'),
     SiteManagement: () => import('../pages/SiteManagement.vue'),
     Settings: () => import('../pages/Settings.vue'),
+    Configurations: () => import('../pages/Settings.vue'),
     CrawlIndexManagement: () => import('../pages/CrawlIndexManagement.vue'),
     CrawlIndexDetails: () => import('../pages/CrawlIndexDetails.vue'),
     GoogleConfiguration: () => import('../pages/GoogleConfiguration.vue'),

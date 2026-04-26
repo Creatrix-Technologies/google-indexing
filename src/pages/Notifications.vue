@@ -52,115 +52,123 @@
 .page-container {
   padding: 0;
   overflow-y: auto;
+  font-family: var(--font-family);
 }
 
 .notifications-card {
-  background: white;
-  padding: 16px 18px;
-  border-radius: 8px;
-  border: 1px solid #e8e8e8;
+  background: var(--color-card-bg);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-xs);
 }
 
 .notifications-card h3 {
-  margin: 0 0 6px 0;
-  font-size: 20px;
-  color: #333;
+  margin: 0 0 4px 0;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semi);
+  letter-spacing: var(--letter-tight);
+  color: var(--color-text);
 }
 
 .subtitle {
-  margin: 0 0 16px 0;
-  color: #999;
-  font-size: 13px;
+  margin: 0 0 var(--space-5) 0;
+  color: var(--color-text-secondary);
+  font-size: var(--fs-base);
 }
 
 .notifications-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-2);
 }
 
 .notification {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 4px;
-  border-left: 4px solid;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-card-bg);
+  position: relative;
 }
 
-.notification.info {
-  background: #e3f2fd;
-  border-left-color: #2196f3;
+.notification::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: var(--space-3);
+  bottom: var(--space-3);
+  width: 2px;
+  border-radius: 2px;
 }
 
-.notification.success {
-  background: #e8f5e9;
-  border-left-color: #4caf50;
-}
+.notification.info::before    { background: var(--info-500); }
+.notification.success::before { background: var(--success-500); }
+.notification.warning::before { background: var(--warning-500); }
+.notification.danger::before  { background: var(--danger-500); }
 
-.notification.warning {
-  background: #fff3e0;
-  border-left-color: #ff9800;
-}
-
-.notification.danger {
-  background: #ffebee;
-  border-left-color: #f44336;
-}
+.notification.info    { background: var(--info-50);    border-color: var(--info-100); }
+.notification.success { background: var(--success-50); border-color: var(--success-100); }
+.notification.warning { background: var(--warning-50); border-color: var(--warning-100); }
+.notification.danger  { background: var(--danger-50);  border-color: var(--danger-100); }
 
 .notification-icon {
-  font-size: 20px;
+  font-size: 14px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
 }
 
 .notification-content {
   flex: 1;
+  min-width: 0;
 }
 
 .notification-content h5 {
-  margin: 0 0 5px 0;
-  font-size: 14px;
-  font-weight: 600;
+  margin: 0 0 3px 0;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semi);
+  letter-spacing: -0.005em;
 }
 
-.notification.info h5 {
-  color: #1976d2;
-}
-
-.notification.success h5 {
-  color: #388e3c;
-}
-
-.notification.warning h5 {
-  color: #f57c00;
-}
-
-.notification.danger h5 {
-  color: #d32f2f;
-}
+.notification.info h5    { color: var(--info-700); }
+.notification.success h5 { color: var(--success-700); }
+.notification.warning h5 { color: var(--warning-700); }
+.notification.danger h5  { color: var(--danger-700); }
 
 .notification-content p {
   margin: 0;
-  font-size: 13px;
-  color: #555;
+  font-size: var(--fs-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
 }
 
 .close-btn {
-  background: none;
-  border: none;
-  font-size: 18px;
+  background: transparent;
+  border: 1px solid transparent;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1;
   cursor: pointer;
-  color: #999;
+  color: var(--color-text-secondary);
   padding: 0;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 140ms ease, color 140ms ease;
 }
 
 .close-btn:hover {
-  color: #666;
+  color: var(--color-text);
+  background: rgba(17, 24, 39, 0.05);
 }
 </style>

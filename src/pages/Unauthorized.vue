@@ -21,32 +21,44 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 80vh;
+    min-height: 80vh;
     text-align: center;
+    font-family: var(--font-family);
+    padding: var(--space-6);
   }
-  
+
   .error-page h1 {
-    font-size: 36px;
-    margin-bottom: 12px;
-    color: #e74c3c;
+    font-size: 32px;
+    font-weight: var(--fw-semi);
+    letter-spacing: var(--letter-tighter);
+    margin: 0 0 var(--space-3) 0;
+    color: var(--color-danger);
+    line-height: 1.1;
   }
-  
+
   .error-page p {
-    font-size: 15px;
-    margin-bottom: 16px;
+    font-size: var(--fs-md);
+    color: var(--color-text-secondary);
+    margin: 0 0 var(--space-5) 0;
+    max-width: 440px;
+    line-height: 1.55;
   }
-  
+
   .error-page button {
-    padding: 8px 16px;
-    background: #4c6fff;
-    color: white;
-    border: none;
-    border-radius: 6px;
+    padding: 9px 14px;
+    background: var(--neutral-900);
+    color: #ffffff;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    font-size: var(--fs-base);
+    font-weight: var(--fw-medium);
     cursor: pointer;
+    font-family: inherit;
+    transition: background 140ms ease;
   }
-  
+
   .error-page button:hover {
-    background: #3f5ae0;
+    background: var(--neutral-800);
   }
   </style>
   

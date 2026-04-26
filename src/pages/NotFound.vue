@@ -17,63 +17,51 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 80vh;
+  min-height: 80vh;
   text-align: center;
-  color: #333;
+  color: var(--color-text);
+  font-family: var(--font-family);
+  padding: var(--space-6);
 }
 
 .error-page h1 {
-  font-size: 36px;
-  font-weight: bold;
-  margin-bottom: 12px;
+  font-size: 32px;
+  font-weight: var(--fw-semi);
+  letter-spacing: var(--letter-tighter);
+  margin: 0 0 var(--space-3) 0;
+  color: var(--color-text);
+  line-height: 1.1;
 }
 
 .error-page p {
-  font-size: 15px;
-  margin-bottom: 20px;
+  font-size: var(--fs-md);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-6) 0;
+  max-width: 420px;
+  line-height: 1.55;
+}
+
+.button-group {
+  display: flex;
+  gap: var(--space-2);
 }
 
 .error-page .btn {
-  padding: 8px 16px;
-  background-color: #4c6fff;
-  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 14px;
+  background: var(--neutral-900);
+  color: #ffffff;
   text-decoration: none;
-  border-radius: 6px;
-  font-weight: 500;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-base);
+  cursor: pointer;
+  transition: background 140ms ease;
 }
 
 .error-page .btn:hover {
-  background-color: #3f5ae0;
-}
-
-.btn {
-  display: inline-block;
-  padding: 8px 16px;
-  margin: 0 8px;
-  border-radius: 6px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-/* Primary button - Login */
-.btn:first-of-type {
-  background-color: #4c6fff;
-  color: #fff;
-}
-
-.btn:first-of-type:hover {
-  background-color: #3f5ae0;
-}
-
-/* Secondary button - Home */
-.btn:last-of-type {
-  background-color: #e5e7eb;
-  color: #1f2937;
-}
-
-.btn:last-of-type:hover {
-  background-color: #d1d5db;
+  background: var(--neutral-800);
 }
 </style>

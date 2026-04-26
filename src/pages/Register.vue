@@ -1,77 +1,80 @@
 <template>
   <transition name="modal">
-    <div v-if="show" class="modal-backdrop">
-      <div class="modal-box modal-box--xs">
+    <div v-if="show" class="modal-backdrop" @click.self="close">
+      <div class="modal-box modal-box--xs" @click.stop role="dialog" aria-modal="true">
+        <header class="modal-header">
+          <div>
+            <h2 class="modal-title">Create account</h2>
+            <p class="modal-subtitle">Register to continue.</p>
+          </div>
+          <button type="button" class="modal-close" aria-label="Close" @click="close">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </header>
 
-        <!-- Close Icon -->
-        <button class="close-btn" @click="close">✕</button>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input
+              v-model="email"
+              type="email"
+              placeholder="you@example.com"
+              :class="{ 'is-invalid': emailError }"
+              @input="validateEmail"
+              @keyup.enter="handleRegister"
+            />
+            <small v-if="emailError" class="field-error">{{ emailError }}</small>
+          </div>
 
-        <!-- Header -->
-        <h2 class="title">Create Account</h2>
-        <p class="subtitle">Register to continue</p>
+          <div class="form-group">
+            <label class="form-label">Username</label>
+            <input
+              v-model="username"
+              type="text"
+              placeholder="Choose a username"
+              :class="{ 'is-invalid': usernameError }"
+              @input="validateUsername"
+              @keyup.enter="handleRegister"
+            />
+            <small v-if="usernameError" class="field-error">{{ usernameError }}</small>
+          </div>
 
-        <!-- Email -->
-        <div class="form-group">
-          <label class="form-label">Email</label>
-          <input
-            v-model="email"
-            type="email"
-            placeholder="Enter email"
-            :style="emailError ? errorStyle : {}"
-            @input="validateEmail"
-            @keyup.enter="handleRegister"
-          />
-          <small v-if="emailError" style="color:#c53030">{{ emailError }}</small>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input
+              v-model="password"
+              type="password"
+              placeholder="Enter password"
+              :class="{ 'is-invalid': passwordError }"
+              @input="validatePassword"
+              @keyup.enter="handleRegister"
+            />
+            <small v-if="passwordError" class="field-error">{{ passwordError }}</small>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Confirm password</label>
+            <input
+              v-model="confirmPassword"
+              type="password"
+              placeholder="Confirm password"
+              :class="{ 'is-invalid': confirmPasswordError }"
+              @input="validateConfirmPassword"
+              @keyup.enter="handleRegister"
+            />
+            <small v-if="confirmPasswordError" class="field-error">{{ confirmPasswordError }}</small>
+          </div>
         </div>
 
-        <!-- Username -->
-        <div class="form-group">
-          <label class="form-label">Username</label>
-          <input
-            v-model="username"
-            type="text"
-            placeholder="Enter username"
-            :style="usernameError ? errorStyle : {}"
-            @input="validateUsername"
-            @keyup.enter="handleRegister"
-          />
-          <small v-if="usernameError" style="color:#c53030">{{ usernameError }}</small>
-        </div>
-
-        <!-- Password -->
-        <div class="form-group">
-          <label class="form-label">Password</label>
-          <input
-            v-model="password"
-            type="password"
-            placeholder="Enter password"
-            :style="passwordError ? errorStyle : {}"
-            @input="validatePassword"
-            @keyup.enter="handleRegister"
-          />
-          <small v-if="passwordError" style="color:#c53030">{{ passwordError }}</small>
-        </div>
-
-        <!-- Confirm Password -->
-        <div class="form-group">
-          <label class="form-label">Confirm Password</label>
-          <input
-            v-model="confirmPassword"
-            type="password"
-            placeholder="Confirm password"
-            :style="confirmPasswordError ? errorStyle : {}"
-            @input="validateConfirmPassword"
-            @keyup.enter="handleRegister"
-          />
-          <small v-if="confirmPasswordError" style="color:#c53030">{{ confirmPasswordError }}</small>
-        </div>
-
-        <!-- Buttons -->
-        <button class="btn-primary" @click="handleRegister" :disabled="!isFormValid">
-          Create Account
-        </button>
-        <button class="btn-secondary" @click="close">Cancel</button>
-
+        <footer class="modal-footer">
+          <button type="button" class="btn-secondary" @click="close">Cancel</button>
+          <button type="button" class="btn-primary" @click="handleRegister" :disabled="!isFormValid">
+            Create account
+          </button>
+        </footer>
       </div>
     </div>
   </transition>
@@ -103,7 +106,7 @@ const passwordError = ref("");
 const confirmPasswordError = ref("");
 
 // inline error style
-const errorStyle = { borderColor: "#c53030" };
+const errorStyle = { borderColor: "#dc2626", boxShadow: "0 0 0 3px rgba(220, 38, 38, 0.16)" };
 
 // Close modal
 const close = () => emit("close");
@@ -177,60 +180,86 @@ watch(password, () => {
 </script>
 
 <style scoped>
-/* Shell: theme.css (.modal-backdrop, .modal-box) */
-.modal-box.modal-box--xs {
-  animation: scaleIn 0.25s ease;
+.modal-box.modal-box--xs { font-family: var(--font-family); }
+
+/* Form */
+.form-group { margin-bottom: var(--space-3); }
+
+.form-label {
+  display: block;
+  text-align: left;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  margin-bottom: 5px;
+  color: var(--color-text);
 }
 
-@keyframes scaleIn {
-  from { transform: scale(0.92); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-
-/* ------------------ Close Button ------------------ */
-.close-btn {
-  position: absolute;
-  top: 14px;
-  right: 16px;
-  background: transparent;
-  border: none;
-  font-size: 20px;
-  color: #444;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.close-btn:hover { color: #d22; }
-
-/* ------------------ Typography ------------------ */
-.title { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 4px; }
-.subtitle { text-align: center; font-size: 13px; color: #666; margin-bottom: 18px; }
-
-/* ------------------ Form Styles ------------------ */
-.form-group { margin-bottom: 14px; }
-.form-label { display: block; text-align: left; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #333; }
 .form-group input {
   width: 100%;
   padding: 9px 11px;
-  border-radius: 6px;
-  border: 1px solid #d6d6d6;
-  transition: all 0.2s;
-  font-size: 13px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-card-bg);
+  color: var(--color-text);
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+  font-size: var(--fs-base);
+  font-family: inherit;
 }
+.form-group input::placeholder { color: var(--color-placeholder); }
 .form-group input:focus {
-  border-color: #4c6fff;
-  box-shadow: 0 0 0 2px rgba(76, 111, 255, 0.25);
+  border-color: var(--color-accent);
+  box-shadow: var(--ring-accent);
   outline: none;
 }
+.form-group input.is-invalid {
+  border-color: var(--color-danger);
+  box-shadow: var(--ring-danger);
+}
 
-/* ------------------ Buttons ------------------ */
-.btn-primary { width: 100%; padding: 10px; background: #4c6fff; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 6px; transition: 0.2s; font-size: 14px; }
-.btn-primary:hover { background: #3b57d8; }
-.btn-primary:disabled { background: #a0b0ff; cursor: not-allowed; }
-.btn-secondary { width: 100%; padding: 10px; background: #efefef; border: none; border-radius: 6px; margin-top: 8px; cursor: pointer; transition: 0.2s; font-size: 14px; }
-.btn-secondary:hover { background: #dedede; }
+.field-error {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  color: var(--color-danger);
+}
 
-/* ------------------ Transition ------------------ */
-.modal-enter-active, .modal-leave-active { transition: opacity 0.25s ease; }
-.modal-enter-from, .modal-leave-to { opacity: 0; }
+/* Buttons (modal footer) */
+.btn-primary {
+  padding: 9px 14px;
+  background: var(--neutral-900);
+  color: #fff;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition: background 140ms ease, opacity 140ms ease;
+  font-size: var(--fs-base);
+  font-family: inherit;
+}
+.btn-primary:hover:not(:disabled) { background: var(--neutral-800); }
+.btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-secondary {
+  padding: 9px 14px;
+  background: var(--color-card-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease;
+  font-size: var(--fs-base);
+  font-family: inherit;
+  font-weight: var(--fw-medium);
+}
+.btn-secondary:hover {
+  background: var(--color-surface-2);
+  border-color: var(--neutral-400);
+}
+
+/* Transition */
+.modal-enter-active,
+.modal-leave-active { transition: opacity 200ms ease; }
+.modal-enter-from,
+.modal-leave-to { opacity: 0; }
 </style>
