@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useToast } from 'vue-toastification'
 import api from '../api'
 import { loadStripe } from '@stripe/stripe-js'
@@ -27,9 +27,12 @@ interface Plan {
 
 interface Payment {
   date: string
+  dateIso?: string
   amount: string
   status: string
   plan: string
+  invoiceId?: string
+  nextBillingDateIso?: string
 }
 
 interface SavedCard {
@@ -44,6 +47,8 @@ interface SavedCard {
 /* ---------------- STATE ---------------- */
 const plans = ref<Plan[]>([])
 const paymentHistory = ref<Payment[]>([])
+const historyPage = ref(1)
+const historyPageSize = ref(10)
 const isLoading = ref(false)
 const subscribingPlan = ref<Plan | null>(null)
 const savedCard = ref<SavedCard | null>(null)
@@ -95,6 +100,62 @@ const failedCount = computed(() =>
   paymentHistory.value.filter(p => p.status === 'Failed').length
 )
 
+const parsePaymentDateMs = (value: string) => {
+  const ms = new Date(value).getTime()
+  return Number.isNaN(ms) ? 0 : ms
+}
+
+const sortedPaymentHistory = computed(() =>
+  [...paymentHistory.value].sort((a, b) => {
+    const bVal = b.dateIso || b.date
+    const aVal = a.dateIso || a.date
+    return parsePaymentDateMs(bVal) - parsePaymentDateMs(aVal)
+  })
+)
+
+const formatPaymentDate = (value: string) => {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return date.toLocaleString()
+}
+
+const nextBillingDate = computed(() => {
+  const iso = paymentHistory.value.find(p => p.nextBillingDateIso)?.nextBillingDateIso
+  if (!iso) return null
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return null
+  return date.toLocaleDateString()
+})
+
+const totalHistoryPages = computed(() =>
+  Math.max(1, Math.ceil(sortedPaymentHistory.value.length / historyPageSize.value))
+)
+
+const pagedPaymentHistory = computed(() => {
+  const start = (historyPage.value - 1) * historyPageSize.value
+  return sortedPaymentHistory.value.slice(start, start + historyPageSize.value)
+})
+
+const historyStart = computed(() =>
+  sortedPaymentHistory.value.length === 0 ? 0 : (historyPage.value - 1) * historyPageSize.value + 1
+)
+
+const historyEnd = computed(() =>
+  Math.min(historyPage.value * historyPageSize.value, sortedPaymentHistory.value.length)
+)
+
+const previousHistoryPage = () => {
+  if (historyPage.value > 1) historyPage.value--
+}
+
+const nextHistoryPage = () => {
+  if (historyPage.value < totalHistoryPages.value) historyPage.value++
+}
+
+watch(historyPageSize, () => {
+  historyPage.value = 1
+})
+
 const formatPeriod = (duration: string) => {
   if (!duration) return ''
   const d = duration.toLowerCase()
@@ -124,6 +185,7 @@ const fetchSubscriptionLogs = async () => {
   try {
     const res = await api.get('/payments/subscription-logs')
     paymentHistory.value = res.data.data || []
+    historyPage.value = 1
   } catch {
     console.log('Failed to load payment history')
   }
@@ -721,7 +783,7 @@ onMounted(async () => {
       <div class="section-header">
         <div>
           <h2 class="section-title">Billing history</h2>
-          <p class="section-subtitle">All charges associated with your account.</p>
+          <p class="section-subtitle">All charges associated with your account (newest first).</p>
         </div>
 
         <div class="history-summary" v-if="paymentHistory.length">
@@ -737,6 +799,10 @@ onMounted(async () => {
             <span class="meta-pill__label">Total spent</span>
             <span class="meta-pill__value">${{ totalSpent.toFixed(2) }}</span>
           </span>
+          <span class="meta-pill" v-if="nextBillingDate">
+            <span class="meta-pill__label">Next billing</span>
+            <span class="meta-pill__value">{{ nextBillingDate }}</span>
+          </span>
         </div>
       </div>
 
@@ -747,14 +813,16 @@ onMounted(async () => {
               <tr>
                 <th>Date</th>
                 <th>Plan</th>
+                <th>Invoice</th>
                 <th class="num">Amount</th>
                 <th>Status</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(payment, index) in paymentHistory" :key="index">
-                <td>{{ payment.date }}</td>
+              <tr v-for="(payment, index) in pagedPaymentHistory" :key="index">
+                <td class="date-cell">{{ formatPaymentDate(payment.dateIso || payment.date) }}</td>
                 <td class="plan-cell">{{ payment.plan }}</td>
+                <td class="invoice-cell">{{ payment.invoiceId || '-' }}</td>
                 <td class="num">{{ payment.amount }}</td>
                 <td>
                   <span
@@ -772,6 +840,24 @@ onMounted(async () => {
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <div class="history-footer" v-if="paymentHistory.length">
+          <div class="history-page-size">
+            <label for="historyPageSize">Rows</label>
+            <select id="historyPageSize" v-model.number="historyPageSize">
+              <option :value="10">10</option>
+              <option :value="25">25</option>
+              <option :value="50">50</option>
+              <option :value="100">100</option>
+            </select>
+          </div>
+          <div class="history-range">{{ historyStart }}-{{ historyEnd }} of {{ sortedPaymentHistory.length }}</div>
+          <div class="history-pagination">
+            <button class="history-page-btn" :disabled="historyPage === 1" @click="previousHistoryPage">Prev</button>
+            <span class="history-page-info">Page {{ historyPage }} / {{ totalHistoryPages }}</span>
+            <button class="history-page-btn" :disabled="historyPage === totalHistoryPages" @click="nextHistoryPage">Next</button>
+          </div>
         </div>
 
         <div v-else class="history-empty">
@@ -1484,6 +1570,19 @@ onMounted(async () => {
   font-size: var(--fs-sm);
 }
 
+.date-cell {
+  white-space: nowrap;
+}
+
+.invoice-cell {
+  font-size: var(--fs-sm);
+  color: var(--color-text-secondary);
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ----- Status pills (history) ----- */
 .status {
   display: inline-flex;
@@ -1526,6 +1625,66 @@ onMounted(async () => {
   justify-content: center;
   padding: var(--space-7) var(--space-5);
   text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.history-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--color-divider);
+  background: var(--neutral-50);
+  flex-wrap: wrap;
+}
+
+.history-page-size {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-sm);
+  color: var(--color-text-secondary);
+}
+
+.history-page-size select {
+  padding: 4px 24px 4px 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-card-bg);
+  font-size: var(--fs-sm);
+  color: var(--color-text);
+}
+
+.history-range {
+  font-size: var(--fs-sm);
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.history-pagination {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.history-page-btn {
+  padding: 5px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-card-bg);
+  color: var(--color-text);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.history-page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.history-page-info {
+  font-size: var(--fs-sm);
   color: var(--color-text-secondary);
 }
 

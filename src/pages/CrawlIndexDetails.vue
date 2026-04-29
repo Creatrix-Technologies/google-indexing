@@ -74,7 +74,7 @@
   <div class="summary-item clickable"
        :class="{ active: selectedFilter === 'DEINDEXED' }"
        @click="applyFilter('DEINDEXED')">
-    <span class="label">DeIndexed</span>
+    <span class="label">Deindexed</span>
     <span class="value success">{{ deIndexed }}</span>
   </div>
 
@@ -93,12 +93,37 @@
   </div>
 </div>
 
-    <!-- GOOGLE SYNC BUTTON -->
-    <div class="top-action-bar">
-  <button class="sync-btn" @click="startGoogleSync" :disabled="isSyncing">
-    🔄 Google Sync
-  </button>
-</div>
+    <!-- CONTROL BAR -->
+    <div class="control-bar">
+      <div class="control-bar-left">
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Search URLs..."
+          class="search-input"
+        />
+        <span class="results-meta">Showing {{ urls.length }} of {{ pageInfo.totalCount }}</span>
+      </div>
+      <div class="control-bar-right">
+        <button
+          v-if="selectedIds.size > 0"
+          class="clear-selection-btn"
+          @click="selectedIds.clear()"
+        >
+          Clear Selection
+        </button>
+        <button
+          class="index-btn"
+          :disabled="selectedIds.size === 0"
+          @click="indexSelectedUrls"
+        >
+          Queue Selected ({{ selectedIds.size }})
+        </button>
+        <button class="sync-btn" @click="startGoogleSync" :disabled="isSyncing">
+          🔄 Google Sync
+        </button>
+      </div>
+    </div>
 
 <!-- SYNC PROGRESS -->
 <div v-if="isSyncing" class="sync-progress-card">
@@ -116,29 +141,8 @@
     <span class="failed">✖ {{ syncFailed }}</span>
   </div>
 </div>
-    <!-- BULK BUTTON -->
-    <div style="margin-bottom: 15px;">
-      <button
-        class="index-btn"
-        :disabled="selectedIds.size === 0"
-        @click="indexSelectedUrls"
-      >
-        Queue Selected URLs ({{ selectedIds.size }})
-      </button>
-    </div>
-
-
     <!-- TABLE -->
-
-      <!-- 🔍 SEARCH BAR -->
-  <div class="search-bar">
-      <input
-        v-model="searchQuery"
-        type="text"
-        placeholder="Search URLs..."
-        class="search-input"
-      />
-    </div>
+    <div class="table-section">
     <div class="table-scroll">
 
       <table class="urls-table">
@@ -193,14 +197,14 @@
   >
     {{ item.indexingState.replace(/_/g, ' ') }}
   </span>
-</td>            <td>{{ item.coverageState}}</td>
-            <td>{{ item.robotsTxtState ? item.robotsTxtState.replace(/_/g, ' ') : '-' }}</td>
-            <td>{{ item.pageFetchSpecified ? item.pageFetchSpecified.replace(/_/g, ' ') : '-' }}</td>
-            <td>{{ item.indexedStatus}}</td>
-            <td>{{ item.priority}}</td>
-            <td>{{ item.indexedResult}}</td>
+</td>            <td>{{ formatStateLabel(item.coverageState) }}</td>
+            <td>{{ formatStateLabel(item.robotsTxtState) }}</td>
+            <td>{{ formatStateLabel(item.pageFetchSpecified) }}</td>
+            <td>{{ formatStateLabel(item.indexedStatus) }}</td>
+            <td>{{ formatStateLabel(item.priority) }}</td>
+            <td>{{ formatStateLabel(item.indexedResult) }}</td>
             <td>{{ item.type }}</td>
-            <td>{{ item.indexedAt }}</td>
+            <td>{{ formatDateTime(item.indexedAt) }}</td>
 
             <td class="action-cell">
               <button title="Instant Index" class="row-index-btn" @click="indexSingleUrl(item.id)">
@@ -215,8 +219,8 @@
           </tr>
 
           <tr v-if="urls.length === 0">
-            <td colspan="10" style="text-align:center; padding:20px">
-              No crawl data found
+            <td colspan="13" style="text-align:center; padding:20px">
+              {{ searchQuery ? 'No matching URLs found for current search/filter.' : 'No crawl data found.' }}
             </td>
           </tr>
         </tbody>
@@ -225,32 +229,38 @@
 
 
       <div class="table-footer">
-  <!-- Page Size Selector -->
-  <div class="page-size-wrapper">
-    <label for="pageSize">Rows per page:</label>
-    <select id="pageSize" v-model.number="pageInfo.pageSize">
-      <option :value="10">10</option>
-      <option :value="25">25</option>
-      <option :value="50">50</option>
-      <option :value="100">100</option>
-      <option :value="1000">1000</option>
-    </select>
-  </div>
+        <div class="page-size-wrapper">
+          <label for="pageSize">Rows</label>
+          <select id="pageSize" v-model.number="pageInfo.pageSize">
+            <option :value="10">10</option>
+            <option :value="25">25</option>
+            <option :value="50">50</option>
+            <option :value="100">100</option>
+            <option :value="1000">1000</option>
+          </select>
+        </div>
 
-  <!-- Pagination -->
-  <div class="pagination-wrapper">
-    <button class="pagination-btn" :disabled="!pageInfo.hasPreviousPage" @click="previousPage">
-      Previous
-    </button>
-    <span class="pagination-info">
-      Page {{ pageInfo.page }} of {{ totalPages }}
-    </span>
-    <button class="pagination-btn" :disabled="!pageInfo.hasNextPage" @click="nextPage">
-      Next
-    </button>
-  </div>
-</div>
+        <span class="pagination-range">
+          {{ pageStartRow }}-{{ pageEndRow }} of {{ pageInfo.totalCount }}
+        </span>
 
+        <div class="pagination-wrapper">
+          <button class="pagination-btn" :disabled="!pageInfo.hasPreviousPage" @click="firstPage">
+            First
+          </button>
+          <button class="pagination-btn" :disabled="!pageInfo.hasPreviousPage" @click="previousPage">
+            Prev
+          </button>
+          <span class="pagination-info">Page {{ pageInfo.page }} / {{ totalPages }}</span>
+          <button class="pagination-btn" :disabled="!pageInfo.hasNextPage" @click="nextPage">
+            Next
+          </button>
+          <button class="pagination-btn" :disabled="!pageInfo.hasNextPage" @click="lastPage">
+            Last
+          </button>
+        </div>
+      </div>
+    </div>
     </div>
 
 
@@ -323,14 +333,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue"
+import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue"
 import { useRoute } from "vue-router"
 import api from "../api"
 import Swal from "sweetalert2"
 import Loading from "vue-loading-overlay"
 import 'vue-loading-overlay/dist/css/index.css'
 
-const selectedFilter = ref<string | null>(null);
+const selectedFilter = ref<string>("ALL");
   const searchQuery = ref("")
   let debounceTimer: any = null
 
@@ -358,7 +368,7 @@ const selectedFilter = ref<string | null>(null);
 // }
 
 const applyFilter = (filter: string | null) => {
-  selectedFilter.value = filter
+  selectedFilter.value = filter ?? "ALL"
   pageInfo.value.page = 1
   fetchCrawlDetails()
 }
@@ -483,6 +493,19 @@ const getIndexingStateClass = (state: string) => {
 
   return "red";
 };
+
+const formatStateLabel = (value?: string | null) => {
+  if (!value) return "-"
+  return value.replace(/_/g, " ")
+}
+
+const formatDateTime = (value?: string | null) => {
+  if (!value) return "-"
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return date.toLocaleString()
+}
+
 const viewLogs = async (urlId: number) => {
   showLogsModal.value = true; // first show modal
   logsLoading.value = true;
@@ -591,7 +614,7 @@ const fetchCrawlDetails = async () => {
     {
       params: {
       SearchBy: searchQuery.value,     // ✅ match backend
-      Filter: selectedFilter.value,    // ✅ match backend
+      Filter: selectedFilter.value === "ALL" ? null : selectedFilter.value,    // ✅ match backend
       SortBy: null,                   // or your sorting value
       PageNo: pageInfo.value.page,
       PageSize: pageInfo.value.pageSize
@@ -902,9 +925,23 @@ const deIndexed = computed(() => counts.value.deIndexedSucceed)
 const totalPages = computed(() => {
   return Math.ceil(pageInfo.value.totalCount / pageInfo.value.pageSize) || 1
 })
+const pageStartRow = computed(() => {
+  if (pageInfo.value.totalCount === 0) return 0
+  return (pageInfo.value.page - 1) * pageInfo.value.pageSize + 1
+})
+const pageEndRow = computed(() => {
+  if (pageInfo.value.totalCount === 0) return 0
+  return Math.min(pageInfo.value.page * pageInfo.value.pageSize, pageInfo.value.totalCount)
+})
 /* PAGINATION */
+const firstPage = () => {
+  if (pageInfo.value.hasPreviousPage) pageInfo.value.page = 1
+}
 const nextPage = () => pageInfo.value.hasNextPage && pageInfo.value.page++
 const previousPage = () => pageInfo.value.hasPreviousPage && pageInfo.value.page--
+const lastPage = () => {
+  if (pageInfo.value.hasNextPage) pageInfo.value.page = totalPages.value
+}
 
 onMounted(() => {
   fetchCrawlDetails()
@@ -916,6 +953,13 @@ onMounted(() => {
   //   isSyncing.value = true
   //   connectSSE()
   // }
+})
+
+onBeforeUnmount(() => {
+  if (eventSource) {
+    eventSource.close()
+    eventSource = null
+  }
 })
 
 watch(() => pageInfo.value.page, fetchCrawlDetails)
@@ -952,7 +996,7 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 
 .summary-card {
   display: grid;
-  grid-template-columns: repeat(7, 1fr); /* 7 boxes in a row */
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 12px;
   margin-bottom: 16px;
 }
@@ -966,35 +1010,36 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 }
 
 .summary-item {
-  background: #fff;
-  padding: 14px 16px;
-  border-radius: 8px;
-  border: 1px solid #e8e8e8;
+  background: var(--color-card-bg);
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
 }
 
 .summary-item .label {
-  font-size: 12px;
-  color: #999;
-  font-weight: 500;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .summary-item .value {
-  font-size: 20px;
-  color: #333;
+  font-size: 22px;
+  color: var(--color-text);
   font-weight: 700;
 }
 
 .summary-item .value.success {
-  color: var(--color-text);
+  color: var(--success-700);
 }
 
 .summary-item .value.failed {
-  color: var(--color-text);
+  color: var(--danger-700);
 }
 
 /* =====================================================================
@@ -1423,6 +1468,21 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 }
 
 @media (max-width: 640px) {
+  .control-bar-left,
+  .control-bar-right {
+    width: 100%;
+  }
+
+  .control-bar-right {
+    margin-left: 0;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .results-meta {
+    width: 100%;
+  }
+
   .url-cell { max-width: 180px; }
   /* On mobile, drop sticky leading column to give content more room.
      Action column stays sticky for quick access. */
@@ -1632,7 +1692,54 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   font-size: 13px;
 }
 
-.top-action-bar { display:flex; justify-content:flex-end; margin-bottom:12px; }
+.control-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  padding: 10px;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--neutral-50);
+}
+
+.control-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 320px;
+  flex: 1;
+}
+
+.control-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.results-meta {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.clear-selection-btn {
+  background: var(--color-card-bg);
+  color: var(--color-text);
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-strong);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+}
+
+.clear-selection-btn:hover {
+  background: var(--neutral-50);
+}
+
 .sync-btn {
   background: var(--color-accent);
   color: var(--color-accent-fg);
@@ -1674,13 +1781,13 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 }
 
 .summary-item.active {
-  border: 1px solid var(--color-text);
-  background: var(--neutral-50);
+  border-color: var(--color-accent);
+  background: var(--success-50);
+  box-shadow: 0 0 0 1px var(--success-100) inset;
 }
 
-.search-bar { margin-bottom: 12px; }
 .search-input {
-  width: 100%;
+  width: min(460px, 100%);
   padding: 8px 12px;
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-md);
@@ -1694,6 +1801,38 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   border-color: var(--color-accent);
   box-shadow: var(--ring-accent);
   box-shadow: 0 0 0 2px rgba(34,197,94,0.2);
+}
+
+.table-section {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-card-bg);
+}
+
+.table-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  background: var(--neutral-50);
+  border-top: 1px solid var(--color-divider);
+}
+
+.pagination-range {
+  color: var(--color-text-secondary);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.control-bar {
+  border: 1px solid var(--color-border);
+  background: var(--color-card-bg);
 }
 
  </style>

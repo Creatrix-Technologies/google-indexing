@@ -8,7 +8,7 @@
         <!-- Brand / welcome side -->
         <div class="welcome-text">
           <h1>WELCOME</h1>
-          <p class="tagline">SITE BOOSTER</p>
+          <p class="tagline">GoogleIndexing.com</p>
           <p class="desc">
             Easily crawl your website URLs and get them indexed on Google. Monitor your pages, improve SEO, and ensure your content is discoverable all from a single powerful API.
           </p>

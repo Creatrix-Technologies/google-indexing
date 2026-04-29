@@ -1,10 +1,10 @@
 <template>
-  <div class="app-container">
+  <div
+    class="app-container"
+    :class="{ 'layout-sidebar-desktop-collapsed': isCollapsed && !isMobile }"
+  >
     <!-- Sidebar -->
-    <Sidebar
-      v-model:collapsed="isCollapsed"
-      :is-mobile="isMobile"
-    />
+    <Sidebar v-model:collapsed="isCollapsed" />
 
     <!-- Overlay for mobile -->
     <div
@@ -15,7 +15,11 @@
 
     <!-- Main content -->
     <div class="main-content">
-      <Header :isOpen="!isCollapsed" @toggle-sidebar="toggleSidebar" />
+      <Header
+        :is-open="!isCollapsed"
+        :is-mobile="isMobile"
+        @toggle-sidebar="toggleSidebar"
+      />
       <div class="page-wrapper">
         <router-view />
       </div>
@@ -67,7 +71,7 @@ const toggleSidebar = () => {
   flex-direction: column;
 }
 
-.sidebar.collapsed + .main-content {
+.layout-sidebar-desktop-collapsed .main-content {
   margin-left: var(--sidebar-collapsed, 64px);
 }
 

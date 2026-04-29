@@ -9,18 +9,18 @@
             <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
           </svg>
         </div>
-        <span v-if="!collapsed" class="logo-text">Site Booster</span>
+        <span v-if="!collapsed" class="logo-text">GoogleIndexing.com</span>
       </div>
     </div>
 
     <!-- Menu -->
-    <nav class="menu" aria-label="Primary">
+    <nav id="app-sidebar-nav" class="menu" aria-label="Primary">
       <p v-if="!collapsed" class="menu-section-label">Main</p>
 
-      <template v-for="menu in menus" :key="menu.id">
-        <div v-if="menu.showInMenu" class="menu-row">
+      <template v-for="menu in visibleMenus" :key="menu.id">
+        <div class="menu-row">
 
-          <!-- Menu with children -->
+          <!-- Menu with children (expanded sidebar) -->
           <div
             v-if="menu.children && menu.children.length > 0 && !collapsed"
             class="menu-group"
@@ -59,7 +59,18 @@
             </div>
           </div>
 
-          <!-- Menu without children -->
+          <!-- Parent with children (collapsed sidebar): expand rail to pick a child -->
+          <button
+            v-else-if="menu.children && menu.children.length > 0 && collapsed"
+            type="button"
+            class="menu-item"
+            :title="cleanTitle(menu.title)"
+            @click="expandFromCollapsedGroup(menu.id)"
+          >
+            <span class="menu-icon" aria-hidden="true" v-html="iconFor(menu)"></span>
+          </button>
+
+          <!-- Leaf: no children -->
           <router-link
             v-else
             :to="menu.path"
@@ -73,38 +84,104 @@
 
         </div>
       </template>
+
+      <p v-if="visibleMenus.length === 0" class="menu-empty" role="status">
+        No menu items
+      </p>
     </nav>
   </aside>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, computed, watch, onMounted, nextTick } from "vue"
+import { useRoute } from "vue-router"
+import { useMenuStore, type Menu } from "../Store/menu"
 
-const props = defineProps({
-  collapsed: Boolean,
-  isMobile: Boolean
-});
+defineProps({
+  collapsed: Boolean
+})
 
-const emit = defineEmits(["update:collapsed"]);
+const emit = defineEmits<{
+  "update:collapsed": [value: boolean]
+}>()
 
-const menus = ref<any[]>([]);
-const openMenus = ref<number[]>([]);
+const route = useRoute()
+const menuStore = useMenuStore()
+
+const openMenus = ref<number[]>([])
+
+/** Stable ordering for API / persisted menu trees */
+const sortMenus = (items: Menu[]): Menu[] =>
+  [...items]
+    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+    .map((m) => ({
+      ...m,
+      children: m.children?.length ? sortMenus(m.children) : undefined,
+    }))
+
+const visibleMenus = computed<Menu[]>(() => {
+  const raw =
+    menuStore.menus?.length > 0
+      ? menuStore.menus
+      : loadMenusFromLegacyStorage()
+  return sortMenus(raw).filter((m) => m.showInMenu !== false)
+})
+
+function loadMenusFromLegacyStorage(): Menu[] {
+  try {
+    const menuData = localStorage.getItem("menu")
+    if (!menuData) return []
+    const parsed = JSON.parse(menuData)
+    return parsed.menus || []
+  } catch {
+    return []
+  }
+}
+
+onMounted(() => {
+  if (!menuStore.loaded || menuStore.menus.length === 0) {
+    const legacy = loadMenusFromLegacyStorage()
+    if (legacy.length) menuStore.setMenus(sortMenus(legacy))
+  }
+  syncOpenMenusForRoute(route.path)
+})
+
+const pathMatches = (current: string, itemPath: string) => {
+  if (!itemPath) return false
+  if (current === itemPath) return true
+  /* Section roots: highlight parent when drilling into nested routes */
+  if (itemPath !== "/" && current.startsWith(itemPath + "/")) return true
+  return false
+}
+
+const syncOpenMenusForRoute = (currentPath: string) => {
+  const next = new Set<number>()
+  for (const m of visibleMenus.value) {
+    if (!m.children?.length) continue
+    const hit = m.children.some((c) => pathMatches(currentPath, c.path || ""))
+    if (hit) next.add(m.id)
+  }
+  openMenus.value = [...next]
+}
+
+watch(
+  () => route.path,
+  (p) => syncOpenMenusForRoute(p)
+)
 
 const toggleSubmenu = (id: number) => {
   if (openMenus.value.includes(id)) {
-    openMenus.value = openMenus.value.filter(mid => mid !== id);
+    openMenus.value = openMenus.value.filter((mid) => mid !== id)
   } else {
-    openMenus.value.push(id);
+    openMenus.value.push(id)
   }
-};
+}
 
-onMounted(() => {
-  const menuData = localStorage.getItem("menu");
-  if (menuData) {
-    const parsed = JSON.parse(menuData);
-    menus.value = parsed.menus || [];
-  }
-});
+const expandFromCollapsedGroup = async (id: number) => {
+  emit("update:collapsed", false)
+  await nextTick()
+  if (!openMenus.value.includes(id)) openMenus.value.push(id)
+}
 
 /* =========================================================================
    Icon system
@@ -116,7 +193,7 @@ onMounted(() => {
 
 const SVG_ATTRS =
   'viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
-  'stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"';
+  'stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"'
 
 const ICONS: Record<string, string> = {
   dashboard:
@@ -164,7 +241,7 @@ const ICONS: Record<string, string> = {
     `<path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>`,
   fallback:
     `<svg ${SVG_ATTRS}><circle cx="12" cy="12" r="2.25"/></svg>`
-};
+}
 
 const stripEmoji = (s: string): string =>
   (s || "")
@@ -172,31 +249,31 @@ const stripEmoji = (s: string): string =>
       /([\u2700-\u27BF\uE000-\uF8FF\uD83C-\uDBFF\uDC00-\uDFFF\u2600-\u26FF\u2300-\u23FF\u2B00-\u2BFF\u200D\uFE0F])+/g,
       ""
     )
-    .trim();
+    .trim()
 
-const cleanTitle = (s: string): string => stripEmoji(s);
+const cleanTitle = (s: string): string => stripEmoji(s)
 
 const iconKey = (m: any): string => {
-  const t = stripEmoji(m?.title || "").toLowerCase();
-  const p = (m?.path || m?.component || "").toLowerCase();
-  const blob = `${t} ${p}`;
+  const t = stripEmoji(m?.title || "").toLowerCase()
+  const p = (m?.path || m?.component || "").toLowerCase()
+  const blob = `${t} ${p}`
 
-  if (/dashboard|overview|home/.test(blob)) return "dashboard";
-  if (/google.*config|google.*key|google.*credentials/.test(blob)) return "google";
-  if (/stripe/.test(blob)) return "stripe";
-  if (/schedule/.test(blob)) return "schedule";
-  if (/notification/.test(blob)) return "notifications";
-  if (/plan/.test(blob)) return "plans";
-  if (/subscription|billing|payment/.test(blob)) return "subscriptions";
-  if (/setting|configuration|config/.test(blob)) return "settings";
-  if (/user|member|account/.test(blob)) return "users";
-  if (/crawl|index|queue/.test(blob)) return "crawl";
-  if (/site|domain|web/.test(blob)) return "sites";
+  if (/dashboard|overview|home/.test(blob)) return "dashboard"
+  if (/google.*config|google.*key|google.*credentials/.test(blob)) return "google"
+  if (/stripe/.test(blob)) return "stripe"
+  if (/schedule/.test(blob)) return "schedule"
+  if (/notification/.test(blob)) return "notifications"
+  if (/plan/.test(blob)) return "plans"
+  if (/subscription|billing|payment/.test(blob)) return "subscriptions"
+  if (/setting|configuration|config/.test(blob)) return "settings"
+  if (/user|member|account/.test(blob)) return "users"
+  if (/crawl|index|queue/.test(blob)) return "crawl"
+  if (/site|domain|web/.test(blob)) return "sites"
 
-  return "fallback";
-};
+  return "fallback"
+}
 
-const iconFor = (m: any): string => ICONS[iconKey(m)] || ICONS.fallback;
+const iconFor = (m: any): string => ICONS[iconKey(m)] || ICONS.fallback
 </script>
 
 <style scoped>
@@ -283,6 +360,16 @@ const iconFor = (m: any): string => ICONS[iconKey(m)] || ICONS.fallback;
   display: flex;
   flex-direction: column;
   gap: 1px;
+}
+
+.menu-empty {
+  margin: var(--space-4) 10px;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--sidebar-border);
+  font-size: var(--fs-sm);
+  color: var(--sidebar-text-muted);
+  text-align: center;
 }
 
 .sidebar.collapsed .menu {
@@ -423,9 +510,6 @@ const iconFor = (m: any): string => ICONS[iconKey(m)] || ICONS.fallback;
 }
 
 .submenu {
-  /* Vertical rail aligns with the icon center of the parent item.
-     Parent: 10px padding + 18px icon = icon center at 19px.
-     Submenu margin-left: 19px places the rail along that center line. */
   position: relative;
   margin: 4px 0 6px 19px;
   padding: 2px 0 2px var(--space-4);
@@ -434,8 +518,6 @@ const iconFor = (m: any): string => ICONS[iconKey(m)] || ICONS.fallback;
   gap: 1px;
 }
 
-/* Visible rail running through the group, slightly brighter than the
-   sidebar border so it's perceivable on the dark surface. */
 .submenu::before {
   content: "";
   position: absolute;
@@ -473,8 +555,6 @@ const iconFor = (m: any): string => ICONS[iconKey(m)] || ICONS.fallback;
   background: var(--sidebar-active-bg);
 }
 
-/* Left-edge accent mark on active submenu item: a 2px segment that
-   "punches through" the rail to indicate selection. */
 .submenu-item.active-sub::before {
   content: "";
   position: absolute;

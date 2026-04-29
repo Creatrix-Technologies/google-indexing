@@ -2,7 +2,22 @@
 
   <!-- Header -->
   <header class="header">
-    <div class="header-left"></div>
+    <div v-if="isMobile" class="header-left">
+      <button
+        type="button"
+        class="menu-toggle"
+        :aria-expanded="isOpen"
+        aria-controls="app-sidebar-nav"
+        aria-label="Toggle navigation menu"
+        @click="emit('toggle-sidebar')"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="4" y1="6" x2="20" y2="6" />
+          <line x1="4" y1="12" x2="20" y2="12" />
+          <line x1="4" y1="18" x2="20" y2="18" />
+        </svg>
+      </button>
+    </div>
 
     <div class="header-right">
       <div class="profile-actions">
@@ -105,6 +120,15 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
+
+const props = defineProps<{
+  isOpen?: boolean
+  isMobile?: boolean
+}>()
+
+const emit = defineEmits<{
+  'toggle-sidebar': []
+}>()
 import { logout, useAuthStore } from '../Store/auth'
 import { useGoogleConfigStore } from '../Shared/googleConfig'
 import { useSubscriptionStore } from '../Shared/subscription'
@@ -137,6 +161,43 @@ const formatDate = (dateStr: string | null) => {
 </script>
 
 <style scoped>
+/* ----------------- Mobile menu toggle ----------------- */
+.header-left {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.menu-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-left: -6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-card-bg);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+
+.menu-toggle:hover {
+  background: var(--color-surface-2);
+  border-color: var(--neutral-400);
+}
+
+.menu-toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-accent);
+}
+
+.menu-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
 /* ----------------- Header shell ----------------- */
 .header {
   position: sticky;
