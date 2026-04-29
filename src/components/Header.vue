@@ -21,66 +21,20 @@
 
     <div class="header-right">
       <div class="profile-actions">
+        <div class="account-card" :title="authStore.userEmail">
+          <span class="user-avatar">
+            {{ authStore.userName.charAt(0).toUpperCase() }}
+          </span>
+          <div class="account-meta">
+            <span class="user-name">{{ authStore.userName }}</span>
+            <span class="user-email">{{ authStore.userEmail }}</span>
+          </div>
+          <span class="account-status" :class="accountStatusClass">
+            <span class="status-dot" aria-hidden="true"></span>
+            {{ accountStatusLabel }}
+          </span>
+        </div>
 
-        <!-- Trial Badge -->
-        <span
-          v-if="userLimitStore.hasLimit && !userLimitStore.isChecking"
-          class="trial-badge"
-          title="Trial Account"
-        >
-          Trial
-        </span>
-
-        <!-- Subscription Status Icon -->
-        <span
-          v-if="!subscriptionStore.isChecking && !userLimitStore.hasLimit"
-          class="subscription-wrapper"
-          :title="subscriptionStore.isValid
-            ? `Subscription Active (Expire Date: ${formatDate(subscriptionStore.expiresAt)})`
-            : 'Subscription Expired'"
-        >
-          <!-- ACTIVE -->
-          <svg
-            v-if="subscriptionStore.isValid"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            class="subscription-icon valid"
-            fill="currentColor"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M12 2l7 4v6c0 5-3.5 9.74-7 10-3.5-.26-7-5-7-10V6l7-4zm3.53 7.47a.75.75 0 00-1.06-1.06L11 11.88 9.53 10.4a.75.75 0 10-1.06 1.06l2 2a.75.75 0 001.06 0l4-4z"
-              clip-rule="evenodd"
-            />
-          </svg>
-
-          <!-- INACTIVE -->
-          <svg
-            v-else
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            class="subscription-icon invalid"
-            fill="currentColor"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M12 2l7 4v6c0 5-3.5 9.74-7 10-3.5-.26-7-5-7-10V6l7-4zm3 7.5a.75.75 0 00-1.06-1.06L12 10.38l-1.94-1.94a.75.75 0 10-1.06 1.06L10.94 11.5l-1.94 1.94a.75.75 0 101.06 1.06L12 12.62l1.94 1.94a.75.75 0 101.06-1.06L13.06 11.5l1.94-1.94z"
-              clip-rule="evenodd"
-            />
-          </svg>
-        </span>
-
-        <!-- User Avatar -->
-        <span class="user-avatar" :title="authStore.userEmail">
-          {{ authStore.userName.charAt(0).toUpperCase() }}
-        </span>
-
-        <!-- User Name -->
-        <span class="user-name">
-          {{ authStore.userName }}
-        </span>
-
-        <!-- Logout -->
         <button class="logout-btn" @click="handleLogout" title="Logout">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -96,8 +50,8 @@
               d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1"
             />
           </svg>
+          <span class="logout-text">Logout</span>
         </button>
-
       </div>
     </div>
   </header>
@@ -119,7 +73,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 
 const props = defineProps<{
   isOpen?: boolean
@@ -148,6 +102,18 @@ onMounted(() => {
 const handleLogout = () => {
   logout()
 }
+
+const accountStatusLabel = computed(() => {
+  if (userLimitStore.isChecking || subscriptionStore.isChecking) return 'Checking'
+  if (userLimitStore.hasLimit) return 'Trial'
+  return subscriptionStore.isValid ? 'Subscribed' : 'Expired'
+})
+
+const accountStatusClass = computed(() => {
+  if (userLimitStore.isChecking || subscriptionStore.isChecking) return 'is-checking'
+  if (userLimitStore.hasLimit) return 'is-trial'
+  return subscriptionStore.isValid ? 'is-active' : 'is-expired'
+})
 
 const formatDate = (dateStr: string | null) => {
   if (!dateStr) return '-'
@@ -205,7 +171,7 @@ const formatDate = (dateStr: string | null) => {
   z-index: var(--z-header, 100);
 
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   padding: 0 var(--space-5);
   background: rgba(255, 255, 255, 0.85);
@@ -221,27 +187,13 @@ const formatDate = (dateStr: string | null) => {
   display: flex;
   align-items: center;
   gap: var(--space-4);
+  margin-left: auto;
 }
 
 .profile-actions {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-}
-
-/* ----------------- Trial Badge ----------------- */
-.trial-badge {
-  display: inline-flex;
-  align-items: center;
-  background: var(--neutral-100);
-  color: var(--neutral-700);
-  padding: 3px 9px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
-  font-size: var(--fs-xs);
-  font-weight: var(--fw-medium);
-  letter-spacing: 0.02em;
-  line-height: 1.4;
 }
 
 /* ----------------- Google Config Warning ----------------- */
@@ -276,32 +228,17 @@ const formatDate = (dateStr: string | null) => {
   background: var(--neutral-800);
 }
 
-/* ----------------- Subscription ----------------- */
-.subscription-wrapper {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: var(--neutral-100);
-  display: flex;
+.account-card {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 10px;
+  padding: 6px 10px;
   border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-card-bg);
+  max-width: min(52vw, 560px);
 }
 
-.subscription-icon {
-  width: 18px;
-  height: 18px;
-}
-
-.subscription-icon.valid {
-  color: var(--color-success);
-}
-
-.subscription-icon.invalid {
-  color: var(--color-danger);
-}
-
-/* ----------------- User ----------------- */
 .user-avatar {
   width: 28px;
   height: 28px;
@@ -316,26 +253,83 @@ const formatDate = (dateStr: string | null) => {
   letter-spacing: 0;
 }
 
+.account-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .user-name {
-  font-size: var(--fs-base);
+  font-size: var(--fs-sm);
   font-weight: var(--fw-medium);
   color: var(--color-text);
-  letter-spacing: -0.005em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 180px;
+  max-width: 220px;
+}
+
+.user-email {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+.account-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  font-size: 11px;
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.account-status.is-trial {
+  color: var(--warning-700);
+  background: var(--warning-50);
+  border-color: var(--warning-100);
+}
+
+.account-status.is-active {
+  color: var(--success-700);
+  background: var(--success-50);
+  border-color: var(--success-100);
+}
+
+.account-status.is-expired {
+  color: var(--danger-700);
+  background: var(--danger-50);
+  border-color: var(--danger-100);
+}
+
+.account-status.is-checking {
+  color: var(--neutral-600);
+  background: var(--neutral-100);
 }
 
 .logout-btn {
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  padding: 6px;
-  display: inline-flex;
+  padding: 8px 10px;
+  display: flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   color: var(--color-text-secondary);
   transition: background 140ms ease, color 140ms ease,
               border-color 140ms ease;
@@ -351,11 +345,30 @@ const formatDate = (dateStr: string | null) => {
   stroke: currentColor;
 }
 
+.logout-text {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+}
+
 @media (max-width: 768px) {
   .header {
     padding: 0 var(--space-4);
   }
+  .account-card {
+    padding: 4px 8px;
+    gap: 8px;
+    max-width: calc(100vw - 180px);
+  }
   .user-name {
+    display: none;
+  }
+  .user-email {
+    display: none;
+  }
+  .account-status {
+    display: none;
+  }
+  .logout-text {
     display: none;
   }
 }

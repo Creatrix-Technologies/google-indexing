@@ -1,7 +1,7 @@
 <template>
   <Loading :active.sync="isLoading" :is-full-page="true" />
 
-  <div class="page-container">
+    <div class="page-container">
     <!-- PAGE HEADER -->
     <div class="page-header">
       <router-link to="/crawl-index-management" class="back-link">
@@ -93,6 +93,16 @@
   </div>
 </div>
 
+<!-- How to read grid: Indexing API ≠ live Search state -->
+    <div class="alert-box indexing-guide" role="note">
+      <div class="alert-title">Indexing API vs URL Inspection</div>
+      <div class="alert-text">
+        <strong>Queue status / API result</strong> show whether Google accepted your <em>Indexing API</em> notification (“Notify accepted”). That does not mean the URL is already visible in Search results.
+        <strong>Coverage</strong>, <strong>Indexing state</strong>, <strong>Robots</strong>, and <strong>Page fetch</strong> come from <em>URL Inspection</em> (Search Console) and often lag until Google recrawls — use <strong>Google Sync</strong> to refresh those fields.
+        Rows use a neutral background; a slim left-edge tint echoes <strong>API result</strong> (Indexing API outcome: notify accepted · failed · none).
+      </div>
+    </div>
+
     <!-- CONTROL BAR -->
     <div class="control-bar">
       <div class="control-bar-left">
@@ -105,21 +115,53 @@
         <span class="results-meta">Showing {{ urls.length }} of {{ pageInfo.totalCount }}</span>
       </div>
       <div class="control-bar-right">
-        <button
-          v-if="selectedIds.size > 0"
-          class="clear-selection-btn"
-          @click="selectedIds.clear()"
-        >
-          Clear Selection
-        </button>
-        <button
-          class="index-btn"
-          :disabled="selectedIds.size === 0"
-          @click="indexSelectedUrls"
-        >
-          Queue Selected ({{ selectedIds.size }})
-        </button>
-        <button class="sync-btn" @click="startGoogleSync" :disabled="isSyncing">
+        <div class="queue-priority-bar" aria-label="Default queue priority">
+          <span class="priority-inline-label">Queue priority</span>
+          <div class="priority-segments" role="radiogroup" aria-label="Queue priority">
+            <button
+              type="button"
+              class="priority-seg"
+              :class="{ active: queuePriority === 0 }"
+              role="radio"
+              :aria-checked="queuePriority === 0"
+              @click="queuePriority = 0"
+            >
+              Low
+            </button>
+            <button
+              type="button"
+              class="priority-seg"
+              :class="{ active: queuePriority === 1 }"
+              role="radio"
+              :aria-checked="queuePriority === 1"
+              @click="queuePriority = 1"
+            >
+              Med
+            </button>
+            <button
+              type="button"
+              class="priority-seg"
+              :class="{ active: queuePriority === 2 }"
+              role="radio"
+              :aria-checked="queuePriority === 2"
+              @click="queuePriority = 2"
+            >
+              High
+            </button>
+          </div>
+        </div>
+        <template v-if="selectedIds.size > 0">
+          <button type="button" class="clear-selection-btn" @click="clearSelection">
+            Clear
+          </button>
+          <button type="button" class="index-btn" @click="queueSelectedForIndex">
+            Index queue ({{ selectedIds.size }})
+          </button>
+          <button type="button" class="queue-remove-btn" @click="queueSelectedForRemoval">
+            Remove queue ({{ selectedIds.size }})
+          </button>
+        </template>
+        <button class="sync-btn" type="button" title="Re-fetches URL Inspection data from Search Console for all URLs on this page (does not re-send Indexing API notifies)." @click="startGoogleSync" :disabled="isSyncing">
           🔄 Google Sync
         </button>
       </div>
@@ -141,6 +183,7 @@
     <span class="failed">✖ {{ syncFailed }}</span>
   </div>
 </div>
+
     <!-- TABLE -->
     <div class="table-section">
     <div class="table-scroll">
@@ -152,16 +195,15 @@
               <input type="checkbox" :checked="isAllChecked" @change="toggleSelectAll" />
             </th>
             <th>URL</th>
-            <th>Status Code</th>
-            <th>Indexing State</th>
-            <th>Coverage State</th>
-            <th>Robots Txt State</th>
-            <th>Page Fetch State</th>
-            <th>Queue Status</th>
-            <th>Priority</th>
-            <th>Result</th>
-            <th>API Type</th>
-            <th>Index Updated At</th>
+            <th title="Google Search URL Inspection: indexing state (can lag after a notify).">Indexing State</th>
+            <th title="Google Search URL Inspection: coverage / discovery.">Coverage State</th>
+            <th title="Google Search URL Inspection.">Robots Txt State</th>
+            <th title="Google Search URL Inspection.">Page Fetch State</th>
+            <th title="Status of the indexing job in this app (e.g. Job done = pipeline finished; not the same as ranking).">Queue Status</th>
+            <th title="Priority of the last queue request.">Priority</th>
+            <th title="Indexing API outcome (notify accepted vs failed).">API Result</th>
+            <th title="Update vs remove notification.">API Type</th>
+            <th title="When the last indexing job finished.">Index Updated At</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -170,7 +212,7 @@
           <tr
             v-for="item in urls"
             :key="item.id"
-            :class="item.statusCode===200?'success':'failed'"
+            :class="apiResultRowClass(item.indexedResult)"
           >
             <td>
               <input
@@ -184,42 +226,60 @@
               <a :href="item.url" target="_blank" :title="item.url">{{ item.url }}</a>
             </td>
 
-            <td>
-              <span class="status-badge" :class="item.statusCode===200?'success':'failed'">
-                {{ item.statusCode }}
-              </span>
-            </td>
-
-            <td>
-  <span style="text-align: center;"
-    class="indexing-chip"
+            <td
+              class="inspection-cell"
+              :title="inspectionTooltip(item.indexingState)"
+            >
+  <span
+    class="indexing-chip indexing-chip--compact"
     :class="getIndexingStateClass(item.indexingState)"
-  >
-    {{ item.indexingState.replace(/_/g, ' ') }}
+  ><span class="indexing-chip__text">{{ formatGoogleInspectionLabel(item.indexingState) }}</span>
   </span>
-</td>            <td>{{ formatStateLabel(item.coverageState) }}</td>
-            <td>{{ formatStateLabel(item.robotsTxtState) }}</td>
-            <td>{{ formatStateLabel(item.pageFetchSpecified) }}</td>
+</td>
+            <td class="inspection-cell" :title="inspectionTooltip(item.coverageState)">{{ formatGoogleInspectionLabel(item.coverageState) }}</td>
+            <td class="inspection-cell" :title="inspectionTooltip(item.robotsTxtState)">{{ formatGoogleInspectionLabel(item.robotsTxtState) }}</td>
+            <td class="inspection-cell" :title="inspectionTooltip(item.pageFetchSpecified)">{{ formatGoogleInspectionLabel(item.pageFetchSpecified) }}</td>
             <td>{{ formatStateLabel(item.indexedStatus) }}</td>
             <td>{{ formatStateLabel(item.priority) }}</td>
-            <td>{{ formatStateLabel(item.indexedResult) }}</td>
+            <td class="api-result-cell">
+              <span
+                class="api-result-chip"
+                :class="apiResultChipClass(item.indexedResult)"
+                :title="'Indexing API outcome: ' + (item.indexedResult || '—')"
+              >{{ formatIndexedResult(item.indexedResult) }}</span>
+            </td>
             <td>{{ item.type }}</td>
             <td>{{ formatDateTime(item.indexedAt) }}</td>
 
             <td class="action-cell">
-              <button title="Instant Index" class="row-index-btn" @click="indexSingleUrl(item.id)">
-                ReIndex
-              </button>
-              <button title="Queue Index" class="row-index-btn failed" @click="removeIndexSingleUrl(item.id)">
-                DeIndex
-              </button>
-              <button title="View Logs" class="row-index-btn view" @click="viewLogs(item.id)">Logs</button>
+              <div class="row-action-group" @click.stop>
+                <button
+                  title="Index actions"
+                  class="row-index-btn"
+                  :class="{ 'is-open-menu': rowMenuPortal?.urlId === item.id && rowMenuPortal.kind === 'index' }"
+                  @click.stop="openRowDropdown($event, item.id, 'index')"
+                >
+                  ReIndex ▾
+                </button>
+              </div>
 
+              <div class="row-action-group" @click.stop>
+                <button
+                  title="Deindex actions"
+                  class="row-index-btn failed"
+                  :class="{ 'is-open-menu': rowMenuPortal?.urlId === item.id && rowMenuPortal.kind === 'remove' }"
+                  @click.stop="openRowDropdown($event, item.id, 'remove')"
+                >
+                  DeIndex ▾
+                </button>
+              </div>
+
+              <button title="View Logs" class="row-index-btn view" @click="viewLogs(item.id)">Logs</button>
             </td>
           </tr>
 
           <tr v-if="urls.length === 0">
-            <td colspan="13" style="text-align:center; padding:20px">
+            <td colspan="12" style="text-align:center; padding:20px">
               {{ searchQuery ? 'No matching URLs found for current search/filter.' : 'No crawl data found.' }}
             </td>
           </tr>
@@ -328,17 +388,63 @@
     </transition>
 
 
+  <!-- Row action menus (fixed to viewport; avoids table overflow + layout shift) -->
+  <Teleport to="body">
+    <div
+      v-if="rowMenuPortal"
+      class="row-menu-backdrop"
+      aria-hidden="true"
+      @click="closeRowDropdown"
+    />
+  </Teleport>
+  <Teleport to="body">
+    <div
+      v-if="rowMenuPortal"
+      ref="rowMenuFloatingEl"
+      class="row-action-menu-portal"
+      role="menu"
+      @click.stop
+    >
+      <template v-if="rowMenuPortal.kind === 'index'">
+        <button type="button" class="row-action-menu-item" @click="indexSingleUrl(rowMenuPortal.urlId, 'direct')">
+          Index now
+        </button>
+        <button type="button" class="row-action-menu-item" @click="indexSingleUrl(rowMenuPortal.urlId, 'queue')">
+          Add to queue ({{ queuePriorityLabel }})
+        </button>
+      </template>
+      <template v-else>
+        <button type="button" class="row-action-menu-item" @click="removeIndexSingleUrl(rowMenuPortal.urlId, 'direct')">
+          Deindex now
+        </button>
+        <button type="button" class="row-action-menu-item" @click="removeIndexSingleUrl(rowMenuPortal.urlId, 'queue')">
+          Queue remove ({{ queuePriorityLabel }})
+        </button>
+      </template>
+    </div>
+  </Teleport>
 
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue"
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from "vue"
 import { useRoute } from "vue-router"
 import api from "../api"
+import {
+  autoUpdate,
+  computePosition,
+  flip,
+  offset,
+  shift,
+} from "@floating-ui/dom"
 import Swal from "sweetalert2"
+import { useToast } from "vue-toastification"
 import Loading from "vue-loading-overlay"
 import 'vue-loading-overlay/dist/css/index.css'
+
+const toast = useToast()
+const route = useRoute()
 
 const selectedFilter = ref<string>("ALL");
   const searchQuery = ref("")
@@ -485,6 +591,26 @@ const showLogsModal = ref(false); // controls modal visibility
 const logs = ref<any[]>([]); // store logs
 const logsLoading = ref(false);
 
+/** Row + chip styling from Indexing API outcome (indexedResult). */
+const apiResultRowClass = (raw?: string | null) => {
+  const v = (raw ?? "").trim().toLowerCase()
+  if (!v) return "api-row api-row--neutral"
+  if (v.includes("fail")) return "api-row api-row--fail"
+  if (v.includes("notify") || v.includes("accepted") || v === "success")
+    return "api-row api-row--ok"
+  return "api-row api-row--neutral"
+}
+
+const apiResultChipClass = (raw?: string | null) => {
+  const v = (raw ?? "").trim()
+  if (!v) return "api-result-chip--muted"
+  const lo = v.toLowerCase()
+  if (lo.includes("fail")) return "api-result-chip--fail"
+  if (lo.includes("notify") || lo.includes("accepted") || lo === "success")
+    return "api-result-chip--ok"
+  return "api-result-chip--muted"
+}
+
 const getIndexingStateClass = (state: string) => {
   if (!state) return "red";
 
@@ -497,6 +623,45 @@ const getIndexingStateClass = (state: string) => {
 const formatStateLabel = (value?: string | null) => {
   if (!value) return "-"
   return value.replace(/_/g, " ")
+}
+
+/** DB / API: last Indexing API outcome (not Search “indexed” rank). Legacy rows may still say Success. */
+const formatIndexedResult = (value?: string | null) => {
+  if (!value) return "-"
+  const v = value.trim()
+  if (v === "Success") return "Notify accepted"
+  return v.replace(/_/g, " ")
+}
+
+/** Full Inspection text for tooltips (underscores → spaces). */
+const inspectionTooltip = (value?: string | null) => {
+  if (value == null || value === "") return ""
+  return value.replace(/_/g, " ").trim()
+}
+
+/** Short single-line labels for URL Inspection-derived cells (full detail in tooltip). */
+const formatGoogleInspectionLabel = (value?: string | null) => {
+  if (value == null || value === "") return "—"
+  const t = value.trim()
+
+  const lower = t.toLowerCase()
+
+  // Condense ENUM-style unspecified states to one token
+  if (/coverage_state/i.test(t) && /unspecified/i.test(t)) return "Unset"
+  if (/indexing_state/i.test(t) && /unspecified/i.test(t)) return "Unset"
+  if (/indexing.+unspecified/i.test(lower) || /^indexing\s+state\s+unspecified$/i.test(t.trim()))
+    return "Unset"
+  if (/robots_txt/i.test(t) && /unspecified/i.test(t)) return "Unset"
+  if (/robots.+unspecified/i.test(lower)) return "Unset"
+  if (/page_fetch/i.test(t) && /unspecified/i.test(t)) return "Unset"
+  if (/page\s+fetch.+unspecified/i.test(lower)) return "Unset"
+  if (/coverage.+unspecified/i.test(lower)) return "Unset"
+  if (/^unspecified$/i.test(t)) return "Unset"
+  if (/unspecified/i.test(t) && (/state$/i.test(t) || /^[A-Z_]+_/i.test(t))) return "Unset"
+
+  if (/url\s+is\s+unknown/i.test(lower) || /unknown\s+to\s+google/i.test(lower)) return "Unknown to Google"
+
+  return t.replace(/_/g, " ")
 }
 
 const formatDateTime = (value?: string | null) => {
@@ -512,7 +677,9 @@ const viewLogs = async (urlId: number) => {
   console.log("Fetching logs for URL ID:", urlId);
 
   try {
-    const res = await api.get(`/crawl/queue-logs?urlId=${urlId}`);
+    const res = await api.get(`/crawl/queue-logs`, {
+      params: { urlId }
+    });
     if (res?.data?.isSuccess) {
       logs.value = res.data.data;
       console.log("Logs fetched:", logs.value);
@@ -520,9 +687,13 @@ const viewLogs = async (urlId: number) => {
       logs.value = [];
       Swal.fire("Error", res?.data?.meta || "Failed to fetch logs", "error");
     }
-  } catch (err) {
+  } catch (err: any) {
     console.error(err);
-    Swal.fire("Error", "Failed to fetch logs", "error");
+    const message =
+      err?.response?.data?.meta ||
+      err?.response?.data?.error?.description ||
+      "Failed to fetch logs";
+    Swal.fire("Error", message, "error");
     logs.value = [];
   } finally {
     logsLoading.value = false;
@@ -573,7 +744,6 @@ interface SiteInfo {
   scheduleMessage: string
 }
 
-const route = useRoute()
 const siteId = Number(route.params.siteId)
 
 const urls = ref<CrawledUrl[]>([])
@@ -661,97 +831,167 @@ const toggleSelectAll = () => {
   }
 }
 
-/* INDEXING */
-const indexSelectedUrls = async () => {
-  const { value: priority } = await Swal.fire({
-    title: "Queue Selected URLs",
-    icon: "warning",
-    input: "select",
-    inputOptions: {
-      2: "High",
-      1: "Medium",
-      0: "Low"
-    },
-    inputPlaceholder: "Select priority",
-    showCancelButton: true,
-    confirmButtonText: "Next",
-    cancelButtonText: "Cancel",
-    confirmButtonColor: "#22c55e"
-  });
+/** Default queue priority for toolbar + single-row “add to queue” (0 low, 1 med, 2 high). */
+const queuePriority = ref<0 | 1 | 2>(1)
 
-  if (!priority && priority !== 0) return; // user cancelled
+const queuePriorityLabel = computed(() =>
+  queuePriority.value === 2 ? "High" : queuePriority.value === 1 ? "Medium" : "Low"
+)
 
-  // Next step: ask if indexing or removing
-  const result = await Swal.fire({
-    title: "Queue Selected URLs",
-    text: "What do you want to do with the selected URLs?",
-    icon: "warning",
-    showCancelButton: true,
-    showDenyButton: true,
-    confirmButtonText: "📥 Index",
-    denyButtonText: "🗑️ DeIndex",
-    confirmButtonColor: "#22c55e",
-    denyButtonColor: "#ef4444",
-    cancelButtonText: "Cancel"
-  });
+const clearSelection = () => {
+  selectedIds.value = new Set()
+}
 
-  if (result.isDismissed) return;
+type RowMenuKind = "index" | "remove"
 
-  const type =
-    result.isConfirmed ? "URL_UPDATED" :
-    result.isDenied ? "URL_DELETED" :
-    null;
+interface RowMenuPortalState {
+  urlId: number
+  kind: RowMenuKind
+}
 
-  if (!type) return;
+const rowMenuPortal = ref<RowMenuPortalState | null>(null)
+const rowMenuFloatingEl = ref<HTMLElement | null>(null)
+/** Trigger button — Floating UI reference element. */
+const rowMenuAnchorEl = ref<HTMLElement | null>(null)
+const MENU_MIN_WIDTH = 196
 
-  // API call including priority
-  const resQueue = await api.post("/crawl/index", {
-    websiteId: siteId,
-    urlId: Array.from(selectedIds.value),
-    type,
-    priority: Number(priority) // send priority here
-  });
+let stopFloatingAutoUpdate: (() => void) | undefined
 
-  if(resQueue?.data.isSuccess){
-    Swal.fire(
-      "Queued",
-      type === "URL_UPDATED"
-        ? "URLs queued for indexing"
-        : "URLs queued for removal",
-      "success"
-    );
-  } else {
-    Swal.fire("Failed", resQueue?.data?.meta, "error");
+const detachFloatingUpdates = () => {
+  stopFloatingAutoUpdate?.()
+  stopFloatingAutoUpdate = undefined
+}
+
+const positionFloatingMenu = async () => {
+  const refEl = rowMenuAnchorEl.value
+  const floatEl = rowMenuFloatingEl.value
+  if (!refEl || !floatEl) return
+
+  const r = refEl.getBoundingClientRect()
+  const menuWidth = Math.max(MENU_MIN_WIDTH, Math.ceil(r.width))
+  const { x, y } = await computePosition(refEl, floatEl, {
+    placement: "bottom-start",
+    strategy: "fixed",
+    middleware: [offset(4), flip(), shift({ padding: 8 })],
+  })
+  Object.assign(floatEl.style, {
+    position: "fixed",
+    left: `${x}px`,
+    top: `${y}px`,
+    width: `${menuWidth}px`,
+  })
+}
+
+const bindFloatingUpdates = async () => {
+  detachFloatingUpdates()
+  await nextTick()
+
+  const refEl = rowMenuAnchorEl.value
+  const floatEl = rowMenuFloatingEl.value
+  if (!refEl || !floatEl) return
+
+  stopFloatingAutoUpdate = autoUpdate(refEl, floatEl, () => {
+    void positionFloatingMenu()
+  })
+  await positionFloatingMenu()
+}
+
+const closeRowDropdown = () => {
+  detachFloatingUpdates()
+  rowMenuAnchorEl.value = null
+  rowMenuPortal.value = null
+}
+
+const openRowDropdown = async (ev: MouseEvent, urlId: number, kind: RowMenuKind) => {
+  const btn = ev.currentTarget as HTMLElement | null
+  if (!btn) return
+
+  const sameOpen =
+    rowMenuPortal.value?.urlId === urlId && rowMenuPortal.value.kind === kind
+  if (sameOpen) {
+    closeRowDropdown()
+    return
   }
 
-  selectedIds.value.clear();
-  fetchCrawlDetails();
-  fetchCrawlCounts();
-};
+  detachFloatingUpdates()
+  rowMenuAnchorEl.value = btn
+  rowMenuPortal.value = { urlId, kind }
+  await bindFloatingUpdates()
+}
 
-
-const indexSingleUrl = async (id: number) => {
+const queueSelectedForIndex = async () => {
+  if (selectedIds.value.size === 0) return
+  isLoading.value = true
   try {
-    // Step 1: Ask user for action (Instant or Queue)
-    const result = await Swal.fire({
-      title: "Index URL",
-      text: "Choose indexing method",
-      icon: "question",
-      showCancelButton: true,
-      showDenyButton: true,
-      confirmButtonText: "⚡ Index Now",
-      denyButtonText: "⏳ Add to Queue",
-      cancelButtonText: "Cancel",
-      confirmButtonColor: "#22c55e",
-      denyButtonColor: "#3b82f6"
-    });
+    const resQueue = await api.post("/crawl/index", {
+      websiteId: siteId,
+      urlId: Array.from(selectedIds.value),
+      type: "URL_UPDATED",
+      priority: queuePriority.value
+    })
+    if (resQueue?.data?.isSuccess) {
+      toast.success(resQueue?.data?.message || `${selectedIds.value.size} URL(s) queued for indexing (${queuePriorityLabel.value}).`)
+    } else {
+      Swal.fire("Failed", resQueue?.data?.meta ?? "Request failed", "error")
+    }
+  } catch (e) {
+    console.error(e)
+    Swal.fire("Failed", "Could not queue URLs.", "error")
+  } finally {
+    isLoading.value = false
+    selectedIds.value = new Set()
+    fetchCrawlDetails()
+    fetchCrawlCounts()
+  }
+}
 
-    if (result.isDismissed) return; // Cancel clicked
+const queueSelectedForRemoval = async () => {
+  if (selectedIds.value.size === 0) return
+  const n = selectedIds.value.size
+  const confirm = await Swal.fire({
+    title: "Queue removal?",
+    text: `Send ${n} URL(s) to the deindex queue at ${queuePriorityLabel.value} priority.`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Queue removal",
+    cancelButtonText: "Cancel",
+    confirmButtonColor: "#ef4444"
+  })
+  if (!confirm.isConfirmed) return
 
-    // --- Instant Indexing ---
-    if (result.isConfirmed) {
-      isLoading.value = true;
-      try {
+  isLoading.value = true
+  try {
+    const resQueue = await api.post("/crawl/index", {
+      websiteId: siteId,
+      urlId: Array.from(selectedIds.value),
+      type: "URL_DELETED",
+      priority: queuePriority.value
+    })
+    if (resQueue?.data?.isSuccess) {
+      toast.success(resQueue?.data?.message || `${n} URL(s) queued for removal (${queuePriorityLabel.value}).`)
+    } else {
+      Swal.fire("Failed", resQueue?.data?.meta ?? "Request failed", "error")
+    }
+  } catch (e) {
+    console.error(e)
+    Swal.fire("Failed", "Could not queue URLs.", "error")
+  } finally {
+    isLoading.value = false
+    selectedIds.value = new Set()
+    fetchCrawlDetails()
+    fetchCrawlCounts()
+  }
+}
+
+/* INDEXING */
+
+
+const indexSingleUrl = async (id: number, mode: "direct" | "queue") => {
+  try {
+    closeRowDropdown()
+    isLoading.value = true;
+    try {
+      if (mode === "direct") {
         const res = await api.post("/crawl/index-direct", {
           websiteId: siteId,
           urlId: id,
@@ -759,55 +999,34 @@ const indexSingleUrl = async (id: number) => {
         });
 
         if (res?.data?.isSuccess) {
-          Swal.fire("Submitted", "URL has been successfully submitted for indexing", "success");
+          Swal.fire({
+            title: "Indexing API",
+            text:
+              res?.data?.message ??
+              "Google accepted the notification. URL Inspection fields can take time to update.",
+            icon: "success"
+          })
         } else {
           Swal.fire("Failed", res?.data?.meta || "Something went wrong", "error");
         }
-      } finally {
-        isLoading.value = false;
-      }
-    }
-
-    // --- Queue Indexing ---
-    if (result.isDenied) {
-      const queueResult = await Swal.fire({
-        title: "Queue URL for Indexing",
-        icon: "question",
-        input: "select",
-        inputOptions: {
-          2: "High",
-          1: "Medium",
-          0: "Low"
-        },
-        inputPlaceholder: "Select priority",
-        showCancelButton: true,
-        cancelButtonText: "Cancel"
-      });
-
-      if (queueResult.isDismissed || queueResult.value === undefined) return;
-
-      const priority = Number(queueResult.value);
-
-      isLoading.value = true;
-      try {
+      } else {
         const resQueue = await api.post("/crawl/index", {
           websiteId: siteId,
           urlId: [id],
           type: "URL_UPDATED",
-          priority
+          priority: queuePriority.value
         });
 
         if (resQueue?.data?.isSuccess) {
-          Swal.fire("Queued", "URLs queued for indexing", "success");
+          toast.success(resQueue?.data?.message || `Queued for indexing (${queuePriorityLabel.value} priority).`);
         } else {
           Swal.fire("Failed", resQueue?.data?.meta || "Something went wrong", "error");
         }
-      } finally {
-        isLoading.value = false;
       }
+    } finally {
+      isLoading.value = false;
     }
 
-    // Refresh UI data after any successful action
     fetchCrawlDetails();
     fetchCrawlCounts();
     
@@ -823,28 +1042,12 @@ const indexSingleUrl = async (id: number) => {
 
 
 
-const removeIndexSingleUrl = async (id: number) => {
+const removeIndexSingleUrl = async (id: number, mode: "direct" | "queue") => {
   try {
-    // Step 1: Ask user for action (Instant or Queue)
-    const result = await Swal.fire({
-      title: "Remove Index URL",
-      text: "Choose removal method",
-      icon: "question",
-      showCancelButton: true,
-      showDenyButton: true,
-      confirmButtonText: "⚡ Deindex Now",
-      denyButtonText: "⏳ Queue to Deindex",
-      cancelButtonText: "Cancel",
-      confirmButtonColor: "#ef4444",
-      denyButtonColor: "#dc2626"
-    });
-
-    if (result.isDismissed) return; // Cancel clicked
-
-    // --- Instant Removal ---
-    if (result.isConfirmed) {
-      isLoading.value = true;
-      try {
+    closeRowDropdown()
+    isLoading.value = true;
+    try {
+      if (mode === "direct") {
         const res = await api.post("/crawl/index-direct", {
           websiteId: siteId,
           urlId: id,
@@ -852,52 +1055,32 @@ const removeIndexSingleUrl = async (id: number) => {
         });
 
         if (res?.data?.isSuccess) {
-          Swal.fire("Submitted", "URL has been successfully submitted for deindexing", "success");
+          Swal.fire({
+            title: "Indexing API",
+            text:
+              res?.data?.message ??
+              "Google accepted the removal notification. URL Inspection can take time to update.",
+            icon: "success"
+          })
         } else {
           Swal.fire("Failed", res?.data?.meta || "Something went wrong", "error");
         }
-      } finally {
-        isLoading.value = false;
-      }
-    }
-
-    // --- Queue Removal ---
-    if (result.isDenied) {
-      const queueResult = await Swal.fire({
-        title: "Queue URL for Deindexing",
-        icon: "question",
-        input: "select",
-        inputOptions: {
-          2: "High",
-          1: "Medium",
-          0: "Low"
-        },
-        inputPlaceholder: "Select priority",
-        showCancelButton: true,
-        cancelButtonText: "Cancel"
-      });
-
-      if (queueResult.isDismissed || queueResult.value === undefined) return;
-
-      const priority = Number(queueResult.value);
-
-      isLoading.value = true;
-      try {
+      } else {
         const resQueue = await api.post("/crawl/index", {
           websiteId: siteId,
           urlId: [id],
           type: "URL_DELETED",
-          priority
+          priority: queuePriority.value
         });
 
         if (resQueue?.data?.isSuccess) {
-          Swal.fire("Queued", "URLs queued for deindexing", "success");
+          toast.success(resQueue?.data?.message || `Queued for removal (${queuePriorityLabel.value} priority).`);
         } else {
           Swal.fire("Failed", resQueue?.data?.meta || "Something went wrong", "error");
         }
-      } finally {
-        isLoading.value = false;
       }
+    } finally {
+      isLoading.value = false;
     }
 
     // Refresh UI
@@ -948,18 +1131,16 @@ onMounted(() => {
   fetchCrawlCounts()
   fetchIndexLimit()  
   connectSSE()
- 
-  // if (counts.value.isSyncing) {
-  //   isSyncing.value = true
-  //   connectSSE()
-  // }
+  document.addEventListener("click", closeRowDropdown)
 })
 
 onBeforeUnmount(() => {
+  detachFloatingUpdates()
   if (eventSource) {
     eventSource.close()
     eventSource = null
   }
+  document.removeEventListener("click", closeRowDropdown)
 })
 
 watch(() => pageInfo.value.page, fetchCrawlDetails)
@@ -1075,7 +1256,7 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  min-width: 1080px;
+  min-width: 980px;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1, "lnum" 1;
 }
@@ -1110,18 +1291,34 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 
 .urls-table tbody tr {
   transition: background 120ms ease;
+  position: relative;
+  z-index: 1;
+  height: 42px;
 }
+/* Rows: stripe from Indexing API result (indexedResult) */
+.urls-table tbody tr.api-row td {
+  background: var(--color-card-bg);
+}
+
 .urls-table tbody tr:hover td {
   background: var(--neutral-50);
 }
+
+.urls-table tbody tr.api-row--ok td:nth-child(1) {
+  box-shadow: inset 2px 0 0 rgba(5, 150, 105, 0.72);
+}
+
+.urls-table tbody tr.api-row--fail td:nth-child(1) {
+  box-shadow: inset 2px 0 0 rgba(220, 38, 38, 0.78);
+}
+
+.urls-table tbody tr.api-row--neutral td:nth-child(1) {
+  box-shadow: inset 2px 0 0 rgba(148, 163, 184, 0.55);
+}
+
 .urls-table tbody tr:last-child td {
   border-bottom: none;
 }
-
-/* Status-row tints applied to td so sticky columns still receive them */
-.urls-table tbody tr.success td  { background: var(--color-card-bg); }
-.urls-table tbody tr.failed td   { background: var(--color-card-bg); }
-.urls-table tbody tr.failed:hover td { background: var(--danger-50); }
 
 /* ----------------- Sticky leading + trailing columns -------------------
    Columns 1 (checkbox), 2 (URL) freeze on the left.
@@ -1210,6 +1407,54 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   border: 1px solid var(--danger-100);
 }
 
+/* Indexing API result — pill chips (paired with api-row stripes) */
+.api-result-cell {
+  max-width: 170px;
+  vertical-align: middle;
+}
+
+.api-result-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.008em;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  max-width: 100%;
+  line-height: 1.25;
+}
+
+.api-result-chip::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.api-result-chip--ok {
+  background: var(--success-50);
+  color: var(--success-700);
+  border-color: var(--success-100);
+}
+
+.api-result-chip--fail {
+  background: var(--danger-50);
+  color: var(--danger-700);
+  border-color: var(--danger-100);
+}
+
+.api-result-chip--muted {
+  background: var(--neutral-100);
+  color: var(--neutral-600);
+  border-color: var(--neutral-200);
+}
+
 /* Buttons */
 .index-btn {
   padding: 8px 14px;
@@ -1274,11 +1519,61 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 }
 
 .urls-table .action-cell {
+  position: relative;
+  overflow: visible;
   gap: 6px;
   justify-content: center;
   align-items: center;
-  min-height: 36px;
+  height: 42px;
+  min-height: 42px;
   white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.row-action-group {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+  height: 32px;
+}
+
+:global(.row-menu-backdrop) {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+}
+
+:global(.row-action-menu-portal) {
+  position: fixed;
+  z-index: 9999;
+  min-width: 180px;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 6px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+:global(.row-action-menu-portal .row-action-menu-item) {
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: block;
+}
+
+:global(.row-action-menu-portal .row-action-menu-item:hover) {
+  background: var(--neutral-50);
 }
 
 /* Site Info */
@@ -1405,7 +1700,7 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   cursor: not-allowed;
 }
 
-/* Chips */
+/* Chips (default sizing; tightened inside .inspection-cell) */
 .indexing-chip {
   padding: 3px 10px;
   border-radius: var(--radius-pill);
@@ -1417,6 +1712,34 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   text-transform: capitalize;
   letter-spacing: 0.005em;
   border: 1px solid transparent;
+}
+
+/* URL Inspection columns: fixed row height — single line + ellipsis */
+.inspection-cell {
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+.inspection-cell .indexing-chip--compact {
+  max-width: 100%;
+  min-width: 0;
+  padding: 2px 8px;
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.inspection-cell .indexing-chip--compact::before {
+  flex-shrink: 0;
+}
+
+.indexing-chip__text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .indexing-chip::before {
   content: "";
@@ -1448,7 +1771,7 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 /* Responsive */
 @media (max-width: 1024px) {
   .urls-table {
-    min-width: 1080px;
+    min-width: 980px;
   }
   .urls-table th,
   .urls-table td {
@@ -1675,11 +1998,12 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
   color: var(--warning-700);
 }
 
-/* Schedule - info style */
-.alert-box.schedule {
-  background: var(--info-50);
-  border-color: var(--info-100);
-  color: var(--info-700);
+/* URL Inspection explainer */
+.alert-box.indexing-guide {
+  background: var(--neutral-50);
+  border-color: var(--color-border);
+  color: var(--color-text);
+  margin-bottom: 14px;
 }
 
 .alert-title {
@@ -1716,8 +2040,81 @@ watch(() => pageInfo.value.page, fetchCrawlDetails)
 .control-bar-right {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   margin-left: auto;
+}
+
+.queue-priority-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: var(--radius-md);
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+}
+
+.priority-inline-label {
+  font-size: 11px;
+  font-weight: var(--fw-medium);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.priority-segments {
+  display: inline-flex;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-strong);
+  overflow: hidden;
+  background: var(--neutral-100);
+}
+
+.priority-seg {
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  padding: 6px 12px;
+  border: none;
+  border-right: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.priority-seg:last-child {
+  border-right: none;
+}
+
+.priority-seg:hover {
+  background: var(--neutral-50);
+  color: var(--color-text);
+}
+
+.priority-seg.active {
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+}
+
+.queue-remove-btn {
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--danger-100);
+  background: var(--color-card-bg);
+  color: var(--color-danger);
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+
+.queue-remove-btn:hover {
+  background: var(--danger-50);
+  border-color: var(--color-danger);
 }
 
 .results-meta {

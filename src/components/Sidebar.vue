@@ -9,13 +9,41 @@
             <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
           </svg>
         </div>
-        <span v-if="!collapsed" class="logo-text">GoogleIndexing.com</span>
+        <div v-if="!collapsed" class="logo-copy">
+          <span class="logo-text">GoogleIndexing.com</span>
+          <span class="logo-subtext">Admin Console</span>
+        </div>
       </div>
+      <button
+        type="button"
+        class="rail-toggle"
+        :title="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+        @click="toggleRail"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path v-if="collapsed" d="m9 18 6-6-6-6" />
+          <path v-else d="m15 18-6-6 6-6" />
+        </svg>
+      </button>
     </div>
 
     <!-- Menu -->
     <nav id="app-sidebar-nav" class="menu" aria-label="Primary">
-      <p v-if="!collapsed" class="menu-section-label">Main</p>
+      <button
+        v-if="collapsed"
+        type="button"
+        class="menu-item menu-expand-item"
+        title="Expand sidebar"
+        @click="toggleRail"
+      >
+        <span class="menu-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m9 18 6-6-6-6" />
+          </svg>
+        </span>
+      </button>
+
+      <p v-if="!collapsed" class="menu-section-label">Navigation</p>
 
       <template v-for="menu in visibleMenus" :key="menu.id">
         <div class="menu-row">
@@ -28,12 +56,13 @@
             <button
               type="button"
               class="menu-item menu-trigger"
-              :class="{ 'is-open': openMenus.includes(menu.id) }"
+              :class="{ 'is-open': openMenus.includes(menu.id), active: hasActiveChild(menu) }"
               @click="toggleSubmenu(menu.id)"
               :aria-expanded="openMenus.includes(menu.id)"
             >
               <span class="menu-icon" aria-hidden="true" v-html="iconFor(menu)"></span>
               <span class="menu-label">{{ cleanTitle(menu.title) }}</span>
+              <span class="menu-meta-pill">{{ menu.children.length }}</span>
               <svg
                 class="arrow"
                 :class="{ open: openMenus.includes(menu.id) }"
@@ -64,6 +93,7 @@
             v-else-if="menu.children && menu.children.length > 0 && collapsed"
             type="button"
             class="menu-item"
+            :class="{ active: hasActiveChild(menu) }"
             :title="cleanTitle(menu.title)"
             @click="expandFromCollapsedGroup(menu.id)"
           >
@@ -97,7 +127,7 @@ import { ref, computed, watch, onMounted, nextTick } from "vue"
 import { useRoute } from "vue-router"
 import { useMenuStore, type Menu } from "../Store/menu"
 
-defineProps({
+const props = defineProps({
   collapsed: Boolean
 })
 
@@ -169,6 +199,9 @@ watch(
   (p) => syncOpenMenusForRoute(p)
 )
 
+const hasActiveChild = (menu: Menu) =>
+  !!menu.children?.some((c) => pathMatches(route.path, c.path || ""))
+
 const toggleSubmenu = (id: number) => {
   if (openMenus.value.includes(id)) {
     openMenus.value = openMenus.value.filter((mid) => mid !== id)
@@ -181,6 +214,10 @@ const expandFromCollapsedGroup = async (id: number) => {
   emit("update:collapsed", false)
   await nextTick()
   if (!openMenus.value.includes(id)) openMenus.value.push(id)
+}
+
+const toggleRail = () => {
+  emit("update:collapsed", !props.collapsed)
 }
 
 /* =========================================================================
@@ -305,6 +342,8 @@ const iconFor = (m: any): string => ICONS[iconKey(m)] || ICONS.fallback
   flex: 0 0 auto;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  position: relative;
   padding: 0 var(--space-4);
   border-bottom: 1px solid var(--sidebar-border);
 }
@@ -314,10 +353,21 @@ const iconFor = (m: any): string => ICONS[iconKey(m)] || ICONS.fallback
   justify-content: center;
 }
 
+.sidebar.collapsed .brand-mark {
+  width: 100%;
+  justify-content: center;
+}
+
 .brand-mark {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  min-width: 0;
+}
+
+.logo-copy {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
 }
 
@@ -344,10 +394,47 @@ const iconFor = (m: any): string => ICONS[iconKey(m)] || ICONS.fallback
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: var(--fs-md);
+  font-size: 13px;
   font-weight: var(--fw-semi);
   letter-spacing: var(--letter-tight);
   color: var(--sidebar-text-strong);
+}
+
+.logo-subtext {
+  margin-top: 1px;
+  font-size: 10.5px;
+  color: var(--sidebar-text-muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.rail-toggle {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--sidebar-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--sidebar-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.rail-toggle:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--sidebar-text-strong);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.rail-toggle svg {
+  width: 14px;
+  height: 14px;
+}
+
+.sidebar.collapsed .rail-toggle {
+  display: none;
 }
 
 /* ----------------- Menu (scrollable) ----------------- */
@@ -447,6 +534,18 @@ const iconFor = (m: any): string => ICONS[iconKey(m)] || ICONS.fallback
   font-weight: var(--fw-medium);
 }
 
+.menu-expand-item {
+  margin-bottom: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: linear-gradient(180deg, rgba(79, 70, 229, 0.95), rgba(67, 56, 202, 0.95));
+  color: #fff;
+}
+
+.menu-expand-item:hover {
+  background: linear-gradient(180deg, rgba(99, 102, 241, 1), rgba(79, 70, 229, 1));
+  color: #fff;
+}
+
 .menu-item.active::before {
   content: "";
   position: absolute;
@@ -496,6 +595,28 @@ const iconFor = (m: any): string => ICONS[iconKey(m)] || ICONS.fallback
   text-overflow: ellipsis;
   flex: 1;
   letter-spacing: -0.003em;
+}
+
+.menu-meta-pill {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--sidebar-text-muted);
+  background: rgba(255, 255, 255, 0.03);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: var(--fw-medium);
+}
+
+.menu-trigger.active .menu-meta-pill,
+.menu-trigger:hover .menu-meta-pill,
+.menu-trigger.is-open .menu-meta-pill {
+  color: var(--sidebar-text-strong);
+  border-color: rgba(255, 255, 255, 0.22);
 }
 
 /* ----------------- Group / submenu ----------------- */
