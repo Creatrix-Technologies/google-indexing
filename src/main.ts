@@ -9,6 +9,7 @@ import 'vue-toastification/dist/index.css';
 
 // Pages
 import Login from "./pages/Login.vue";
+import Home from "./pages/Home.vue";
 import GoogleCallback from './pages/GoogleCallback.vue';
 
 // Layouts
@@ -35,14 +36,14 @@ import { useUserLimitStore } from './Shared/userLimit'
 /* ---------------- ROUTES ---------------- */
 
 const routes = [
-  // { path: "/", redirect: "/dashboard" },
+  { path: "/", component: Home, meta: { public: true } },
 
   {
-    path: "/",
+    path: "/app",
     redirect: "/dashboard",
     component: DefaultLayout,
     name: "DefaultLayout",
-    children: [] // 🔥 filled dynamically
+    children: [] // filled dynamically via addRoute
   },
 
   {
@@ -67,6 +68,7 @@ const router = createRouter({
 
 
 const PUBLIC_PATHS = [
+  "/",
   "/login",
   "/google-callback"
 ];
@@ -124,7 +126,9 @@ const initApp = async () => {
     } catch {
       authStore.clearUser();
       menuStore.clearMenus();
-      router.push('/login');
+      if (!PUBLIC_PATHS.includes(window.location.pathname)) {
+        router.push('/login');
+      }
     }
   }
 };
