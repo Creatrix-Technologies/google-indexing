@@ -32,7 +32,7 @@
           <!-- Username -->
           <div class="form-group">
             <label>Username</label>
-            <input v-model="username" type="text" placeholder="Enter username" />
+            <input v-model="username" type="text" :disabled="loading" placeholder="Enter username" />
           </div>
 
           <!-- Password -->
@@ -43,6 +43,7 @@
                 v-model="password"
                 :type="showPassword ? 'text' : 'password'"
                 placeholder="Enter password"
+                 :disabled="loading"
                 @keyup.enter="handleLogin"
               />
               <span class="toggle" @click="showPassword = !showPassword">
@@ -62,9 +63,15 @@
           </div>
 
           <!-- LOGIN -->
-          <button class="btn-primary" @click="handleLogin">
-            Sign in
-          </button>
+          <button
+  class="btn-primary"
+  @click="handleLogin"
+  :disabled="loading"
+>
+  <span v-if="loading" class="spinner"></span>
+  <span v-if="loading">Signing in...</span>
+  <span v-else>Sign in</span>
+</button>
 
           <!-- DIVIDER -->
           <div class="divider">OR</div>
@@ -102,6 +109,8 @@ import { useMenuStore } from "../Store/menu";
 import { buildRoutes } from "../Router/dynamicRoutes";
 import RegisterModal from "../pages/Register.vue";
 
+const loading = ref(false);
+
 const router = useRouter();
 
 const username = ref("");
@@ -111,34 +120,43 @@ const showRegister = ref(false);
 const errorMessage = ref("");
 
 const handleLogin = async () => {
+  if (loading.value) return;
+
   errorMessage.value = "";
+  loading.value = true;
 
-  const payload = {
-    userName: username.value,
-    password: password.value,
-  };
+  try {
+    const payload = {
+      userName: username.value,
+      password: password.value,
+    };
 
-  const success = await apiLogin(payload, router);
+    const success = await apiLogin(payload, router);
 
-  if (success) {
-    const menuStore = useMenuStore();
+    if (success) {
+      const menuStore = useMenuStore();
 
-    await api.get("/auth-check");
+      await api.get("/auth-check");
 
-    if (!menuStore.loaded || menuStore.menus.length === 0) {
-      await menuStore.fetchMenus();
-    }
-
-    const dynamicRoutes = buildRoutes(menuStore.menus);
-    dynamicRoutes.forEach(route => {
-      if (!router.hasRoute(route.name!)) {
-        router.addRoute("DefaultLayout", route);
+      if (!menuStore.loaded || menuStore.menus.length === 0) {
+        await menuStore.fetchMenus();
       }
-    });
 
-    router.push("/dashboard");
-  } else {
-    errorMessage.value = "Login failed. Please check your credentials.";
+      const dynamicRoutes = buildRoutes(menuStore.menus);
+      dynamicRoutes.forEach(route => {
+        if (!router.hasRoute(route.name!)) {
+          router.addRoute("DefaultLayout", route);
+        }
+      });
+
+      router.push("/dashboard");
+    } else {
+      errorMessage.value = "Login failed. Please check your credentials.";
+    }
+  } catch (err) {
+    errorMessage.value = "Something went wrong.";
+  } finally {
+    loading.value = false;
   }
 };
 
@@ -351,5 +369,20 @@ const handleGoogleLogin = () => {
   color: #14b8a6;
   cursor: pointer;
   margin-top: 8px;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #fff;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+  margin-right: 6px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 </style>
