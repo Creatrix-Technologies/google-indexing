@@ -50,6 +50,9 @@
               </span>
             </div>
           </div>
+          <p class="forgot" @click="router.push('/forgot-password')">
+  Forgot password?
+</p>
 
           <!-- Options -->
           <div class="options">
@@ -341,5 +344,12 @@ const handleGoogleLogin = () => {
 /* Responsive */
 @media (max-width: 900px) {
   .content-wrapper { flex-direction: column; gap: 40px; }
+}
+.forgot {
+  text-align: right;
+  font-size: 12px;
+  color: #14b8a6;
+  cursor: pointer;
+  margin-top: 8px;
 }
 </style>

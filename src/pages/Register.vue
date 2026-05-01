@@ -4,7 +4,7 @@
       <div class="modal-box modal-box--xs">
 
         <!-- Close Icon -->
-        <button class="close-btn" @click="close">✕</button>
+        <button class="close-btn" @click="close" :disabled="loading">✕</button>
 
         <!-- Header -->
         <h2 class="title">Create Account</h2>
@@ -20,6 +20,7 @@
             :style="emailError ? errorStyle : {}"
             @input="validateEmail"
             @keyup.enter="handleRegister"
+            :disabled="loading"
           />
           <small v-if="emailError" style="color:#c53030">{{ emailError }}</small>
         </div>
@@ -34,6 +35,7 @@
             :style="usernameError ? errorStyle : {}"
             @input="validateUsername"
             @keyup.enter="handleRegister"
+            :disabled="loading"
           />
           <small v-if="usernameError" style="color:#c53030">{{ usernameError }}</small>
         </div>
@@ -48,6 +50,7 @@
             :style="passwordError ? errorStyle : {}"
             @input="validatePassword"
             @keyup.enter="handleRegister"
+            :disabled="loading"
           />
           <small v-if="passwordError" style="color:#c53030">{{ passwordError }}</small>
         </div>
@@ -62,15 +65,25 @@
             :style="confirmPasswordError ? errorStyle : {}"
             @input="validateConfirmPassword"
             @keyup.enter="handleRegister"
+            :disabled="loading"
           />
           <small v-if="confirmPasswordError" style="color:#c53030">{{ confirmPasswordError }}</small>
         </div>
 
         <!-- Buttons -->
-        <button class="btn-primary" @click="handleRegister" :disabled="!isFormValid">
-          Create Account
+        <button
+          class="btn-primary"
+          @click="handleRegister"
+          :disabled="!isFormValid || loading"
+        >
+          <span v-if="loading" class="spinner"></span>
+          <span v-if="loading">Creating...</span>
+          <span v-else>Create Account</span>
         </button>
-        <button class="btn-secondary" @click="close">Cancel</button>
+
+        <button class="btn-secondary" @click="close" :disabled="loading">
+          Cancel
+        </button>
 
       </div>
     </div>
@@ -84,34 +97,37 @@ import { useToast } from "vue-toastification";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
+const toast = useToast();
 
 const props = defineProps({ show: Boolean });
 const emit = defineEmits(["close"]);
 
-const toast = useToast();
+// ---------------- STATE ----------------
+const loading = ref(false);
 
-// form fields
 const email = ref("");
 const username = ref("");
 const password = ref("");
 const confirmPassword = ref("");
 
-// field-level errors
+// errors
 const emailError = ref("");
 const usernameError = ref("");
 const passwordError = ref("");
 const confirmPasswordError = ref("");
 
-// inline error style
 const errorStyle = { borderColor: "#c53030" };
 
-// Close modal
-const close = () => emit("close");
+// ---------------- CLOSE ----------------
+const close = () => {
+  if (!loading.value) emit("close");
+};
 
-// ------------------- Individual field validation -------------------
+// ---------------- VALIDATIONS ----------------
 const validateEmail = () => {
   if (!email.value.trim()) emailError.value = "Email is required.";
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) emailError.value = "Invalid email address.";
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value))
+    emailError.value = "Invalid email address.";
   else emailError.value = "";
 };
 
@@ -121,17 +137,18 @@ const validateUsername = () => {
 
 const validatePassword = () => {
   passwordError.value = password.value.trim() ? "" : "Password is required.";
-  // also validate confirm password if it has value
   if (confirmPassword.value) validateConfirmPassword();
 };
 
 const validateConfirmPassword = () => {
-  if (!confirmPassword.value.trim()) confirmPasswordError.value = "Confirm password is required.";
-  else if (password.value !== confirmPassword.value) confirmPasswordError.value = "Passwords do not match.";
+  if (!confirmPassword.value.trim())
+    confirmPasswordError.value = "Confirm password is required.";
+  else if (password.value !== confirmPassword.value)
+    confirmPasswordError.value = "Passwords do not match.";
   else confirmPasswordError.value = "";
 };
 
-// ------------------- Computed form validity -------------------
+// ---------------- FORM VALID ----------------
 const isFormValid = computed(() => {
   return (
     email.value.trim() &&
@@ -145,39 +162,55 @@ const isFormValid = computed(() => {
   );
 });
 
-// ------------------- Main submit -------------------
+// ---------------- SUBMIT ----------------
 const handleRegister = async () => {
-  // validate all fields first
   validateEmail();
   validateUsername();
   validatePassword();
   validateConfirmPassword();
 
-  if (!isFormValid.value) return;
+  if (!isFormValid.value || loading.value) return;
 
-  const payload = {
-    email: email.value,
-    userName: username.value,
-    password: password.value,
-  };
+  loading.value = true;
 
-  const success = await apiRegister(payload);
+  try {
+    const payload = {
+      email: email.value,
+      userName: username.value,
+      password: password.value,
+    };
 
-  if (success) {
-    router.push("/login"); 
-    close();
-  } 
+    const success = await apiRegister(payload);
+
+    if (success) {
+      // 1. close modal FIRST (important)
+      close();
+
+      // 2. reset form (optional but recommended)
+      email.value = "";
+      username.value = "";
+      password.value = "";
+      confirmPassword.value = "";
+
+      // 3. redirect AFTER UI update
+      setTimeout(() => {
+        router.push("/login");
+      }, 200);
+    }
+  } catch (err) {
+    toast.error("Registration failed");
+  } finally {
+    loading.value = false;
+  }
 };
 
-// ------------------- Optional: live validation watch -------------------
-// Re-validate password/confirm on password change
+// ---------------- WATCH ----------------
 watch(password, () => {
   if (confirmPassword.value) validateConfirmPassword();
 });
 </script>
 
 <style scoped>
-/* Shell: theme.css (.modal-backdrop, .modal-box) */
 .modal-box.modal-box--xs {
   animation: scaleIn 0.25s ease;
 }
@@ -187,7 +220,7 @@ watch(password, () => {
   to { transform: scale(1); opacity: 1; }
 }
 
-/* ------------------ Close Button ------------------ */
+/* Close */
 .close-btn {
   position: absolute;
   top: 14px;
@@ -195,42 +228,58 @@ watch(password, () => {
   background: transparent;
   border: none;
   font-size: 20px;
-  color: #444;
   cursor: pointer;
-  transition: 0.2s;
 }
 
-.close-btn:hover { color: #d22; }
-
-/* ------------------ Typography ------------------ */
-.title { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 4px; }
-.subtitle { text-align: center; font-size: 13px; color: #666; margin-bottom: 18px; }
-
-/* ------------------ Form Styles ------------------ */
+/* Form */
 .form-group { margin-bottom: 14px; }
-.form-label { display: block; text-align: left; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #333; }
+
 .form-group input {
   width: 100%;
   padding: 9px 11px;
   border-radius: 6px;
   border: 1px solid #d6d6d6;
-  transition: all 0.2s;
-  font-size: 13px;
-}
-.form-group input:focus {
-  border-color: #4c6fff;
-  box-shadow: 0 0 0 2px rgba(76, 111, 255, 0.25);
-  outline: none;
 }
 
-/* ------------------ Buttons ------------------ */
-.btn-primary { width: 100%; padding: 10px; background: #4c6fff; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 6px; transition: 0.2s; font-size: 14px; }
-.btn-primary:hover { background: #3b57d8; }
-.btn-primary:disabled { background: #a0b0ff; cursor: not-allowed; }
-.btn-secondary { width: 100%; padding: 10px; background: #efefef; border: none; border-radius: 6px; margin-top: 8px; cursor: pointer; transition: 0.2s; font-size: 14px; }
-.btn-secondary:hover { background: #dedede; }
+/* Buttons */
+.btn-primary {
+  width: 100%;
+  padding: 10px;
+  background: #4c6fff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
 
-/* ------------------ Transition ------------------ */
-.modal-enter-active, .modal-leave-active { transition: opacity 0.25s ease; }
-.modal-enter-from, .modal-leave-to { opacity: 0; }
+.btn-primary:disabled {
+  background: #a0b0ff;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+  background: #efefef;
+  border: none;
+  border-radius: 6px;
+}
+
+/* Spinner */
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #fff;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+  margin-right: 6px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 </style>

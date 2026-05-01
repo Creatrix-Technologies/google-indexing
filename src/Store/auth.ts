@@ -86,8 +86,7 @@ export async function register(payload: RegisterPayload): Promise<boolean> {
 
     await api.post('/register', payload, { withCredentials: true });
 
-    toast.success('Registration successful!');
-    return true;
+    toast.success('Account created! Please verify your email to continue.');    return true;
 
   } catch (err: any) {
     let msg="";
@@ -173,6 +172,33 @@ export async function loginWithGoogle(code: string, router: any): Promise<boolea
     console.error(err);
     toast.error('Google login failed! Please try again.');
     await router.push('/login');
+    return false;
+  }
+}
+
+// -----------------------------
+// Confirm Email
+// -----------------------------
+export async function confirmEmail(userId: string, token: string): Promise<boolean> {
+  const toast = useToast();
+
+  try {
+    await api.get('/confirm-email', {
+      params: { userId, token },
+      withCredentials: true,
+    });
+
+    toast.success('Email verified successfully!');
+    return true;
+
+  } catch (err: any) {
+    let msg = 'Email verification failed.';
+
+    if (err?.response?.data?.error?.description) {
+      msg = err.response.data.error.description;
+    }
+
+    toast.error(msg);
     return false;
   }
 }
