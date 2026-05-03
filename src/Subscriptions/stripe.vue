@@ -8,6 +8,7 @@ import Swal from 'sweetalert2'
 import Loading from 'vue-loading-overlay'
 import 'vue-loading-overlay/dist/css/index.css'
 import { useSubscriptionStore } from '../Shared/subscription'
+import PaymentTrustBadges from '../components/PaymentTrustBadges.vue'
 
 const subscriptionStore = useSubscriptionStore()
 const toast = useToast()
@@ -573,9 +574,6 @@ onMounted(async () => {
       <div class="section-header">
         <div>
           <h2 class="section-title">Payment method</h2>
-          <p class="section-subtitle">
-            Your card is stored securely with Stripe. Renewals charge it automatically.
-          </p>
         </div>
       </div>
 
@@ -629,6 +627,10 @@ onMounted(async () => {
         <div class="pm-card__actions">
           <button class="btn-secondary" @click="startUpdateCard">Add card</button>
         </div>
+      </div>
+
+      <div class="pm-trust-badges">
+        <PaymentTrustBadges variant="inline" />
       </div>
     </section>
 
@@ -926,6 +928,14 @@ onMounted(async () => {
   margin: 4px 0 0 0;
   font-size: var(--fs-sm);
   color: var(--color-text-secondary);
+}
+
+.pm-trust-badges {
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: center;
 }
 
 /* ============ Status dot helper ============ */

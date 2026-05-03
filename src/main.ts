@@ -11,6 +11,7 @@ import 'vue-toastification/dist/index.css';
 // Pages
 import Login from "./pages/Login.vue";
 import Home from "./pages/Home.vue";
+import Pricing from "./pages/Pricing.vue";
 import GoogleCallback from './pages/GoogleCallback.vue';
 
 // Layouts
@@ -38,6 +39,7 @@ import { useUserLimitStore } from './Shared/userLimit'
 
 const routes = [
   { path: "/", component: Home, meta: { public: true } },
+  { path: "/pricing", component: Pricing, meta: { public: true } },
 
   {
     path: "/app",
@@ -65,11 +67,18 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  scrollBehavior(to, _from, savedPosition) {
+    if (savedPosition) return savedPosition;
+    if (to.hash)
+      return { el: to.hash, behavior: "smooth", top: 72 };
+    return { left: 0, top: 0 };
+  },
 });
 
 
 const PUBLIC_PATHS = [
   "/",
+  "/pricing",
   "/login",
   "/google-callback"
 ];

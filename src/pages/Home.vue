@@ -8,9 +8,10 @@
       <header class="site-header fade-in">
         <div class="logo">GoogleIndexing</div>
         <nav class="header-links">
-          <a href="#features">Features</a>
-          <a href="#how-it-works">How it works</a>
-          <a href="#faq">FAQ</a>
+          <a href="#features" class="hide-below-tablet">Features</a>
+          <a href="#how-it-works" class="hide-below-tablet">How it works</a>
+          <a href="#faq" class="hide-below-tablet">FAQ</a>
+          <router-link to="/pricing">Pricing</router-link>
           <router-link to="/login" class="cta-pill">Sign In</router-link>
         </nav>
       </header>
@@ -28,6 +29,10 @@
             <router-link to="/login" class="btn-hero-primary">Get Started Free</router-link>
             <a href="#how-it-works" class="btn-hero-secondary">See how it works</a>
           </div>
+          <p class="pricing-teaser fade-in delay-3">
+            <router-link to="/pricing">Pricing</router-link>
+            — free trial with 100 requests; paid from $17/mo.
+          </p>
         </section>
 
         <!-- Trust bar -->
@@ -237,17 +242,21 @@
             <a href="https://nopbooster.com" target="_blank" rel="noopener">Nopbooster</a>
           </p>
           <p class="footer-note">
+            <router-link to="/pricing">Pricing</router-link>
+            &middot;
             Not affiliated with Google Inc. Contact:
             <a href="mailto:sales@nopbooster.com">sales@nopbooster.com</a>
           </p>
         </div>
+        <PaymentTrustBadges variant="footer-bar" />
       </footer>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted } from 'vue'
+import PaymentTrustBadges from '../components/PaymentTrustBadges.vue'
 
 onMounted(() => {
   // Scroll-reveal observer
@@ -493,6 +502,32 @@ main {
   border-color: #4285F4;
   color: #4285F4;
   transform: translateY(-2px);
+}
+
+.pricing-teaser {
+  max-width: 34rem;
+  margin: 1.5rem auto 0;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: #5f6368;
+  font-weight: 400;
+}
+
+.pricing-teaser :deep(a) {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.pricing-teaser :deep(a:hover) {
+  color: #0a0a0c;
+}
+
+.footer-note :deep(a) {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 /* ===== Trust bar ===== */
@@ -887,8 +922,11 @@ main {
 
 /* ===== Footer ===== */
 .site-footer {
-  padding: 3rem 0;
+  padding: 3rem 0 2rem;
   border-top: 1px solid rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .footer-inner {
@@ -960,7 +998,7 @@ main {
   .container { padding: 0 1.25rem; }
   .hero h1 { font-size: 3rem; letter-spacing: -2px; }
   .hero-subtext { font-size: 1.05rem; }
-  .header-links a:not(.cta-pill) { display: none; }
+  .hide-below-tablet { display: none; }
   .trust-logos { gap: 1.5rem; }
   .footer-inner { flex-direction: column; text-align: center; }
   .impact-metrics { grid-template-columns: 1fr 1fr; }
