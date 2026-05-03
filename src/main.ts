@@ -35,6 +35,7 @@ import { buildRoutes } from './Router/dynamicRoutes';
 import HighchartsVue from 'highcharts-vue'
 import { useUserLimitStore } from './Shared/userLimit'
 
+import ConfirmEmail from "./pages/ConfirmEmail.vue";
 /* ---------------- ROUTES ---------------- */
 
 const routes = [
@@ -61,6 +62,27 @@ const routes = [
     path: "/:pathMatch(.*)*",
     component: AuthLayout,
     children: [{ path: "", component: () => import('./pages/NotFound.vue'), meta: { public: true } }],
+  },
+  {
+    path: "/confirm-email",
+    component: AuthLayout,
+    children: [
+      {
+        path: "",
+        component: ConfirmEmail,
+        meta: { public: true } // 🔥 IMPORTANT
+      }
+    ]
+  },
+  {
+    path: "/forgot-password",
+    name: "ForgotPassword",
+    component: () => import("./pages/ForgotPassword.vue"),
+  },
+  {
+    path: "/reset-password",
+    name: "ResetPassword",
+    component: () => import("./pages/ResetPassword.vue")
   }
 ];
 
@@ -80,7 +102,10 @@ const PUBLIC_PATHS = [
   "/",
   "/pricing",
   "/login",
-  "/google-callback"
+  "/google-callback",
+  "/confirm-email",
+  "/forgot-password",
+  "/reset-password"
 ];
 
 /* ---------------- AUTH GUARD ---------------- */

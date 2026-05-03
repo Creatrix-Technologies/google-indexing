@@ -16,6 +16,7 @@
         </header>
 
         <div class="modal-body">
+          <!-- Email -->
           <div class="form-group">
             <label class="form-label">Email</label>
             <input
@@ -25,10 +26,12 @@
               :class="{ 'is-invalid': emailError }"
               @input="validateEmail"
               @keyup.enter="handleRegister"
+              :disabled="loading"
             />
             <small v-if="emailError" class="field-error">{{ emailError }}</small>
           </div>
 
+          <!-- Username -->
           <div class="form-group">
             <label class="form-label">Username</label>
             <input
@@ -38,10 +41,12 @@
               :class="{ 'is-invalid': usernameError }"
               @input="validateUsername"
               @keyup.enter="handleRegister"
+              :disabled="loading"
             />
             <small v-if="usernameError" class="field-error">{{ usernameError }}</small>
           </div>
 
+          <!-- Password -->
           <div class="form-group">
             <label class="form-label">Password</label>
             <input
@@ -51,10 +56,12 @@
               :class="{ 'is-invalid': passwordError }"
               @input="validatePassword"
               @keyup.enter="handleRegister"
+              :disabled="loading"
             />
             <small v-if="passwordError" class="field-error">{{ passwordError }}</small>
           </div>
 
+          <!-- Confirm Password -->
           <div class="form-group">
             <label class="form-label">Confirm password</label>
             <input
@@ -64,15 +71,18 @@
               :class="{ 'is-invalid': confirmPasswordError }"
               @input="validateConfirmPassword"
               @keyup.enter="handleRegister"
+              :disabled="loading"
             />
             <small v-if="confirmPasswordError" class="field-error">{{ confirmPasswordError }}</small>
           </div>
         </div>
 
         <footer class="modal-footer">
-          <button type="button" class="btn-secondary" @click="close">Cancel</button>
-          <button type="button" class="btn-primary" @click="handleRegister" :disabled="!isFormValid">
-            Create account
+          <button type="button" class="btn-secondary" @click="close" :disabled="loading">Cancel</button>
+          <button type="button" class="btn-primary" @click="handleRegister" :disabled="!isFormValid || loading">
+            <span v-if="loading" class="spinner"></span>
+            <span v-if="loading">Creating...</span>
+            <span v-else>Create account</span>
           </button>
         </footer>
       </div>
@@ -87,19 +97,20 @@ import { useToast } from "vue-toastification";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
+const toast = useToast();
 
 const props = defineProps({ show: Boolean });
 const emit = defineEmits(["close"]);
 
-const toast = useToast();
+// ---------------- STATE ----------------
+const loading = ref(false);
 
-// form fields
 const email = ref("");
 const username = ref("");
 const password = ref("");
 const confirmPassword = ref("");
 
-// field-level errors
+// errors
 const emailError = ref("");
 const usernameError = ref("");
 const passwordError = ref("");
@@ -108,13 +119,16 @@ const confirmPasswordError = ref("");
 // inline error style
 const errorStyle = { borderColor: "#dc2626", boxShadow: "0 0 0 3px rgba(220, 38, 38, 0.16)" };
 
-// Close modal
-const close = () => emit("close");
+// ---------------- CLOSE ----------------
+const close = () => {
+  if (!loading.value) emit("close");
+};
 
-// ------------------- Individual field validation -------------------
+// ---------------- VALIDATIONS ----------------
 const validateEmail = () => {
   if (!email.value.trim()) emailError.value = "Email is required.";
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) emailError.value = "Invalid email address.";
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value))
+    emailError.value = "Invalid email address.";
   else emailError.value = "";
 };
 
@@ -124,17 +138,18 @@ const validateUsername = () => {
 
 const validatePassword = () => {
   passwordError.value = password.value.trim() ? "" : "Password is required.";
-  // also validate confirm password if it has value
   if (confirmPassword.value) validateConfirmPassword();
 };
 
 const validateConfirmPassword = () => {
-  if (!confirmPassword.value.trim()) confirmPasswordError.value = "Confirm password is required.";
-  else if (password.value !== confirmPassword.value) confirmPasswordError.value = "Passwords do not match.";
+  if (!confirmPassword.value.trim())
+    confirmPasswordError.value = "Confirm password is required.";
+  else if (password.value !== confirmPassword.value)
+    confirmPasswordError.value = "Passwords do not match.";
   else confirmPasswordError.value = "";
 };
 
-// ------------------- Computed form validity -------------------
+// ---------------- FORM VALID ----------------
 const isFormValid = computed(() => {
   return (
     email.value.trim() &&
@@ -148,42 +163,75 @@ const isFormValid = computed(() => {
   );
 });
 
-// ------------------- Main submit -------------------
+// ---------------- SUBMIT ----------------
 const handleRegister = async () => {
-  // validate all fields first
   validateEmail();
   validateUsername();
   validatePassword();
   validateConfirmPassword();
 
-  if (!isFormValid.value) return;
+  if (!isFormValid.value || loading.value) return;
 
-  const payload = {
-    email: email.value,
-    userName: username.value,
-    password: password.value,
-  };
+  loading.value = true;
 
-  const success = await apiRegister(payload);
+  try {
+    const payload = {
+      email: email.value,
+      userName: username.value,
+      password: password.value,
+    };
 
-  if (success) {
-    router.push("/login"); 
-    close();
-  } 
+    const success = await apiRegister(payload);
+
+    if (success) {
+      // 1. close modal FIRST (important)
+      close();
+
+      // 2. reset form (optional but recommended)
+      email.value = "";
+      username.value = "";
+      password.value = "";
+      confirmPassword.value = "";
+
+      // 3. redirect AFTER UI update
+      setTimeout(() => {
+        router.push("/login");
+      }, 200);
+    }
+  } catch (err) {
+    toast.error("Registration failed");
+  } finally {
+    loading.value = false;
+  }
 };
 
-// ------------------- Optional: live validation watch -------------------
-// Re-validate password/confirm on password change
+// ---------------- WATCH ----------------
 watch(password, () => {
   if (confirmPassword.value) validateConfirmPassword();
 });
 </script>
 
 <style scoped>
-.modal-box.modal-box--xs { font-family: var(--font-family); }
+.modal-box.modal-box--xs {
+  font-family: var(--font-family);
+  animation: scaleIn 0.25s ease;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
 
 /* Form */
-.form-group { margin-bottom: var(--space-3); }
+.form-group {
+  margin-bottom: var(--space-3);
+}
 
 .form-label {
   display: block;
@@ -205,7 +253,9 @@ watch(password, () => {
   font-size: var(--fs-base);
   font-family: inherit;
 }
-.form-group input::placeholder { color: var(--color-placeholder); }
+.form-group input::placeholder {
+  color: var(--color-placeholder);
+}
 .form-group input:focus {
   border-color: var(--color-accent);
   box-shadow: var(--ring-accent);
@@ -236,9 +286,18 @@ watch(password, () => {
   transition: background 140ms ease, opacity 140ms ease;
   font-size: var(--fs-base);
   font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
-.btn-primary:hover:not(:disabled) { background: var(--neutral-800); }
-.btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary:hover:not(:disabled) {
+  background: var(--neutral-800);
+}
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 
 .btn-secondary {
   padding: 9px 14px;
@@ -257,9 +316,29 @@ watch(password, () => {
   border-color: var(--neutral-400);
 }
 
-/* Transition */
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #fff;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+  margin-right: 6px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .modal-enter-active,
-.modal-leave-active { transition: opacity 200ms ease; }
+.modal-leave-active {
+  transition: opacity 200ms ease;
+}
 .modal-enter-from,
-.modal-leave-to { opacity: 0; }
+.modal-leave-to {
+  opacity: 0;
+}
 </style>

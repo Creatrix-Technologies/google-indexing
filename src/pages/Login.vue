@@ -37,6 +37,7 @@
               id="login-username"
               v-model="username"
               type="text"
+              :disabled="loading"
               placeholder="Enter username"
               autocomplete="username"
             />
@@ -50,6 +51,7 @@
                 v-model="password"
                 :type="showPassword ? 'text' : 'password'"
                 placeholder="Enter password"
+                :disabled="loading"
                 autocomplete="current-password"
                 @keyup.enter="handleLogin"
               />
@@ -63,6 +65,9 @@
               </button>
             </div>
           </div>
+          <p class="forgot" @click="router.push('/forgot-password')">
+  Forgot password?
+</p>
 
           <div class="options">
             <label class="remember">
@@ -71,22 +76,14 @@
             </label>
           </div>
 
-          <button class="btn-primary" @click="handleLogin">
-            Sign in
-            <svg
-              class="btn-primary__arrow"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.75"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <line x1="5" y1="12" x2="19" y2="12"/>
-              <polyline points="12 5 19 12 12 19"/>
-            </svg>
+          <button
+            class="btn-primary"
+            @click="handleLogin"
+            :disabled="loading"
+          >
+            <span v-if="loading" class="spinner"></span>
+            <span v-if="loading">Signing in...</span>
+            <span v-else>Sign in</span>
           </button>
 
           <div class="divider"><span>OR</span></div>
@@ -131,6 +128,8 @@ import { useMenuStore } from "../Store/menu";
 import { buildRoutes } from "../Router/dynamicRoutes";
 import RegisterModal from "../pages/Register.vue";
 
+const loading = ref(false);
+
 const router = useRouter();
 
 const username = ref("");
@@ -140,34 +139,43 @@ const showRegister = ref(false);
 const errorMessage = ref("");
 
 const handleLogin = async () => {
+  if (loading.value) return;
+
   errorMessage.value = "";
+  loading.value = true;
 
-  const payload = {
-    userName: username.value,
-    password: password.value,
-  };
+  try {
+    const payload = {
+      userName: username.value,
+      password: password.value,
+    };
 
-  const success = await apiLogin(payload, router);
+    const success = await apiLogin(payload, router);
 
-  if (success) {
-    const menuStore = useMenuStore();
+    if (success) {
+      const menuStore = useMenuStore();
 
-    await api.get("/auth-check");
+      await api.get("/auth-check");
 
-    if (!menuStore.loaded || menuStore.menus.length === 0) {
-      await menuStore.fetchMenus();
-    }
-
-    const dynamicRoutes = buildRoutes(menuStore.menus);
-    dynamicRoutes.forEach(route => {
-      if (!router.hasRoute(route.name!)) {
-        router.addRoute("DefaultLayout", route);
+      if (!menuStore.loaded || menuStore.menus.length === 0) {
+        await menuStore.fetchMenus();
       }
-    });
 
-    router.push("/dashboard");
-  } else {
-    errorMessage.value = "Login failed. Please check your credentials.";
+      const dynamicRoutes = buildRoutes(menuStore.menus);
+      dynamicRoutes.forEach(route => {
+        if (!router.hasRoute(route.name!)) {
+          router.addRoute("DefaultLayout", route);
+        }
+      });
+
+      router.push("/dashboard");
+    } else {
+      errorMessage.value = "Login failed. Please check your credentials.";
+    }
+  } catch (err) {
+    errorMessage.value = "Something went wrong.";
+  } finally {
+    loading.value = false;
   }
 };
 
@@ -538,5 +546,27 @@ const handleGoogleLogin = () => {
 @media (max-width: 480px) {
   .login-card { width: 100%; border-radius: 20px; padding: 2rem 1.5rem; }
   .welcome-text h1 { font-size: 2.4rem; }
+}
+.forgot {
+  text-align: right;
+  font-size: 12px;
+  color: #14b8a6;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #fff;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+  margin-right: 6px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 </style>
