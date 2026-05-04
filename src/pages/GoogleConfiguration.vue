@@ -1,30 +1,34 @@
-<template>
+﻿<template>
   <SettingsLayout>
     <div class="page-content">
-      <div class="grid">
+
+      <!-- Upload + Status row -->
+      <div class="grid" id="upload-section">
         <!-- Left Column -->
         <div class="column">
           <!-- Current Status -->
           <div class="card">
             <h3>Current Status</h3>
 
-            <div class="status-box success" v-if="credentials.serviceAccountEmail">
+            <div class="status-box status-box--success" v-if="credentials.serviceAccountEmail">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="15" height="15">
+                <circle cx="8" cy="8" r="7"/><polyline points="5 8 7 10.5 11 5.5"/>
+              </svg>
               <div>
-                <strong>Service Account:</strong><br />
+                <strong>Connected</strong><br />
                 <span class="mono">{{ credentials.serviceAccountEmail }}</span>
               </div>
             </div>
 
             <div class="status-box" v-else>
-              <span>No credentials uploaded</span>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="15" height="15">
+                <circle cx="8" cy="8" r="7"/><line x1="8" y1="5.5" x2="8" y2="8.5"/><circle cx="8" cy="10.5" r=".5" fill="currentColor"/>
+              </svg>
+              <span>No credentials uploaded yet</span>
             </div>
 
             <div class="actions" v-if="credentials.serviceAccountEmail">
-              <button
-                class="btn danger"
-                @click="removeCredentials"
-                :disabled="loading"
-              >
+              <button class="btn danger" @click="removeCredentials" :disabled="loading">
                 Remove Credentials
               </button>
             </div>
@@ -34,35 +38,24 @@
           <div class="card">
             <h3>Upload Service Account Key</h3>
             <p class="hint">
-              Upload a Google service account JSON key file to enable URL
-              indexing functionality.
+              Upload the <code>.json</code> key file downloaded from Google Cloud IAM to enable URL indexing.
+              Not sure where to get it? See the setup guide below.
             </p>
 
-            <input
-              type="file"
-              class="file-input"
-              ref="fileInput"
-              @change="handleFileChange"
-            />
-
-            <div class="actions">
-              <button
-                class="btn primary"
-                @click="uploadKey"
-                :disabled="loading"
-              >
-                Upload Key
-              </button>
+            <div class="file-row">
+              <input
+                type="file"
+                accept=".json,application/json"
+                class="file-input"
+                ref="fileInput"
+                @change="handleFileChange"
+              />
             </div>
 
-            <div class="info">
-              <h4>How to get a service account key?</h4>
-              <ol>
-                <li>Go to Google Cloud Console</li>
-                <li>Create or select a service account</li>
-                <li>Go to “Keys” → “Add Key”</li>
-                <li>Create a new JSON key</li>
-              </ol>
+            <div class="actions">
+              <button class="btn primary" @click="uploadKey" :disabled="loading">
+                {{ loading ? 'Uploading...' : 'Upload Key' }}
+              </button>
             </div>
           </div>
         </div>
@@ -71,6 +64,7 @@
         <div class="column">
           <div class="card">
             <h3>Manual Credentials Entry</h3>
+            <p class="hint">Paste the individual fields from your JSON key file if you prefer not to upload the file directly.</p>
 
             <div class="form-group">
               <label>Client ID</label>
@@ -97,16 +91,48 @@
               <textarea rows="6" v-model="credentials.privateKey"></textarea>
             </div>
 
-            <button
-              class="btn primary full"
-              @click="updateCredentials"
-              :disabled="loading"
-            >
+            <button class="btn primary full" @click="updateCredentials" :disabled="loading">
               Update Credentials
             </button>
           </div>
         </div>
       </div>
+
+      <!-- Setup Guide accordion -->
+      <div class="setup-guide">
+        <button
+          class="setup-guide__toggle"
+          :aria-expanded="guideOpen"
+          @click="guideOpen = !guideOpen"
+        >
+          <span class="setup-guide__toggle-left">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="15" height="15">
+              <rect x="2" y="2" width="12" height="12" rx="1.5"/>
+              <line x1="5" y1="6" x2="11" y2="6"/>
+              <line x1="5" y1="9" x2="9" y2="9"/>
+            </svg>
+            <span class="setup-guide__label">Setup Guide</span>
+            <span class="setup-guide__badge">6 steps</span>
+          </span>
+          <span class="setup-guide__toggle-right">
+            <span class="setup-guide__hint">How do I get a service account JSON key?</span>
+            <svg
+              class="setup-guide__chevron"
+              :class="{ 'setup-guide__chevron--open': guideOpen }"
+              xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="13" height="13"
+            >
+              <polyline points="2 4 6 8 10 4"/>
+            </svg>
+          </span>
+        </button>
+
+        <Transition name="guide-expand">
+          <div v-if="guideOpen" class="setup-guide__body">
+            <GoogleSetupSteps :all-expanded="false" :hide-final-cta="true" />
+          </div>
+        </Transition>
+      </div>
+
     </div>
   </SettingsLayout>
 </template>
@@ -118,6 +144,9 @@ import { useToast } from 'vue-toastification'
 import { useGoogleConfigStore } from '../Shared/googleConfig'
 import { useSubscriptionStore } from '../Shared/subscription'
 import SettingsLayout from '../components/SettingsLayout.vue'
+import GoogleSetupSteps from '../components/GoogleSetupSteps.vue'
+
+const guideOpen = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
 
 const googleConfigStore = useGoogleConfigStore()
@@ -270,6 +299,9 @@ onMounted(() => {
 <style scoped>
 .page-content {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
 }
 
 .grid {
@@ -306,27 +338,37 @@ onMounted(() => {
   margin: 0 0 var(--space-3);
   line-height: 1.55;
 }
+.hint :deep(code) {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: var(--neutral-100);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  padding: 1px 5px;
+  color: var(--neutral-700);
+}
 
+/* Status box */
 .status-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
   background: var(--neutral-50);
   border: 1px solid var(--color-border);
   font-size: var(--fs-sm);
-  color: var(--color-text);
+  color: var(--color-text-secondary);
   line-height: 1.55;
 }
+.status-box svg { flex-shrink: 0; margin-top: 1px; }
 
-.status-box strong {
-  font-weight: var(--fw-semi);
-  color: var(--color-text);
-}
-
-.status-box.success {
+.status-box--success {
   background: var(--success-50);
-  border: 1px solid var(--success-100);
+  border-color: var(--success-100);
   color: var(--success-700);
 }
+.status-box--success strong { color: var(--success-700); }
 
 .mono {
   font-family: var(--font-mono);
@@ -334,6 +376,8 @@ onMounted(() => {
   word-break: break-all;
   color: var(--color-text);
 }
+
+.file-row { margin-bottom: var(--space-1); }
 
 .actions {
   margin-top: var(--space-4);
@@ -351,40 +395,18 @@ onMounted(() => {
   font-weight: var(--fw-medium);
   transition: background 140ms ease, border-color 140ms ease;
 }
-
-.btn.primary {
-  background: var(--color-accent);
-  color: var(--color-accent-fg);
-}
-.btn.primary:hover:not(:disabled) {
-  background: var(--color-accent-hover);
-}
-
-.btn.danger {
-  background: var(--color-card-bg);
-  color: var(--color-danger);
-  border-color: var(--danger-100);
-}
-.btn.danger:hover:not(:disabled) {
-  background: var(--danger-50);
-  border-color: var(--color-danger);
-}
-
-.btn.full {
-  width: 100%;
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+.btn.primary { background: var(--color-accent); color: var(--color-accent-fg); }
+.btn.primary:hover:not(:disabled) { background: var(--color-accent-hover); }
+.btn.danger { background: var(--color-card-bg); color: var(--color-danger); border-color: var(--danger-100); }
+.btn.danger:hover:not(:disabled) { background: var(--danger-50); border-color: var(--color-danger); }
+.btn.full { width: 100%; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .form-group {
   margin-bottom: var(--space-4);
   display: flex;
   flex-direction: column;
 }
-
 .form-group label {
   font-size: var(--fs-sm);
   font-weight: var(--fw-medium);
@@ -392,8 +414,7 @@ onMounted(() => {
   margin-bottom: 6px;
 }
 
-input,
-textarea {
+input, textarea {
   padding: 8px 11px;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border-strong);
@@ -403,23 +424,10 @@ textarea {
   color: var(--color-text);
   transition: border-color 140ms ease, box-shadow 140ms ease;
 }
-textarea {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  resize: vertical;
-}
+textarea { font-family: var(--font-mono); font-size: 12px; resize: vertical; }
+input:focus, textarea:focus { outline: none; border-color: var(--color-accent); box-shadow: var(--ring-accent); }
 
-input:focus,
-textarea:focus {
-  outline: none;
-  border-color: var(--color-accent);
-  box-shadow: var(--ring-accent);
-}
-
-.file-input {
-  font-family: inherit;
-  font-size: var(--fs-sm);
-}
+.file-input { font-family: inherit; font-size: var(--fs-sm); }
 .file-input::file-selector-button {
   margin-right: var(--space-3);
   padding: 6px 12px;
@@ -430,29 +438,90 @@ textarea:focus {
   font-weight: var(--fw-medium);
   cursor: pointer;
 }
-.file-input::file-selector-button:hover {
-  background: var(--color-surface-2);
+.file-input::file-selector-button:hover { background: var(--color-surface-2); }
+
+/* ============ Setup Guide accordion ============ */
+.setup-guide {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  overflow: hidden;
 }
 
-.info {
-  margin-top: var(--space-5);
-  padding: var(--space-4);
-  border-radius: var(--radius-md);
-  background: var(--info-50);
-  border: 1px solid var(--info-100);
+.setup-guide__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  width: 100%;
+  padding: var(--space-4) var(--space-5);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: background 140ms ease;
 }
-.info h4 {
-  margin: 0 0 var(--space-2) 0;
-  font-size: var(--fs-sm);
-  color: var(--info-700);
+.setup-guide__toggle:hover { background: var(--neutral-50); }
+.setup-guide__toggle:focus-visible { outline: none; box-shadow: var(--ring-neutral) inset; }
+
+.setup-guide__toggle-left {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text);
+}
+
+.setup-guide__label {
+  font-size: var(--fs-md);
   font-weight: var(--fw-semi);
-}
-.info ol {
-  margin: 0;
-  padding-left: 18px;
-  font-size: var(--fs-sm);
-  color: var(--info-700);
-  line-height: 1.7;
+  letter-spacing: var(--letter-tight);
 }
 
+.setup-guide__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--neutral-100);
+  border: 1px solid var(--color-border);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  color: var(--color-text-secondary);
+}
+
+.setup-guide__toggle-right {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.setup-guide__hint {
+  font-size: var(--fs-sm);
+  color: var(--color-text-secondary);
+}
+
+.setup-guide__chevron {
+  color: var(--color-muted);
+  transition: transform 220ms ease;
+  flex-shrink: 0;
+}
+.setup-guide__chevron--open { transform: rotate(180deg); }
+
+.setup-guide__body {
+  padding: var(--space-5) var(--space-6);
+  border-top: 1px solid var(--color-divider);
+}
+
+/* Accordion transition */
+.guide-expand-enter-active { transition: opacity 220ms ease, transform 220ms ease; }
+.guide-expand-leave-active { transition: opacity 160ms ease, transform 160ms ease; }
+.guide-expand-enter-from,
+.guide-expand-leave-to    { opacity: 0; transform: translateY(-8px); }
+
+@media (max-width: 640px) {
+  .setup-guide__hint { display: none; }
+  .setup-guide__body { padding: var(--space-4); }
+}
 </style>

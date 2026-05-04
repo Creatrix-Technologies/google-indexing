@@ -154,14 +154,14 @@
           <button type="button" class="clear-selection-btn" @click="clearSelection">
             Clear
           </button>
-          <button type="button" class="index-btn" @click="queueSelectedForIndex">
+          <button type="button" class="index-btn" @click="queueSelectedForIndex" :disabled="!entitlementsStore.canUsePaidFeatures || entitlementsStore.isChecking" :title="paidActionTitle">
             Index queue ({{ selectedIds.size }})
           </button>
-          <button type="button" class="queue-remove-btn" @click="queueSelectedForRemoval">
+          <button type="button" class="queue-remove-btn" @click="queueSelectedForRemoval" :disabled="!entitlementsStore.canUsePaidFeatures || entitlementsStore.isChecking" :title="paidActionTitle">
             Remove queue ({{ selectedIds.size }})
           </button>
         </template>
-        <button class="sync-btn" type="button" title="Re-fetches URL Inspection data from Search Console for all URLs on this page (does not re-send Indexing API notifies)." @click="startGoogleSync" :disabled="isSyncing">
+        <button class="sync-btn" type="button" :title="paidActionTitle || 'Re-fetches URL Inspection data from Search Console for all URLs on this page (does not re-send Indexing API notifies).'" @click="startGoogleSync" :disabled="isSyncing || !entitlementsStore.canUsePaidFeatures || entitlementsStore.isChecking">
           🔄 Google Sync
         </button>
       </div>
@@ -442,9 +442,19 @@ import Swal from "sweetalert2"
 import { useToast } from "vue-toastification"
 import Loading from "vue-loading-overlay"
 import 'vue-loading-overlay/dist/css/index.css'
+import { useEntitlementsStore } from "../Shared/entitlements"
 
 const toast = useToast()
 const route = useRoute()
+const entitlementsStore = useEntitlementsStore()
+const paidActionTitle = computed(() => entitlementsStore.canUsePaidFeatures ? '' : entitlementsStore.blockingReason)
+
+const ensurePaidAccess = async () => {
+  await entitlementsStore.refresh()
+  if (entitlementsStore.canUsePaidFeatures) return true
+  await Swal.fire('Subscription required', entitlementsStore.blockingReason, 'warning')
+  return false
+}
 
 const selectedFilter = ref<string>("ALL");
   const searchQuery = ref("")
@@ -494,6 +504,7 @@ const progressPercent = computed(() =>
 // START SYNC
 const startGoogleSync = async () => {
   if (isSyncing.value) return
+  if (!(await ensurePaidAccess())) return
 
   const confirm = await Swal.fire({
   title: 'Confirm Google Sync',
@@ -921,6 +932,7 @@ const openRowDropdown = async (ev: MouseEvent, urlId: number, kind: RowMenuKind)
 
 const queueSelectedForIndex = async () => {
   if (selectedIds.value.size === 0) return
+  if (!(await ensurePaidAccess())) return
   isLoading.value = true
   try {
     const resQueue = await api.post("/crawl/index", {
@@ -947,6 +959,7 @@ const queueSelectedForIndex = async () => {
 
 const queueSelectedForRemoval = async () => {
   if (selectedIds.value.size === 0) return
+  if (!(await ensurePaidAccess())) return
   const n = selectedIds.value.size
   const confirm = await Swal.fire({
     title: "Queue removal?",
@@ -988,6 +1001,7 @@ const queueSelectedForRemoval = async () => {
 
 const indexSingleUrl = async (id: number, mode: "direct" | "queue") => {
   try {
+    if (!(await ensurePaidAccess())) return
     closeRowDropdown()
     isLoading.value = true;
     try {
@@ -1044,6 +1058,7 @@ const indexSingleUrl = async (id: number, mode: "direct" | "queue") => {
 
 const removeIndexSingleUrl = async (id: number, mode: "direct" | "queue") => {
   try {
+    if (!(await ensurePaidAccess())) return
     closeRowDropdown()
     isLoading.value = true;
     try {
@@ -1127,6 +1142,7 @@ const lastPage = () => {
 }
 
 onMounted(() => {
+  entitlementsStore.refresh()
   fetchCrawlDetails()
   fetchCrawlCounts()
   fetchIndexLimit()  

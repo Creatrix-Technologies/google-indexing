@@ -128,7 +128,7 @@
         </div>
         <div class="bulk-bar__actions">
           <button class="btn-ghost" @click="clearSelection">Clear</button>
-          <button class="btn-primary" @click="queueForCrawl">
+          <button class="btn-primary" @click="queueForCrawl" :disabled="!entitlementsStore.canUsePaidFeatures || entitlementsStore.isChecking" :title="paidActionTitle">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <polygon points="5 3 19 12 5 21 5 3" />
             </svg>
@@ -246,7 +246,8 @@
                     v-if="site.crawlStatus !== 'In Progress'"
                     class="action-btn"
                     @click="startCrawl(site.id)"
-                    :title="`Crawl ${site.url}`"
+                    :title="paidActionTitle || `Crawl ${site.url}`"
+                    :disabled="!entitlementsStore.canUsePaidFeatures || entitlementsStore.isChecking"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                       <polyline points="23 4 23 10 17 10" />
@@ -302,11 +303,21 @@ import { useToast } from 'vue-toastification'
 import Swal from 'sweetalert2'
 import { useGoogleConfigStore } from '../Shared/googleConfig'
 import { useSubscriptionStore } from '../Shared/subscription'
+import { useEntitlementsStore } from '../Shared/entitlements'
 
 const toast = useToast()
 const router = useRouter()
 const googleConfigStore = useGoogleConfigStore()
 const subscriptionStore = useSubscriptionStore()
+const entitlementsStore = useEntitlementsStore()
+const paidActionTitle = computed(() => entitlementsStore.canUsePaidFeatures ? '' : entitlementsStore.blockingReason)
+
+const ensurePaidAccess = async () => {
+  await entitlementsStore.refresh()
+  if (entitlementsStore.canUsePaidFeatures) return true
+  await Swal.fire('Subscription required', entitlementsStore.blockingReason, 'warning')
+  return false
+}
 
 interface Site {
   id: number
@@ -365,6 +376,7 @@ const clearSelection = () => {
 
 const queueForCrawl = async () => {
   if (!selectedSites.value.length) return
+  if (!(await ensurePaidAccess())) return
 
   const result = await Swal.fire({
     title: 'Are you sure?',
@@ -480,6 +492,7 @@ const fetchStats = async () => {
 }
 
 const startCrawl = async (id: number) => {
+  if (!(await ensurePaidAccess())) return
   const confirm = await Swal.fire({
     title: 'Are you sure?',
     text: 'Do you want to crawl this site?',
@@ -577,6 +590,7 @@ onMounted(async () => {
   await fetchStats()
   googleConfigStore.check()
   subscriptionStore.checkSubscription()
+  entitlementsStore.refresh()
 })
 </script>
 

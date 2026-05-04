@@ -5,7 +5,9 @@
         <header class="modal-header">
           <div>
             <h2 class="modal-title">Create account</h2>
-            <p class="modal-subtitle">Register to continue.</p>
+            <p class="modal-subtitle">
+            {{ hasSelectedPlan ? `Create account to get ${selectedPlanName}` : 'Register to continue.' }}
+          </p>
           </div>
           <button type="button" class="modal-close" aria-label="Close" @click="close">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -14,6 +16,20 @@
             </svg>
           </button>
         </header>
+
+        <!-- Plan Context Banner -->
+        <div v-if="hasSelectedPlan" class="plan-context-banner">
+          <div class="plan-context-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 16v-4"/>
+              <path d="M12 8h.01"/>
+            </svg>
+          </div>
+          <div class="plan-context-content">
+            <p class="plan-context-desc">{{ selectedPlanDesc }}</p>
+          </div>
+        </div>
 
         <div class="modal-body">
           <!-- Email -->
@@ -90,17 +106,56 @@
   </transition>
 </template>
 
-<script setup>
-import { ref, computed, defineProps, defineEmits, watch } from "vue";
+<script setup lang="ts">
+import { ref, computed, watch, onMounted } from "vue";
 import { register as apiRegister } from "../Store/auth";
 import { useToast } from "vue-toastification";
 import { useRouter } from "vue-router";
+
+// Plan display names mapping
+const planNames: Record<string, string> = {
+  trial: 'Trial (100 requests)',
+  solo: 'Solo ($17/mo)',
+  pro: 'Pro ($47/mo)',
+  team: 'Team ($88/mo)'
+};
+
+const planDescriptions: Record<string, string> = {
+  trial: 'Get started with 100 free indexing requests.',
+  solo: 'Perfect for individual sites with 6,000 indexings/month.',
+  pro: 'Most popular choice with 10 sites and priority support.',
+  team: 'Collaborate with up to 8 team members across 30 sites.'
+};
 
 const router = useRouter();
 const toast = useToast();
 
 const props = defineProps({ show: Boolean });
 const emit = defineEmits(["close"]);
+
+// Track selected plan
+const selectedPlan = ref<string | null>(null);
+const hasSelectedPlan = computed(() => !!selectedPlan.value && planNames[selectedPlan.value]);
+const selectedPlanName = computed(() => hasSelectedPlan.value ? planNames[selectedPlan.value!] : '');
+const selectedPlanDesc = computed(() => hasSelectedPlan.value ? planDescriptions[selectedPlan.value!] : '');
+
+// Load plan from localStorage when modal opens
+onMounted(() => {
+  const storedPlan = localStorage.getItem('selectedPlan');
+  if (storedPlan) {
+    selectedPlan.value = storedPlan;
+  }
+});
+
+// Watch for modal open to refresh plan
+watch(() => props.show, (isOpen) => {
+  if (isOpen) {
+    const storedPlan = localStorage.getItem('selectedPlan');
+    if (storedPlan) {
+      selectedPlan.value = storedPlan;
+    }
+  }
+});
 
 // ---------------- STATE ----------------
 const loading = ref(false);
@@ -115,9 +170,6 @@ const emailError = ref("");
 const usernameError = ref("");
 const passwordError = ref("");
 const confirmPasswordError = ref("");
-
-// inline error style
-const errorStyle = { borderColor: "#dc2626", boxShadow: "0 0 0 3px rgba(220, 38, 38, 0.16)" };
 
 // ---------------- CLOSE ----------------
 const close = () => {
@@ -193,9 +245,15 @@ const handleRegister = async () => {
       password.value = "";
       confirmPassword.value = "";
 
-      // 3. redirect AFTER UI update
+      // 3. redirect to subscription with plan, or to login
       setTimeout(() => {
-        router.push("/login");
+        const pendingPlan = localStorage.getItem('selectedPlan');
+        if (pendingPlan) {
+          localStorage.removeItem('selectedPlan');
+          router.push(`/subscription?plan=${pendingPlan}`);
+        } else {
+          router.push("/login");
+        }
       }, 200);
     }
   } catch (err) {
@@ -340,5 +398,58 @@ watch(password, () => {
 .modal-enter-from,
 .modal-leave-to {
   opacity: 0;
+}
+
+/* Plan Context Banner */
+.plan-context-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0 24px 16px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, rgba(66, 133, 244, 0.08), rgba(52, 168, 83, 0.06));
+  border: 1px solid rgba(66, 133, 244, 0.2);
+  border-radius: 12px;
+  animation: slideIn 0.4s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.plan-context-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #4285F4, #34A853);
+  border-radius: 50%;
+  color: white;
+}
+
+.plan-context-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.plan-context-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.plan-context-desc {
+  font-size: 0.8rem;
+  color: #5f6368;
+  margin: 0;
+  line-height: 1.4;
 }
 </style>

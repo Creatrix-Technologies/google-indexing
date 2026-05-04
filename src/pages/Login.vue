@@ -98,9 +98,25 @@
             <span>Continue with Google</span>
           </button>
 
+          <!-- Plan Context Banner -->
+          <div v-if="hasSelectedPlan" class="plan-context-banner">
+            <div class="plan-context-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 16v-4"/>
+                <path d="M12 8h.01"/>
+              </svg>
+            </div>
+            <div class="plan-context-content">
+              <p class="plan-context-title">You're getting the {{ selectedPlanName }}</p>
+              <p class="plan-context-desc">{{ selectedPlanDesc }}</p>
+            </div>
+          </div>
+
           <p class="signup-text">
             Don't have an account?
-            <span class="signup-link" @click="showRegister = true">Sign up</span>
+            <router-link v-if="selectedPlan" :to="`/signup?plan=${selectedPlan}`" class="signup-link">Sign up</router-link>
+            <span v-else class="signup-link" @click="showRegister = true">Sign up</span>
           </p>
 
           <p v-if="errorMessage" class="error" role="alert">
@@ -120,23 +136,53 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed, onMounted } from "vue";
 import api from "../api";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { login as apiLogin, redirectToGoogleLogin } from "../Store/auth";
 import { useMenuStore } from "../Store/menu";
 import { buildRoutes } from "../Router/dynamicRoutes";
 import RegisterModal from "../pages/Register.vue";
 
+// Plan display names mapping
+const planNames: Record<string, string> = {
+  trial: 'Trial (100 requests)',
+  solo: 'Solo ($17/mo)',
+  pro: 'Pro ($47/mo)',
+  team: 'Team ($88/mo)'
+};
+
+// Plan descriptions
+const planDescriptions: Record<string, string> = {
+  trial: 'Get started with 100 free indexing requests.',
+  solo: 'Perfect for individual sites with 6,000 indexings/month.',
+  pro: 'Most popular choice with 10 sites and priority support.',
+  team: 'Collaborate with up to 8 team members across 30 sites.'
+};
+
 const loading = ref(false);
 
 const router = useRouter();
+const route = useRoute();
 
 const username = ref("");
 const password = ref("");
 const showPassword = ref(false);
 const showRegister = ref(false);
 const errorMessage = ref("");
+
+// Get plan from query params
+const selectedPlan = computed(() => route.query.plan as string | undefined);
+const hasSelectedPlan = computed(() => !!selectedPlan.value && planNames[selectedPlan.value]);
+const selectedPlanName = computed(() => hasSelectedPlan.value ? planNames[selectedPlan.value!] : '');
+const selectedPlanDesc = computed(() => hasSelectedPlan.value ? planDescriptions[selectedPlan.value!] : '');
+
+// Store plan in localStorage for persistence through registration
+onMounted(() => {
+  if (selectedPlan.value) {
+    localStorage.setItem('selectedPlan', selectedPlan.value);
+  }
+});
 
 const handleLogin = async () => {
   if (loading.value) return;
@@ -157,9 +203,7 @@ const handleLogin = async () => {
 
       await api.get("/auth-check");
 
-      if (!menuStore.loaded || menuStore.menus.length === 0) {
-        await menuStore.fetchMenus();
-      }
+      await menuStore.fetchMenus();
 
       const dynamicRoutes = buildRoutes(menuStore.menus);
       dynamicRoutes.forEach(route => {
@@ -168,7 +212,19 @@ const handleLogin = async () => {
         }
       });
 
-      router.push("/dashboard");
+      // Redirect based on plan type
+      const pendingPlan = localStorage.getItem('selectedPlan');
+      if (pendingPlan) {
+        localStorage.removeItem('selectedPlan');
+        // Paid plans go to subscription for payment, trial goes to dashboard
+        if (pendingPlan === 'trial') {
+          router.push('/dashboard');
+        } else {
+          router.push(`/subscriptions?plan=${pendingPlan}`);
+        }
+      } else {
+        router.push('/dashboard');
+      }
     } else {
       errorMessage.value = "Login failed. Please check your credentials.";
     }
@@ -568,5 +624,66 @@ const handleGoogleLogin = () => {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* Plan Context Banner */
+.plan-context-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 1.25rem 0;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(66, 133, 244, 0.08), rgba(52, 168, 83, 0.06));
+  border: 1px solid rgba(66, 133, 244, 0.2);
+  border-radius: 14px;
+  animation: slideIn 0.4s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.plan-context-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #4285F4, #34A853);
+  border-radius: 50%;
+  color: white;
+}
+
+.plan-context-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.plan-context-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.plan-context-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0a0a0c;
+  margin: 0 0 4px;
+  line-height: 1.3;
+}
+
+.plan-context-desc {
+  font-size: 0.82rem;
+  color: #5f6368;
+  margin: 0;
+  line-height: 1.4;
 }
 </style>

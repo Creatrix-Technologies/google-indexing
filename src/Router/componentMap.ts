@@ -13,5 +13,6 @@ export const componentMap: Record<string, any> = {
     plans: () => import('../Subscriptions/plans.vue'),
     GoogleKeys: () => import('../pages/GoogleKeys.vue'),
     StripeKeys: () => import('../pages/StripeKeys.vue'),
+    EmailSettings: () => import('../pages/EmailSettings.vue'),
   };
   

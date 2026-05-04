@@ -6,11 +6,12 @@
     <div class="container">
       <!-- Header -->
       <header class="site-header fade-in">
-        <div class="logo">GoogleIndexing</div>
+        <router-link to="/" class="logo" aria-label="GoogleIndexing.com home">GoogleIndexing</router-link>
         <nav class="header-links">
           <a href="#features" class="hide-below-tablet">Features</a>
           <a href="#how-it-works" class="hide-below-tablet">How it works</a>
           <a href="#faq" class="hide-below-tablet">FAQ</a>
+          <a href="#contact" class="hide-below-tablet">Contact</a>
           <router-link to="/pricing">Pricing</router-link>
           <router-link to="/login" class="cta-pill">Sign In</router-link>
         </nav>
@@ -22,7 +23,7 @@
           <div class="badge">INDEXING API AUTOMATION</div>
           <h1>Google <span class="accent">SEO Indexing</span><br>Made Simple</h1>
           <p class="hero-subtext fade-in delay-1">
-            Crawl your URLs and get them indexed on Google in hours, not weeks.<br>
+            Crawl URLs and help Google discover updates faster through official indexing signals.<br>
             Monitor pages, improve SEO, and stay discoverable — all from one dashboard.
           </p>
           <div class="hero-actions fade-in delay-2">
@@ -232,6 +233,91 @@
             <router-link to="/login" class="btn-hero-primary">Start for Free</router-link>
           </div>
         </section>
+
+        <div class="hero-divider"></div>
+
+        <!-- Contact -->
+        <section id="contact" class="contact-section reveal-hidden">
+          <div class="section-header">
+            <h2>Get in touch</h2>
+            <p>We're a globally distributed team — reach us in the timezone that suits you.</p>
+          </div>
+
+          <div class="contact-grid">
+            <!-- Minneapolis -->
+            <div class="contact-card glass-card">
+              <div class="card-glow"></div>
+              <img src="https://flagcdn.com/40x30/us.png" width="40" height="30" alt="United States" class="contact-card__flag" />
+              <h3>Minneapolis, MN</h3>
+              <p class="contact-card__region">United States</p>
+              <ul class="contact-card__details">
+                <li>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.57 3.4 2 2 0 0 1 3.54 1.26h3a2 2 0 0 1 2 1.72c.12.96.36 1.9.71 2.81a2 2 0 0 1-.45 2.11L7.91 8.8a16 16 0 0 0 6.29 6.29l.9-.9a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.71A2 2 0 0 1 22 16.92z"/></svg>
+                  <a href="tel:+16125827037">612-582-7037</a>
+                </li>
+                <li>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <a href="https://maps.google.com/?q=Minneapolis,MN,USA" target="_blank" rel="noopener">Minneapolis, MN, USA</a>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Dubai -->
+            <div class="contact-card glass-card main-card">
+              <div class="card-glow"></div>
+              <img src="https://flagcdn.com/40x30/ae.png" width="40" height="30" alt="United Arab Emirates" class="contact-card__flag" />
+              <h3>Dubai</h3>
+              <p class="contact-card__region">United Arab Emirates</p>
+              <ul class="contact-card__details">
+                <li>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.57 3.4 2 2 0 0 1 3.54 1.26h3a2 2 0 0 1 2 1.72c.12.96.36 1.9.71 2.81a2 2 0 0 1-.45 2.11L7.91 8.8a16 16 0 0 0 6.29 6.29l.9-.9a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.71A2 2 0 0 1 22 16.92z"/></svg>
+                  <a href="tel:+971526223988">+971 52 622 3988</a>
+                </li>
+                <li>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <a href="https://maps.google.com/?q=Dubai,UAE" target="_blank" rel="noopener">Dubai, UAE</a>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Nepal -->
+            <div class="contact-card glass-card">
+              <div class="card-glow"></div>
+              <img src="https://flagcdn.com/40x30/np.png" width="40" height="30" alt="Nepal" class="contact-card__flag" />
+              <h3>Kathmandu</h3>
+              <p class="contact-card__region">Nepal</p>
+              <ul class="contact-card__details">
+                <li>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.57 3.4 2 2 0 0 1 3.54 1.26h3a2 2 0 0 1 2 1.72c.12.96.36 1.9.71 2.81a2 2 0 0 1-.45 2.11L7.91 8.8a16 16 0 0 0 6.29 6.29l.9-.9a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.71A2 2 0 0 1 22 16.92z"/></svg>
+                  <a href="tel:+9779851357889">+977 9851357889</a>
+                </li>
+                <li>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <a href="https://maps.google.com/?q=Lalitpur,Kathmandu,Nepal" target="_blank" rel="noopener">Lalitpur, Kathmandu, Nepal</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Email + Social row -->
+          <div class="contact-bottom reveal-hidden">
+            <a href="mailto:sales@nopbooster.com" class="contact-email">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2 4 12 13 22 4"/></svg>
+              sales@nopbooster.com
+            </a>
+            <div class="contact-socials">
+              <a href="https://facebook.com/creatrixVentures/" target="_blank" rel="noopener" aria-label="Facebook">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+              </a>
+              <a href="https://instagram.com/creatrixtechnologies" target="_blank" rel="noopener" aria-label="Instagram">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+              </a>
+              <a href="https://linkedin.com/company/creatrix-media-and-solutions/" target="_blank" rel="noopener" aria-label="LinkedIn">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+              </a>
+            </div>
+          </div>
+        </section>
       </main>
 
       <!-- Footer -->
@@ -243,6 +329,8 @@
           </p>
           <p class="footer-note">
             <router-link to="/pricing">Pricing</router-link>
+            &middot;
+            <a href="#contact">Contact</a>
             &middot;
             Not affiliated with Google Inc. Contact:
             <a href="mailto:sales@nopbooster.com">sales@nopbooster.com</a>
@@ -259,6 +347,7 @@ import { onMounted } from 'vue'
 import PaymentTrustBadges from '../components/PaymentTrustBadges.vue'
 
 onMounted(() => {
+  document.querySelector('.home-page')?.classList.add('is-enhanced')
   // Scroll-reveal observer
   const observer = new IntersectionObserver(
     (entries) => {
@@ -374,6 +463,7 @@ onMounted(() => {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  text-decoration: none;
 }
 
 .header-links {
@@ -920,6 +1010,142 @@ main {
   margin-bottom: 2rem;
 }
 
+/* ===== Contact section ===== */
+.contact-section {
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+}
+
+.contact-card {
+  padding: 2rem 1.75rem;
+}
+
+.contact-card__flag {
+  display: block;
+  width: 40px;
+  height: 30px;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+  object-fit: cover;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+}
+
+.contact-card h3 {
+  font-family: 'Syne', 'Inter', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: #0a0a0c;
+  margin: 0 0 2px;
+}
+
+.contact-card__region {
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #9aa0a6;
+  margin: 0 0 1.25rem;
+}
+
+.contact-card__details {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.contact-card__details li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.92rem;
+  color: #5f6368;
+}
+
+.contact-card__details li svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  color: #4285F4;
+}
+
+.contact-card__details a {
+  color: #5f6368;
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.contact-card__details a:hover {
+  color: #4285F4;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Email + social row */
+.contact-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  padding: 1.5rem 2rem;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.contact-email {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #0a0a0c;
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+.contact-email svg { width: 18px; height: 18px; color: #4285F4; flex-shrink: 0; }
+.contact-email:hover { color: #4285F4; }
+
+.contact-socials {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.contact-socials a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: #5f6368;
+  text-decoration: none;
+  transition: background 150ms ease, color 150ms ease, border-color 150ms ease, transform 80ms ease;
+}
+.contact-socials a svg { width: 16px; height: 16px; }
+.contact-socials a:hover {
+  background: rgba(66, 133, 244, 0.08);
+  border-color: rgba(66, 133, 244, 0.25);
+  color: #4285F4;
+  transform: translateY(-2px);
+}
+
 /* ===== Footer ===== */
 .site-footer {
   padding: 3rem 0 2rem;
@@ -969,7 +1195,7 @@ main {
 .delay-4 { animation-delay: 0.8s; }
 .delay-5 { animation-delay: 1s; }
 
-.reveal-hidden {
+.home-page.is-enhanced .reveal-hidden {
   opacity: 0;
   transform: translateY(28px);
   transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
@@ -985,6 +1211,7 @@ main {
 @media (max-width: 1024px) {
   .features-grid { grid-template-columns: 1fr; gap: 1.5rem; }
   .impact-metrics { grid-template-columns: repeat(2, 1fr); }
+  .contact-grid { grid-template-columns: 1fr; gap: 1.25rem; }
 }
 
 @media (max-width: 768px) {
@@ -1001,6 +1228,8 @@ main {
   .hide-below-tablet { display: none; }
   .trust-logos { gap: 1.5rem; }
   .footer-inner { flex-direction: column; text-align: center; }
+  .contact-bottom { flex-direction: column; align-items: flex-start; }
+  .contact-grid { grid-template-columns: 1fr; }
   .impact-metrics { grid-template-columns: 1fr 1fr; }
   .cta-pill { padding: 0.5rem 1rem; font-size: 0.85rem; }
 }

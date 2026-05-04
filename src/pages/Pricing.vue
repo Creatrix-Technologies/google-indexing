@@ -18,7 +18,7 @@
         <section class="pricing-hero fade-in">
           <h1>Simple, transparent <span class="accent">pricing</span></h1>
           <p class="pricing-subtext">
-            Choose the plan that fits your indexing needs. All plans use Google's official Indexing API.
+            Choose the plan that fits your indexing needs. Works with <strong>any website</strong> — WordPress, Shopify, nopCommerce, Next.js, corporate sites, or fully custom-built. All plans use Google's official Indexing API.
           </p>
         </section>
 
@@ -47,7 +47,7 @@
               <li>Web dashboard</li>
               <li>No API access</li>
             </ul>
-            <router-link to="/login" class="pricing-cta pricing-cta-outline">Start trial</router-link>
+            <router-link to="/login?plan=trial" class="pricing-cta pricing-cta-outline">Start trial</router-link>
           </article>
 
           <article class="pricing-card glass-card">
@@ -63,9 +63,13 @@
               <li>6,000 indexings/month</li>
               <li>3 sites</li>
               <li>API access</li>
-              <li>WordPress, Shopify integrations</li>
+              <li>WordPress, Shopify, nopCommerce &amp; more</li>
             </ul>
-            <router-link to="/login" class="pricing-cta">Get Solo</router-link>
+            <div class="verify-hint">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              Verify email, then pay securely
+            </div>
+            <router-link to="/signup?plan=solo" class="pricing-cta">Get Solo</router-link>
           </article>
 
           <article class="pricing-card glass-card main-card pricing-popular">
@@ -85,7 +89,11 @@
               <li>Email alerts</li>
               <li>Priority support</li>
             </ul>
-            <router-link to="/login" class="pricing-cta pricing-cta-primary">Get Pro</router-link>
+            <div class="verify-hint">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              Verify email, then pay securely
+            </div>
+            <router-link to="/signup?plan=pro" class="pricing-cta pricing-cta-primary">Get Pro</router-link>
           </article>
 
           <article class="pricing-card glass-card">
@@ -105,8 +113,24 @@
               <li>Priority support</li>
               <li>Custom onboarding</li>
             </ul>
-            <router-link to="/login" class="pricing-cta">Get Team</router-link>
+            <div class="verify-hint">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              Verify email, then pay securely
+            </div>
+            <router-link to="/signup?plan=team" class="pricing-cta">Get Team</router-link>
           </article>
+        </div>
+
+        <div class="compat-strip fade-in delay-2">
+          <span class="compat-label">Works with any website</span>
+          <span class="compat-divider" aria-hidden="true"></span>
+          <span class="compat-item">WordPress</span>
+          <span class="compat-item">Shopify</span>
+          <span class="compat-item">nopCommerce</span>
+          <span class="compat-item">Next.js</span>
+          <span class="compat-item">Corporate sites</span>
+          <span class="compat-item">Custom builds</span>
+          <span class="compat-item">Any public URL</span>
         </div>
 
         <p class="pricing-annual fade-in delay-2">
@@ -445,6 +469,26 @@ main {
   flex-shrink: 0;
 }
 
+.verify-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: #5f6368;
+  margin: -0.5rem 0 1rem;
+  padding: 8px 12px;
+  background: rgba(66, 133, 244, 0.06);
+  border-radius: 8px;
+  border: 1px solid rgba(66, 133, 244, 0.15);
+}
+
+.verify-hint svg {
+  width: 14px;
+  height: 14px;
+  color: #4285f4;
+  flex-shrink: 0;
+}
+
 .pricing-cta {
   display: block;
   text-align: center;
@@ -486,6 +530,48 @@ main {
 .pricing-cta-primary:hover {
   box-shadow: 0 10px 30px rgba(66, 133, 244, 0.35);
   transform: translateY(-2px);
+}
+
+.compat-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 1rem;
+  max-width: 860px;
+  margin: 0 auto 2rem;
+  padding: 1rem 1.5rem;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  font-size: 0.85rem;
+}
+
+.compat-label {
+  font-weight: 600;
+  color: #0a0a0c;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.compat-divider {
+  width: 1px;
+  height: 16px;
+  background: rgba(0, 0, 0, 0.12);
+  flex-shrink: 0;
+}
+
+.compat-item {
+  padding: 3px 10px;
+  border-radius: 100px;
+  background: rgba(66, 133, 244, 0.07);
+  border: 1px solid rgba(66, 133, 244, 0.15);
+  color: #3c4043;
+  white-space: nowrap;
+  font-size: 0.8rem;
 }
 
 .pricing-annual {

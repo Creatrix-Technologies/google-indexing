@@ -138,6 +138,17 @@ const emit = defineEmits<{
 const route = useRoute()
 const menuStore = useMenuStore()
 
+/** Matches configuration pages; backend often persists ShowInMenu = false — still surface in sidebar when role allows. */
+const SETTINGS_MENU_COMPONENTS = new Set([
+  'Settings',
+  'Configurations',
+  'GoogleConfiguration',
+  'ScheduleConfiguration',
+  'GoogleKeys',
+  'StripeKeys',
+  'EmailSettings',
+])
+
 const openMenus = ref<number[]>([])
 
 /** Stable ordering for API / persisted menu trees */
@@ -154,7 +165,19 @@ const visibleMenus = computed<Menu[]>(() => {
     menuStore.menus?.length > 0
       ? menuStore.menus
       : loadMenusFromLegacyStorage()
-  return sortMenus(raw).filter((m) => m.showInMenu !== false)
+  return sortMenus(raw).filter((m) => {
+    if (m.showInMenu !== false) return true
+    if (Array.isArray(m.children) && m.children.length > 0) {
+      const walkChildren = (items: Menu[]): boolean =>
+        items.some(
+          (c) =>
+            SETTINGS_MENU_COMPONENTS.has(c.component || '') ||
+            (c.children?.length ? walkChildren(c.children) : false)
+        )
+      return walkChildren(m.children)
+    }
+    return SETTINGS_MENU_COMPONENTS.has(m.component || '')
+  })
 })
 
 function loadMenusFromLegacyStorage(): Menu[] {
@@ -298,6 +321,7 @@ const iconKey = (m: any): string => {
   if (/dashboard|overview|home/.test(blob)) return "dashboard"
   if (/google.*config|google.*key|google.*credentials/.test(blob)) return "google"
   if (/stripe/.test(blob)) return "stripe"
+  if (/smtp|mailto/.test(blob)) return "settings"
   if (/schedule/.test(blob)) return "schedule"
   if (/notification/.test(blob)) return "notifications"
   if (/plan/.test(blob)) return "plans"
@@ -310,7 +334,7 @@ const iconKey = (m: any): string => {
   return "fallback"
 }
 
-const iconFor = (m: any): string => ICONS[iconKey(m)] || ICONS.fallback
+const iconFor = (m: any): string => ICONS[iconKey(m) as keyof typeof ICONS] ?? ICONS.fallback!
 </script>
 
 <style scoped>

@@ -236,7 +236,7 @@
 
           <footer class="modal-footer">
             <button type="button" class="btn-secondary" @click="closeModal">Cancel</button>
-            <button type="submit" class="btn-primary">Save changes</button>
+            <button type="submit" class="btn-primary" :disabled="!entitlementsStore.canUsePaidFeatures || entitlementsStore.isChecking" :title="paidActionTitle">Save changes</button>
           </footer>
         </form>
       </div>
@@ -249,8 +249,18 @@ import { ref, computed, onMounted } from 'vue'
 import api from '../api'
 import { useToast } from 'vue-toastification'
 import Swal from 'sweetalert2'
+import { useEntitlementsStore } from '../Shared/entitlements'
 
 const toast = useToast()
+const entitlementsStore = useEntitlementsStore()
+const paidActionTitle = computed(() => entitlementsStore.canUsePaidFeatures ? '' : entitlementsStore.blockingReason)
+
+const ensurePaidAccess = async () => {
+  await entitlementsStore.refresh()
+  if (entitlementsStore.canUsePaidFeatures) return true
+  await Swal.fire('Subscription required', entitlementsStore.blockingReason, 'warning')
+  return false
+}
 
 interface Schedule {
   websiteId: number
@@ -348,6 +358,7 @@ const fetchSchedules = async () => {
 }
 
 const bulkrun = async (websiteId: number) => {
+  if (!(await ensurePaidAccess())) return
 
   const confirm = await Swal.fire({
     title: 'Run Instantly?',
@@ -394,6 +405,7 @@ const openEdit = (item: Schedule) => {
 
 const saveSchedule = async () => {
   if (!editingId.value) return
+  if (!(await ensurePaidAccess())) return
 
   try {
     const now = new Date()
@@ -499,14 +511,19 @@ const isItemRunning = (item: Schedule): boolean => {
   return false
 }
 
-const isRunActionDisabled = (item: Schedule): boolean => isItemRunning(item)
+const isRunActionDisabled = (item: Schedule): boolean =>
+  isItemRunning(item) || !entitlementsStore.canUsePaidFeatures || entitlementsStore.isChecking
 
 const runActionLabel = (item: Schedule): string => {
+  if (!entitlementsStore.canUsePaidFeatures) return entitlementsStore.blockingReason
   if (isItemRunning(item)) return 'Already running'
   return 'Run instantly'
 }
 
-onMounted(fetchSchedules)
+onMounted(() => {
+  entitlementsStore.refresh()
+  fetchSchedules()
+})
 </script>
 
 <style scoped>

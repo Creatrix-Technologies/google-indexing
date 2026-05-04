@@ -488,7 +488,9 @@ const formatRange = (dates: string[]) => {
   if (!dates.length) return ''
   const fmt = (d: string) =>
     new Date(d).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-  return `${fmt(dates[0])} → ${fmt(dates[dates.length - 1])}`
+  const first = dates[0]
+  const last = dates[dates.length - 1]
+  return first && last ? `${fmt(first)} → ${fmt(last)}` : ''
 }
 
 const absoluteDate = (date: string) =>

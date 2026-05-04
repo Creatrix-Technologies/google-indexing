@@ -279,8 +279,9 @@ const initials = (user: User) => {
   const source = (user.name && user.name.trim()) || user.email || '?'
   const parts = source.replace(/[^a-zA-Z0-9 ._-]/g, '').split(/[\s._-]+/).filter(Boolean)
   if (parts.length === 0) return '?'
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
-  return (parts[0][0] + parts[1][0]).toUpperCase()
+  const firstPart = parts[0] ?? ''
+  if (parts.length === 1) return firstPart.slice(0, 2).toUpperCase()
+  return `${parts[0]?.[0] ?? ''}${parts[1]?.[0] ?? ''}`.toUpperCase() || '?'
 }
 
 // Deterministic muted hue per user (display-only)

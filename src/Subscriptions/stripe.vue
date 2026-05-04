@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useToast } from 'vue-toastification'
+import { useRoute } from 'vue-router'
 import api from '../api'
 import { loadStripe } from '@stripe/stripe-js'
 import type { Stripe } from '@stripe/stripe-js'
@@ -12,6 +13,7 @@ import PaymentTrustBadges from '../components/PaymentTrustBadges.vue'
 
 const subscriptionStore = useSubscriptionStore()
 const toast = useToast()
+const route = useRoute()
 
 /* ---------------- TYPES ---------------- */
 interface Plan {
@@ -171,13 +173,52 @@ const formatAmount = (amount: number) => {
   return amount.toFixed(2)
 }
 
+const scrollToPlans = () => {
+  document.getElementById('available-plans')?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  })
+}
+
 /* ---------------- FETCH PLANS ---------------- */
 const fetchPlans = async () => {
   try {
     const res = await api.get('/payments/stripe-subscription-plans')
     plans.value = res.data.data || []
+
+    // Auto-select plan from query parameter after plans are loaded
+    const planFromQuery = route.query.plan as string | undefined
+    if (planFromQuery) {
+      autoSelectPlan(planFromQuery)
+    }
   } catch {
     toast.error('Failed to load plans')
+  }
+}
+
+/* ---------------- AUTO-SELECT PLAN FROM QUERY ---------------- */
+const autoSelectPlan = (planIdentifier: string) => {
+  // Map query plan identifiers to plan names
+  const planNameMap: Record<string, string[]> = {
+    trial: ['Trial', 'trial', 'Free', 'free'],
+    solo: ['Solo', 'solo', 'Basic', 'basic'],
+    pro: ['Pro', 'pro', 'Professional', 'professional'],
+    team: ['Team', 'team', 'Enterprise', 'enterprise', 'Business', 'business']
+  }
+
+  const possibleNames = planNameMap[planIdentifier.toLowerCase()] || [planIdentifier]
+
+  // Find matching plan (case-insensitive, partial match)
+  const matchingPlan = plans.value.find(p => {
+    const planName = p.name.toLowerCase()
+    return possibleNames.some(name => planName.includes(name.toLowerCase()))
+  })
+
+  if (matchingPlan && !matchingPlan.isCurrentPlan) {
+    // Small delay to ensure UI is ready
+    setTimeout(() => {
+      startSubscribe(matchingPlan)
+    }, 300)
   }
 }
 
@@ -501,7 +542,7 @@ const syncSubscription = async () => {
 
 onMounted(async () => {
   await syncSubscription()
-  fetchPlans()
+  await fetchPlans()
   fetchSubscriptionLogs()
   fetchSavedCard()
 })
@@ -567,10 +608,19 @@ onMounted(async () => {
           </p>
         </div>
       </div>
+      <div class="current-card__actions">
+        <button type="button" class="btn-primary-inline" @click="scrollToPlans">
+          View plans
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <polyline points="12 5 19 12 12 19" />
+          </svg>
+        </button>
+      </div>
     </section>
 
     <!-- ============ PAYMENT METHOD ============ -->
-    <section class="section">
+    <section id="available-plans" class="section">
       <div class="section-header">
         <div>
           <h2 class="section-title">Payment method</h2>
@@ -1053,6 +1103,35 @@ onMounted(async () => {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
+}
+
+.btn-primary-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+  border: 1px solid var(--color-accent);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 140ms ease, border-color 140ms ease, transform 100ms ease;
+}
+.btn-primary-inline svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+.btn-primary-inline:hover {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+  transform: translateY(-1px);
 }
 
 .btn-ghost-danger {

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
 
   <!-- Header -->
   <header class="header">
@@ -56,24 +56,38 @@
     </div>
   </header>
 
-  <!-- Google Config Warning -->
+  <!-- Google connection: compact action bar shown when not connected -->
   <div
-    v-if="!googleConfigStore.isValid && !googleConfigStore.isChecking"
-    class="google-config-bar"
+    v-if="!googleConfigStore.isValid && !googleConfigStore.isChecking && !noticeDismissed"
+    class="google-notice-bar"
+    role="alert"
   >
-    <span>
-      ⚠️ Google configuration is missing or invalid, which may result in missing
-      or incomplete data.
-    </span>
-    <router-link to="/settings/google-configuration" class="config-link">
-      Connect Now
-    </router-link>
+    <div class="gnb-inner">
+      <span class="gnb-dot" aria-hidden="true"></span>
+      <p class="gnb-text">
+        Google Search Console is not connected —
+        <router-link to="/settings/google-configuration" class="gnb-inline-link">complete setup</router-link>
+        to enable indexing and populate your dashboard.
+        <span v-if="googleNoticeIssues.length" class="gnb-issue">{{ googleNoticeIssues[0] }}</span>
+      </p>
+      <router-link to="/settings/google-configuration" class="gnb-cta">
+        Connect Google
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="10" height="10">
+          <line x1="2" y1="6" x2="10" y2="6"/><polyline points="6 2 10 6 6 10"/>
+        </svg>
+      </router-link>
+      <button class="gnb-dismiss" @click="noticeDismissed = true" aria-label="Dismiss Google setup notice">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="11" height="11">
+          <line x1="2" y1="2" x2="10" y2="10"/><line x1="10" y1="2" x2="2" y2="10"/>
+        </svg>
+      </button>
+    </div>
   </div>
 
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 const props = defineProps<{
   isOpen?: boolean
@@ -88,8 +102,12 @@ import { useGoogleConfigStore } from '../Shared/googleConfig'
 import { useSubscriptionStore } from '../Shared/subscription'
 import { useUserLimitStore } from '../Shared/userLimit'
 
+const noticeDismissed = ref(false)
 const authStore = useAuthStore()
 const googleConfigStore = useGoogleConfigStore()
+const googleNoticeIssues = computed(() =>
+  googleConfigStore.errors.map((e) => e.trim()).filter(Boolean)
+)
 const subscriptionStore = useSubscriptionStore()
 const userLimitStore = useUserLimitStore()
 
@@ -115,15 +133,6 @@ const accountStatusClass = computed(() => {
   return subscriptionStore.isValid ? 'is-active' : 'is-expired'
 })
 
-const formatDate = (dateStr: string | null) => {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
-}
 </script>
 
 <style scoped>
@@ -196,36 +205,109 @@ const formatDate = (dateStr: string | null) => {
   gap: var(--space-3);
 }
 
-/* ----------------- Google Config Warning ----------------- */
-.google-config-bar {
+/* ----------------- Google connection: compact notice bar ----------------- */
+.google-notice-bar {
   position: sticky;
   top: var(--header-height, 56px);
   z-index: var(--z-config-bar, 99);
   background: var(--warning-50);
-  color: var(--warning-700);
-  padding: 8px var(--space-5);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: var(--fs-base);
-  font-weight: var(--fw-medium);
   border-bottom: 1px solid var(--warning-100);
-  gap: var(--space-3);
+  padding: 9px var(--space-5);
 }
 
-.config-link {
-  background: var(--neutral-900);
-  color: #ffffff;
-  padding: 5px 12px;
-  border-radius: var(--radius-sm);
-  font-weight: var(--fw-medium);
-  font-size: var(--fs-sm);
-  text-decoration: none;
+.gnb-inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  max-width: 100%;
+}
+
+.gnb-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--warning-500);
   flex-shrink: 0;
+  animation: gnb-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes gnb-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+
+.gnb-text {
+  flex: 1;
+  font-size: var(--fs-sm);
+  color: var(--warning-700);
+  margin: 0;
+  line-height: 1.4;
+  min-width: 0;
+}
+
+.gnb-inline-link {
+  color: var(--warning-700);
+  font-weight: var(--fw-medium);
+  text-underline-offset: 2px;
+}
+.gnb-inline-link:hover {
+  text-decoration: underline;
+}
+
+.gnb-issue {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--fs-xs);
+  color: var(--warning-600);
+  opacity: 0.85;
+}
+
+.gnb-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 5px 11px;
+  border-radius: var(--radius-md);
+  background: var(--neutral-900);
+  color: #fff;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  text-decoration: none;
+  white-space: nowrap;
   transition: background 140ms ease;
 }
-.config-link:hover {
+.gnb-cta:hover {
   background: var(--neutral-800);
+}
+
+.gnb-dismiss {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--warning-600);
+  cursor: pointer;
+  transition: background 140ms, border-color 140ms;
+}
+.gnb-dismiss:hover {
+  background: var(--warning-100);
+  border-color: var(--warning-200);
+}
+
+@media (max-width: 768px) {
+  .google-notice-bar {
+    padding: 8px var(--space-4);
+  }
+  .gnb-cta {
+    display: none;
+  }
 }
 
 .account-card {

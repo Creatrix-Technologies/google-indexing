@@ -34,7 +34,8 @@
           v-if="googleConfigStore.isValid"
           class="btn-primary"
           @click="syncsites"
-          :disabled="loading"
+          :disabled="loading || !entitlementsStore.canUsePaidFeatures || entitlementsStore.isChecking"
+          :title="paidActionTitle"
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" :class="{ 'is-spinning': loading }">
             <polyline points="23 4 23 10 17 10" />
@@ -282,7 +283,7 @@
             <button type="button" class="btn-secondary" @click="closeModal">
               Cancel
             </button>
-            <button type="submit" class="btn-primary">
+            <button type="submit" class="btn-primary" :disabled="!entitlementsStore.canUsePaidFeatures || entitlementsStore.isChecking" :title="paidActionTitle">
               {{ isEditing ? 'Update Site' : 'Add Site' }}
             </button>
           </footer>
@@ -298,6 +299,7 @@ import api from '../api'
 import { useToast } from 'vue-toastification'
 import { useGoogleConfigStore } from '../Shared/googleConfig'
 import { useSubscriptionStore } from '../Shared/subscription'
+import { useEntitlementsStore } from '../Shared/entitlements'
 import Swal from 'sweetalert2'
 
 const loading = ref(false)
@@ -305,6 +307,15 @@ const loading = ref(false)
 const toast = useToast()
 const googleConfigStore = useGoogleConfigStore()
 const subscriptionStore = useSubscriptionStore()
+const entitlementsStore = useEntitlementsStore()
+const paidActionTitle = computed(() => entitlementsStore.canUsePaidFeatures ? '' : entitlementsStore.blockingReason)
+
+const ensurePaidAccess = async () => {
+  await entitlementsStore.refresh()
+  if (entitlementsStore.canUsePaidFeatures) return true
+  await Swal.fire('Subscription required', entitlementsStore.blockingReason, 'warning')
+  return false
+}
 
 interface Site {
   id: number
@@ -361,6 +372,7 @@ const fetchSites = async () => {
 
 
 const syncsites = async () => {
+  if (!(await ensurePaidAccess())) return
   const result = await Swal.fire({
     text: 'This will sync all available sites from your Google account.',
     title: `Do you want to continue?`,
@@ -398,6 +410,7 @@ const syncsites = async () => {
 }
 
 const saveSite = async () => {
+  if (!(await ensurePaidAccess())) return
   try {
     await api.post('/site', {
       siteName: formData.value.name,
@@ -501,6 +514,7 @@ onMounted(() => {
   fetchSites()
   googleConfigStore.check()
   subscriptionStore.checkSubscription()
+  entitlementsStore.refresh()
 })
 </script>
 

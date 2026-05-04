@@ -15,6 +15,8 @@ export interface Menu {
   component?: string;
   icon?: string;
   parentId?: number | null;
+  requiresAuth?: boolean;
+  showInMenu?: boolean;
   sortOrder: number;
   children?: Menu[];
 }

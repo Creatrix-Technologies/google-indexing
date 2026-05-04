@@ -18,7 +18,7 @@
 import { computed, defineAsyncComponent } from 'vue'
 import { useMenuStore, type Menu } from '../Store/menu'
 
-const ADMIN_COMPONENTS = ['Users', 'plans', 'StripeKeys', 'GoogleKeys']
+const ADMIN_COMPONENTS = ['Users', 'plans', 'StripeKeys', 'GoogleKeys', 'EmailSettings']
 
 const TenantDashboard = defineAsyncComponent(() => import('./TenantDashboard.vue'))
 const AdminDashboard  = defineAsyncComponent(() => import('./AdminDashboard.vue'))

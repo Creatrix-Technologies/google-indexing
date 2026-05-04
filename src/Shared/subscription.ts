@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import api from '../api'
 import { useUserLimitStore } from '../Shared/userLimit'
+import { useEntitlementsStore } from '../Shared/entitlements'
 
 
 export const useSubscriptionStore = defineStore('subscription', {
@@ -26,6 +27,10 @@ export const useSubscriptionStore = defineStore('subscription', {
           const store = useUserLimitStore()
           
           await store.checkLimit()
+          const entitlementsStore = useEntitlementsStore()
+          entitlementsStore.subscriptionActive = this.isValid
+          entitlementsStore.expiresAt = this.expiresAt
+          entitlementsStore.trialAvailable = store.hasLimit
 
       } catch (err) {
         this.isValid = false

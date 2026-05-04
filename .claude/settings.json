@@ -7,7 +7,15 @@
       "PowerShell(sqlcmd -S \"DESKTOP-GU413U8\" -d \"GoogleToolsDB\" -Q \"SELECT Id, Name, Amount, IsActive FROM SubscriptionPlans ORDER BY Amount\" -C)",
       "PowerShell(sqlcmd -S \"DESKTOP-GU413U8\" -d \"GoogleToolsDB\" -Q \"SELECT Id, Name, Amount, IsActive, Description FROM SubscriptionPlans ORDER BY Amount\" -C -y 0)",
       "PowerShell(sqlcmd -S \"DESKTOP-GU413U8\" -d \"GoogleToolsDB\" -C -Q \"SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'SubscriptionPlans' ORDER BY ORDINAL_POSITION\")",
-      "PowerShell(sqlcmd -S \"DESKTOP-GU413U8\" -d \"GoogleToolsDB\" -C -Q \"SELECT Id, Name, Amount, StripePriceId, StripeProductId FROM SubscriptionPlans WHERE IsActive = 1 ORDER BY Amount\" -y 0)"
+      "PowerShell(sqlcmd -S \"DESKTOP-GU413U8\" -d \"GoogleToolsDB\" -C -Q \"SELECT Id, Name, Amount, StripePriceId, StripeProductId FROM SubscriptionPlans WHERE IsActive = 1 ORDER BY Amount\" -y 0)",
+      "Bash(npx vue-tsc *)",
+      "WebFetch(domain:www.creatrixtechnologies.com)",
+      "Bash(xargs grep *)",
+      "Bash(git -C \"d:\\\\Creatrix Projects\\\\google-indexingapi\" log --all --full-history -- \"*Menus*\" \"*menu*\" \"*seed*\")",
+      "Bash(git -C \"d:\\\\Creatrix Projects\\\\google-indexingapi\" log -p --all -S \"stripe\\\\|plans\" -- \"*.cs\")",
+      "Read(//d/Creatrix Projects/**)",
+      "Bash(git -C \"d:\\\\Creatrix Projects\\\\google-indexingapi\" log --all -p)",
+      "Bash(git -C \"d:\\\\Creatrix Projects\\\\google-indexingapi\" log --all --oneline)"
     ]
   }
 }

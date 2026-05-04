@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+Disallow: /app
+Disallow: /dashboard
+Disallow: /login
+Disallow: /signup
+Disallow: /verify-required
+Disallow: /confirm-email
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /settings
+Disallow: /subscriptions
+Disallow: /crawl-index-management
+Disallow: /crawl-index-details
+Disallow: /site-management
+Disallow: /schedule-configuration
+Disallow: /google-callback
+
+Sitemap: https://googleindexing.com/sitemap.xml

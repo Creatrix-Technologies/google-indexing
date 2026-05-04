@@ -3,7 +3,7 @@ import { useToast } from 'vue-toastification';
 import api from '../api';
 const toast = useToast();
 
-// import { useMenuStore } from '../Store/menu';
+import { useMenuStore } from '../Store/menu';
 
 
 import { defineStore } from 'pinia';
@@ -115,8 +115,8 @@ export async function logout(): Promise<void> {
 
   localStorage.removeItem('menu');
 
-  // const menuStore = useMenuStore();
-  // menuStore.clearMenus();
+  useMenuStore().clearMenus();
+
   
   // localStorage.removeItem('aT');
 

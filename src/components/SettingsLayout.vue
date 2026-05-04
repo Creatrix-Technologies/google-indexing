@@ -95,13 +95,23 @@ const SECTION_META: Record<string, SectionMeta> = {
         <rect x="2" y="5" width="20" height="14" rx="2"/>
         <line x1="2" y1="10" x2="22" y2="10"/>
       </svg>`
+  },
+  EmailSettings: {
+    title: 'Email (SMTP)',
+    desc: 'Outbound mail server used for confirmations and transactional email.',
+    icon: `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="5" width="20" height="14" rx="2"/>
+        <path d="M22 8l-10 7L2 8"/>
+      </svg>`
   }
 }
 
 const SECTION_ORDER = [
   'GoogleConfiguration',
   'GoogleKeys',
-  'StripeKeys'
+  'StripeKeys',
+  'EmailSettings'
 ]
 
 interface SectionItem {
