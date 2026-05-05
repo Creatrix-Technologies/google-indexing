@@ -3,5 +3,18 @@
     "allow": [
       "WebSearch"
     ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:\\Users\\MVXplus\\.local\\bin\\cce.EXE status --oneline"
+          }
+        ]
+      }
+    ]
   }
 }

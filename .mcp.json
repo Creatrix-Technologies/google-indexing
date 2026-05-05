@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "context-engine": {
+      "command": "C:\\Users\\MVXplus\\.local\\bin\\cce.EXE",
+      "args": [
+        "serve",
+        "--project-dir",
+        "D:\\Creatrix Projects\\google-indexing"
+      ]
+    }
+  }
+}

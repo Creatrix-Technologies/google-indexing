@@ -17,5 +17,62 @@
       "Bash(git -C \"d:\\\\Creatrix Projects\\\\google-indexingapi\" log --all -p)",
       "Bash(git -C \"d:\\\\Creatrix Projects\\\\google-indexingapi\" log --all --oneline)"
     ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"C:\\Users\\MVXplus\\.cce\\hooks\\cce_hook.cmd\" SessionStart"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"C:\\Users\\MVXplus\\.cce\\hooks\\cce_hook.cmd\" UserPromptSubmit"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"C:\\Users\\MVXplus\\.cce\\hooks\\cce_hook.cmd\" PostToolUse"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"C:\\Users\\MVXplus\\.cce\\hooks\\cce_hook.cmd\" Stop"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"C:\\Users\\MVXplus\\.cce\\hooks\\cce_hook.cmd\" SessionEnd"
+          }
+        ]
+      }
+    ]
   }
 }
