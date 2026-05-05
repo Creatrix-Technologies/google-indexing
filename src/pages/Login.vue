@@ -71,7 +71,7 @@
 
           <div class="options">
             <label class="remember">
-              <input type="checkbox" />
+              <input type="checkbox" v-model="rememberMe" />
               <span>Remember me</span>
             </label>
           </div>
@@ -116,7 +116,7 @@
           <p class="signup-text">
             Don't have an account?
             <router-link v-if="selectedPlan" :to="`/signup?plan=${selectedPlan}`" class="signup-link">Sign up</router-link>
-            <span v-else class="signup-link" @click="showRegister = true">Sign up</span>
+            <router-link v-else to="/signup" class="signup-link">Sign up</router-link>
           </p>
 
           <p v-if="errorMessage" class="error" role="alert">
@@ -131,7 +131,6 @@
       </div>
     </div>
 
-    <RegisterModal :show="showRegister" @close="showRegister = false" />
   </div>
 </template>
 
@@ -142,7 +141,6 @@ import { useRouter, useRoute } from "vue-router";
 import { login as apiLogin, redirectToGoogleLogin } from "../Store/auth";
 import { useMenuStore } from "../Store/menu";
 import { buildRoutes } from "../Router/dynamicRoutes";
-import RegisterModal from "../pages/Register.vue";
 
 // Plan display names mapping
 const planNames: Record<string, string> = {
@@ -168,8 +166,8 @@ const route = useRoute();
 const username = ref("");
 const password = ref("");
 const showPassword = ref(false);
-const showRegister = ref(false);
 const errorMessage = ref("");
+const rememberMe = ref(false);
 
 // Get plan from query params
 const selectedPlan = computed(() => route.query.plan as string | undefined);
@@ -181,6 +179,11 @@ const selectedPlanDesc = computed(() => hasSelectedPlan.value ? planDescriptions
 onMounted(() => {
   if (selectedPlan.value) {
     localStorage.setItem('selectedPlan', selectedPlan.value);
+  }
+  const savedUsername = localStorage.getItem("rememberedUsername");
+  if (savedUsername) {
+    username.value = savedUsername;
+    rememberMe.value = true;
   }
 });
 
@@ -194,11 +197,14 @@ const handleLogin = async () => {
     const payload = {
       userName: username.value,
       password: password.value,
+      rememberMe: rememberMe.value,
     };
 
     const success = await apiLogin(payload, router);
 
     if (success) {
+      if (rememberMe.value) localStorage.setItem("rememberedUsername", username.value);
+      else localStorage.removeItem("rememberedUsername");
       const menuStore = useMenuStore();
 
       await api.get("/auth-check");

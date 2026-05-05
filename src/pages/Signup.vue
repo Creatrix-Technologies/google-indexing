@@ -241,13 +241,25 @@ const validateEmail = () => {
 const validateUsername = () => {
   if (!username.value.trim()) usernameError.value = "Username is required.";
   else if (username.value.length < 3) usernameError.value = "Username must be at least 3 characters.";
+  else if (!/^[a-zA-Z0-9._-]+$/.test(username.value.trim()))
+    usernameError.value = "Use letters, numbers, dot, underscore, or hyphen only.";
   else usernameError.value = "";
 };
 
 const validatePassword = () => {
   if (!password.value) passwordError.value = "Password is required.";
-  else if (password.value.length < 6) passwordError.value = "Password must be at least 6 characters.";
-  else passwordError.value = "";
+  else {
+    const hasLower = /[a-z]/.test(password.value);
+    const hasUpper = /[A-Z]/.test(password.value);
+    const hasDigit = /[0-9]/.test(password.value);
+    const hasSpecial = /[^a-zA-Z0-9]/.test(password.value);
+    if (password.value.length < 8 || !hasLower || !hasUpper || !hasDigit || !hasSpecial) {
+      passwordError.value =
+        "Password must be 8+ chars and include upper, lower, number, and special character.";
+    } else {
+      passwordError.value = "";
+    }
+  }
   if (confirmPassword.value) validateConfirmPassword();
 };
 

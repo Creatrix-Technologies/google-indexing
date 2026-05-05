@@ -243,6 +243,50 @@
             <p>We're a globally distributed team — reach us in the timezone that suits you.</p>
           </div>
 
+          <div class="contact-form-block reveal-hidden">
+            <div class="contact-form-card glass-card">
+              <div class="card-glow"></div>
+              <div class="contact-form-card__head">
+                <span class="contact-form-card__eyebrow">Talk to our team</span>
+                <h3>Send us a message</h3>
+                <p>Tell us about your sites and goals. We'll come back with a tailored next step within one business day.</p>
+              </div>
+              <ContactForm />
+            </div>
+
+            <aside class="contact-side glass-card">
+              <div class="card-glow"></div>
+              <h4>What to expect</h4>
+              <ul class="contact-side__list">
+                <li>
+                  <span class="contact-side__num">1</span>
+                  <div>
+                    <strong>Quick response</strong>
+                    <p>Most messages are answered within one business day, often the same day.</p>
+                  </div>
+                </li>
+                <li>
+                  <span class="contact-side__num">2</span>
+                  <div>
+                    <strong>Real human reply</strong>
+                    <p>A product specialist reviews your message — no auto-routed bot responses.</p>
+                  </div>
+                </li>
+                <li>
+                  <span class="contact-side__num">3</span>
+                  <div>
+                    <strong>Concrete next step</strong>
+                    <p>Recommended plan, setup walkthrough, or a tailored quote — whatever fits your goal.</p>
+                  </div>
+                </li>
+              </ul>
+              <div class="contact-side__direct">
+                <p>Prefer email?</p>
+                <a href="mailto:sales@nopbooster.com">sales@nopbooster.com</a>
+              </div>
+            </aside>
+          </div>
+
           <div class="contact-grid">
             <!-- Minneapolis -->
             <div class="contact-card glass-card">
@@ -339,12 +383,33 @@
         <PaymentTrustBadges variant="footer-bar" />
       </footer>
     </div>
+
+    <button
+      v-if="showScrollTop"
+      class="scroll-top-btn"
+      type="button"
+      aria-label="Go to top"
+      @click="scrollToTop"
+    >
+      ↑
+    </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import PaymentTrustBadges from '../components/PaymentTrustBadges.vue'
+import ContactForm from '../components/ContactForm.vue'
+
+const showScrollTop = ref(false)
+
+const onScroll = () => {
+  showScrollTop.value = window.scrollY > 420
+}
+
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
 
 onMounted(() => {
   document.querySelector('.home-page')?.classList.add('is-enhanced')
@@ -375,7 +440,14 @@ onMounted(() => {
       mesh.style.setProperty('--mouse-y', `${y}%`);
     });
   }
+
+  window.addEventListener('scroll', onScroll, { passive: true })
+  onScroll()
 });
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', onScroll)
+})
 </script>
 
 <style scoped>
@@ -470,9 +542,11 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 2rem;
+  flex-wrap: wrap;
 }
 
 .header-links a {
+  white-space: nowrap;
   text-decoration: none;
   color: #0a0a0c;
   font-weight: 500;
@@ -1016,6 +1090,152 @@ main {
   margin-bottom: 2rem;
 }
 
+.contact-form-block {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+  align-items: stretch;
+}
+
+.contact-form-card {
+  padding: 2rem 2rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  position: relative;
+}
+
+.contact-form-card__head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.contact-form-card__eyebrow {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #4285F4;
+}
+
+.contact-form-card h3 {
+  font-family: 'Syne', 'Inter', sans-serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: #0a0a0c;
+  margin: 0;
+}
+
+.contact-form-card p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: #5f6368;
+  max-width: 52ch;
+}
+
+.contact-side {
+  padding: 1.75rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.contact-side h4 {
+  font-family: 'Syne', 'Inter', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: #0a0a0c;
+  margin: 0;
+}
+
+.contact-side__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.contact-side__list li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.contact-side__num {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: #0a0a0c;
+  color: #fff;
+  font: 700 12px/24px 'Outfit', 'Inter', sans-serif;
+  text-align: center;
+}
+
+.contact-side__list strong {
+  display: block;
+  font-size: 0.92rem;
+  color: #0a0a0c;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.contact-side__list p {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: #5f6368;
+}
+
+.contact-side__direct {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.contact-side__direct p {
+  margin: 0 0 4px;
+  font-size: 0.78rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.contact-side__direct a {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0a0a0c;
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.contact-side__direct a:hover {
+  color: #4285F4;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 900px) {
+  .contact-form-block {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .contact-form-card {
+    padding: 1.5rem 1.25rem 1.25rem;
+  }
+  .contact-side {
+    padding: 1.5rem 1.25rem;
+  }
+}
+
 .contact-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1115,6 +1335,9 @@ main {
   color: #0a0a0c;
   text-decoration: none;
   transition: color 150ms ease;
+  pointer-events: auto;
+  position: relative;
+  z-index: 2;
 }
 .contact-email svg { width: 18px; height: 18px; color: #4285F4; flex-shrink: 0; }
 .contact-email:hover { color: #4285F4; }
@@ -1195,6 +1418,29 @@ main {
 .delay-4 { animation-delay: 0.8s; }
 .delay-5 { animation-delay: 1s; }
 
+.scroll-top-btn {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #0a0a0c;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 20;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.scroll-top-btn:hover {
+  background: #ffffff;
+  transform: translateY(-1px);
+}
+
 .home-page.is-enhanced .reveal-hidden {
   opacity: 0;
   transform: translateY(28px);
@@ -1225,7 +1471,7 @@ main {
   .container { padding: 0 1.25rem; }
   .hero h1 { font-size: 3rem; letter-spacing: -2px; }
   .hero-subtext { font-size: 1.05rem; }
-  .hide-below-tablet { display: none; }
+  .header-links { gap: 0.85rem; }
   .trust-logos { gap: 1.5rem; }
   .footer-inner { flex-direction: column; text-align: center; }
   .contact-bottom { flex-direction: column; align-items: flex-start; }

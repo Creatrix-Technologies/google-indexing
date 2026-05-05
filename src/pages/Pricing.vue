@@ -8,7 +8,9 @@
         <router-link to="/" class="logo">GoogleIndexing</router-link>
         <nav class="header-links">
           <router-link :to="{ path: '/', hash: '#features' }" class="hide-below-tablet">Features</router-link>
+          <router-link :to="{ path: '/', hash: '#how-it-works' }" class="hide-below-tablet">How it works</router-link>
           <router-link :to="{ path: '/', hash: '#faq' }" class="hide-below-tablet">FAQ</router-link>
+          <router-link :to="{ path: '/', hash: '#contact' }" class="hide-below-tablet">Contact</router-link>
           <router-link to="/pricing">Pricing</router-link>
           <router-link to="/login" class="cta-pill">Sign In</router-link>
         </nav>
@@ -135,16 +137,43 @@
 
         <p class="pricing-annual fade-in delay-2">
           Save 2 months with annual billing —
-          <a href="mailto:sales@nopbooster.com">contact us</a> for annual plans.
+          <a href="#pricing-contact">contact us</a> for annual plans.
         </p>
 
-        <section class="pricing-faq fade-in delay-2">
-          <h2>Questions?</h2>
-          <p>
-            Contact
-            <a href="mailto:sales@nopbooster.com">sales@nopbooster.com</a>
-            for volume discounts, custom plans, or enterprise needs.
-          </p>
+        <section id="pricing-contact" class="pricing-contact fade-in delay-2">
+          <div class="pricing-contact__intro">
+            <span class="pricing-contact__eyebrow">Talk to sales</span>
+            <h2>Questions, custom quotes, or enterprise needs?</h2>
+            <p>
+              Volume discounts, annual billing, and onboarding support — tell us about your sites and we'll come back with a tailored next step within one business day.
+            </p>
+            <ul class="pricing-contact__list">
+              <li>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                Volume / annual pricing
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                Multi-site / agency setup
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                Enterprise SSO &amp; invoicing
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                Migration from existing tools
+              </li>
+            </ul>
+            <p class="pricing-contact__direct">
+              Or email <a href="mailto:sales@nopbooster.com">sales@nopbooster.com</a> directly.
+            </p>
+          </div>
+
+          <div class="pricing-contact__form glass-card">
+            <div class="card-glow"></div>
+            <ContactForm default-subject="Pricing inquiry" />
+          </div>
         </section>
       </main>
 
@@ -162,12 +191,33 @@
         <PaymentTrustBadges variant="footer-bar" />
       </footer>
     </div>
+
+    <button
+      v-if="showScrollTop"
+      class="scroll-top-btn"
+      type="button"
+      aria-label="Go to top"
+      @click="scrollToTop"
+    >
+      ↑
+    </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import PaymentTrustBadges from '../components/PaymentTrustBadges.vue'
+import ContactForm from '../components/ContactForm.vue'
+
+const showScrollTop = ref(false)
+
+const onScroll = () => {
+  showScrollTop.value = window.scrollY > 320
+}
+
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
 
 onMounted(() => {
   const mesh = document.querySelector('.pricing-page .mesh-gradient') as HTMLElement | null
@@ -179,6 +229,12 @@ onMounted(() => {
       mesh.style.setProperty('--mouse-y', `${y}%`)
     })
   }
+  window.addEventListener('scroll', onScroll, { passive: true })
+  onScroll()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', onScroll)
 })
 </script>
 
@@ -249,9 +305,11 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 2rem;
+  flex-wrap: wrap;
 }
 
 .header-links > a {
+  white-space: nowrap;
   text-decoration: none;
   color: #0a0a0c;
   font-weight: 500;
@@ -584,27 +642,118 @@ main {
 .pricing-annual a {
   color: #4285f4;
   text-decoration: underline;
+  pointer-events: auto;
+  position: relative;
+  z-index: 2;
 }
 
-.pricing-faq {
-  text-align: center;
-  max-width: 500px;
+.pricing-contact {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.45fr);
+  gap: 1.75rem;
+  align-items: start;
+  max-width: 1200px;
   margin: 0 auto 3rem;
+  scroll-margin-top: 90px;
 }
 
-.pricing-faq h2 {
-  font-family: 'Syne', 'Inter', sans-serif;
-  font-size: 1.25rem;
-  margin-bottom: 0.75rem;
+.pricing-contact__intro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding-top: 0.5rem;
 }
 
-.pricing-faq p {
-  color: #5f6368;
-}
-
-.pricing-faq a {
+.pricing-contact__eyebrow {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: #4285f4;
-  text-decoration: underline;
+}
+
+.pricing-contact__intro h2 {
+  font-family: 'Syne', 'Inter', sans-serif;
+  font-size: clamp(1.5rem, 3.2vw, 1.95rem);
+  font-weight: 700;
+  letter-spacing: -1px;
+  line-height: 1.2;
+  color: #0a0a0c;
+  margin: 0;
+}
+
+.pricing-contact__intro > p {
+  color: #5f6368;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 46ch;
+}
+
+.pricing-contact__list {
+  list-style: none;
+  padding: 0;
+  margin: 0.25rem 0 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 1rem;
+}
+
+.pricing-contact__list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #3c4043;
+}
+
+.pricing-contact__list svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: #34a853;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pricing-contact__direct {
+  margin: 0.5rem 0 0;
+  font-size: 0.88rem;
+  color: #6b7280;
+}
+
+.pricing-contact__direct a {
+  color: #0a0a0c;
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(10, 10, 12, 0.18);
+  transition: color 150ms ease, border-color 150ms ease;
+}
+
+.pricing-contact__direct a:hover {
+  color: #4285f4;
+  border-bottom-color: #4285f4;
+}
+
+.pricing-contact__form {
+  padding: 2rem 1.85rem 1.75rem;
+}
+
+@media (max-width: 900px) {
+  .pricing-contact {
+    grid-template-columns: 1fr;
+  }
+  .pricing-contact__list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .pricing-contact__form {
+    padding: 1.5rem 1.25rem 1.25rem;
+  }
 }
 
 .site-footer {
@@ -660,6 +809,29 @@ main {
   animation-delay: 0.65s;
 }
 
+.scroll-top-btn {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #0a0a0c;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 20;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.scroll-top-btn:hover {
+  background: #ffffff;
+  transform: translateY(-1px);
+}
+
 @media (max-width: 1024px) {
   .pricing-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -679,8 +851,8 @@ main {
     padding: 0 1.25rem;
   }
 
-  .hide-below-tablet {
-    display: none;
+  .header-links {
+    gap: 0.85rem;
   }
 
   .pricing-grid {

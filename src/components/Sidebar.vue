@@ -748,7 +748,7 @@ const iconFor = (m: any): string => ICONS[iconKey(m) as keyof typeof ICONS] ?? I
 @media (max-width: 768px) {
   .sidebar {
     transform: translateX(-100%);
-    width: var(--sidebar-width, 240px);
+    width: min(86vw, 320px);
   }
 
   .sidebar:not(.collapsed) {

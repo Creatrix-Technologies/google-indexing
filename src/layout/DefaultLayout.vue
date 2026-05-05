@@ -24,6 +24,7 @@
         <router-view />
       </div>
     </div>
+    <FrontendAssistant />
   </div>
 </template>
 
@@ -31,6 +32,7 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import Sidebar from "../components/Sidebar.vue";
 import Header from "../components/Header.vue";
+import FrontendAssistant from "../components/FrontendAssistant.vue";
 
 const isCollapsed = ref(false);
 const isMobile = ref(window.innerWidth <= 768);
@@ -99,7 +101,7 @@ const toggleSidebar = () => {
     background: rgba(17, 24, 39, 0.50);
     backdrop-filter: blur(2px);
     -webkit-backdrop-filter: blur(2px);
-    z-index: 999;
+    z-index: 150;
     animation: overlay-in 160ms ease-out;
   }
 }

@@ -43,6 +43,7 @@ export interface User {
 interface LoginPayload {
   userName: string;
   password: string;
+  rememberMe?: boolean;
 }
 
 interface RegisterPayload {

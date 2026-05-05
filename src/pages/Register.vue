@@ -185,11 +185,36 @@ const validateEmail = () => {
 };
 
 const validateUsername = () => {
-  usernameError.value = username.value.trim() ? "" : "Username is required.";
+  if (!username.value.trim()) {
+    usernameError.value = "Username is required.";
+    return;
+  }
+  if (username.value.trim().length < 3) {
+    usernameError.value = "Username must be at least 3 characters.";
+    return;
+  }
+  if (!/^[a-zA-Z0-9._-]+$/.test(username.value.trim())) {
+    usernameError.value = "Use letters, numbers, dot, underscore, or hyphen only.";
+    return;
+  }
+  usernameError.value = "";
 };
 
 const validatePassword = () => {
-  passwordError.value = password.value.trim() ? "" : "Password is required.";
+  if (!password.value.trim()) {
+    passwordError.value = "Password is required.";
+    return;
+  }
+  const hasLower = /[a-z]/.test(password.value);
+  const hasUpper = /[A-Z]/.test(password.value);
+  const hasDigit = /[0-9]/.test(password.value);
+  const hasSpecial = /[^a-zA-Z0-9]/.test(password.value);
+  if (password.value.length < 8 || !hasLower || !hasUpper || !hasDigit || !hasSpecial) {
+    passwordError.value =
+      "Password must be 8+ chars and include upper, lower, number, and special character.";
+    return;
+  }
+  passwordError.value = "";
   if (confirmPassword.value) validateConfirmPassword();
 };
 
@@ -250,7 +275,7 @@ const handleRegister = async () => {
         const pendingPlan = localStorage.getItem('selectedPlan');
         if (pendingPlan) {
           localStorage.removeItem('selectedPlan');
-          router.push(`/subscription?plan=${pendingPlan}`);
+          router.push(`/subscriptions?plan=${pendingPlan}`);
         } else {
           router.push("/login");
         }

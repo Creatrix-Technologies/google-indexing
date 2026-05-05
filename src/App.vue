@@ -15,7 +15,17 @@
 
 <template>
   <router-view />
+  <PublicSalesAssistant v-if="showPublicAssistant" />
 </template>
+
+<script setup lang="ts">
+import { computed } from "vue";
+import { useRoute } from "vue-router";
+import PublicSalesAssistant from "./components/PublicSalesAssistant.vue";
+
+const route = useRoute();
+const showPublicAssistant = computed(() => route.path === "/" || route.path === "/pricing");
+</script>
 
 
 
