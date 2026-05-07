@@ -22,6 +22,24 @@
       </div>
     </div>
 
+    <!-- ======================== Daily API quota (Google Indexing API) ======================== -->
+    <div
+      v-if="dailyQuotaLimit > 0 && schedules.length"
+      class="quota-callout"
+      role="status"
+    >
+      <div class="quota-callout__text">
+        <span class="quota-callout__label">Indexing API usage today</span>
+        <span class="quota-callout__value" :class="quotaToneClass">
+          {{ formatNumber(dailyQuotaUsed) }} / {{ formatNumber(dailyQuotaLimit) }} URLs
+        </span>
+        <span class="quota-callout__hint">Successful notifications since midnight Pacific · Google limit per Cloud project</span>
+      </div>
+      <div class="quota-callout__track" :aria-label="`Quota ${quotaPercent} percent used`">
+        <div class="quota-callout__fill" :class="quotaToneClass" :style="{ width: Math.min(100, quotaPercent) + '%' }"></div>
+      </div>
+    </div>
+
     <!-- ======================== Table ======================== -->
     <div class="table-card">
       <div class="grid-toolbar" v-if="schedules.length">
@@ -39,7 +57,7 @@
               <th>Type</th>
               <th>Frequency</th>
               <th>Window</th>
-              <th class="th-num">Daily quota</th>
+              <th class="th-num">Schedule cap</th>
               <th>Queue progress</th>
               <th class="th-actions">Actions</th>
             </tr>
@@ -79,10 +97,15 @@
                 {{ formatWindow(item.startTime, item.endTime) }}
               </td>
 
-              <!-- Daily quota -->
+              <!-- Schedule cap (processed vs max for this site / period) -->
               <td class="num-cell">
-                <span class="num-strong">{{ formatNumber(item.maxUrls) }}</span>
-                <span class="num-suffix">URLs</span>
+                <div class="cap-stack">
+                  <span class="cap-stack__main">
+                    <span class="num-strong">{{ formatNumber(item.queueCompleted) }}</span>
+                    <span class="num-suffix">/ {{ formatNumber(item.maxUrls) }} URLs</span>
+                  </span>
+                  <span class="cap-stack__sub">this schedule period</span>
+                </div>
               </td>
 
               <!-- Queue progress -->
@@ -284,6 +307,8 @@ interface Progress {
 }
 
 const schedules = ref<Schedule[]>([])
+const dailyQuotaUsed = ref(0)
+const dailyQuotaLimit = ref(0)
 const progressMap = ref<Record<number, Progress | undefined>>({})
 const eventSources = new Map<number, EventSource>()
 
@@ -335,8 +360,9 @@ const listenToProgress = (websiteId: number) => {
 /* ================= API ================= */
 const fetchSchedules = async () => {
   const res = await api.get('/schedule/get')
+  const raw = res.data?.data
 
-  schedules.value = (res.data.data || []).map((i: any) => ({
+  const mapRow = (i: any) => ({
     websiteId: i.websiteId,
     url: i.url,
     type: i.type,
@@ -348,8 +374,22 @@ const fetchSchedules = async () => {
     isRunning: i.isRunning,
     isPickByJob: i.isPickByJob,
     queueCompleted: i.queueCompleted,
-    isActive: i.isActive 
-  }))
+    isActive: i.isActive
+  })
+
+  if (raw && !Array.isArray(raw) && Array.isArray(raw.schedules)) {
+    dailyQuotaUsed.value = Number(raw.dailyIndexingQuotaUsed) || 0
+    dailyQuotaLimit.value = Number(raw.dailyIndexingQuotaLimit) || 0
+    schedules.value = raw.schedules.map(mapRow)
+  } else if (Array.isArray(raw)) {
+    dailyQuotaUsed.value = 0
+    dailyQuotaLimit.value = 0
+    schedules.value = raw.map(mapRow)
+  } else {
+    dailyQuotaUsed.value = 0
+    dailyQuotaLimit.value = 0
+    schedules.value = []
+  }
 
   // resume listeners for running items
   schedules.value.forEach(i => {
@@ -462,7 +502,20 @@ const formatTime = (t?: string | null) => {
 const formatFrequency = (v: number) =>
   v === 1 ? 'Daily' : v === 7 ? 'Weekly' : v === 30 ? 'Monthly' : ''
 
-/* ================= COMPUTED HELPERS ================= */
+const quotaRatio = computed(() => {
+  if (dailyQuotaLimit.value <= 0) return 0
+  return dailyQuotaUsed.value / dailyQuotaLimit.value
+})
+
+const quotaPercent = computed(() => Math.min(100, Math.round(quotaRatio.value * 100)))
+
+const quotaToneClass = computed(() => {
+  const r = quotaRatio.value
+  if (r >= 1) return 'quota-tone--danger'
+  if (r >= 0.85) return 'quota-tone--warn'
+  return 'quota-tone--ok'
+})
+
 const getProgress = (websiteId: number) => progressMap.value[websiteId]
 
 const getProgressPercent = (websiteId: number) => {
@@ -558,6 +611,82 @@ onMounted(() => {
   color: var(--color-text-secondary);
   margin: 0;
   max-width: 64ch;
+}
+
+.quota-callout {
+  margin-bottom: var(--space-5);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: var(--neutral-50);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.quota-callout__text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.quota-callout__label {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semi);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary);
+}
+.quota-callout__value {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semi);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+.quota-callout__hint {
+  font-size: var(--fs-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+  max-width: 72ch;
+}
+.quota-callout__track {
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--neutral-200);
+  overflow: hidden;
+}
+.quota-callout__fill {
+  height: 100%;
+  border-radius: inherit;
+  transition: width 320ms ease, background 200ms ease;
+}
+.quota-tone--ok .quota-callout__fill,
+.quota-callout__fill.quota-tone--ok {
+  background: var(--color-success);
+}
+.quota-tone--warn .quota-callout__fill,
+.quota-callout__fill.quota-tone--warn {
+  background: var(--warning-500);
+}
+.quota-tone--danger .quota-callout__fill,
+.quota-callout__fill.quota-tone--danger {
+  background: var(--danger-500);
+}
+.quota-callout__value.quota-tone--ok { color: var(--success-700); }
+.quota-callout__value.quota-tone--warn { color: var(--warning-700); }
+.quota-callout__value.quota-tone--danger { color: var(--danger-600); }
+
+.cap-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+.cap-stack__main {
+  white-space: nowrap;
+}
+.cap-stack__sub {
+  font-size: var(--fs-xs);
+  color: var(--color-text-secondary);
+  font-weight: var(--fw-regular);
 }
 
 .header-meta {

@@ -34,13 +34,16 @@ import Sidebar from "../components/Sidebar.vue";
 import Header from "../components/Header.vue";
 import FrontendAssistant from "../components/FrontendAssistant.vue";
 
+/** Sidebar overlay drawer below this width (split-screen half desktops ~960–1024px). Keep CSS media queries in sync. */
+const DRAWER_BREAKPOINT_PX = 1024;
+
 const isCollapsed = ref(false);
-const isMobile = ref(window.innerWidth <= 768);
+const isMobile = ref(window.innerWidth <= DRAWER_BREAKPOINT_PX);
 
 const handleResize = () => {
-  isMobile.value = window.innerWidth <= 768;
+  isMobile.value = window.innerWidth <= DRAWER_BREAKPOINT_PX;
   if (!isMobile.value) isCollapsed.value = false; // desktop: expanded
-  else isCollapsed.value = true; // mobile: hidden by default
+  else isCollapsed.value = true; // drawer: hidden by default
 };
 
 onMounted(() => {
@@ -86,7 +89,7 @@ const toggleSidebar = () => {
   width: 100%;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .main-content {
     margin-left: 0;
   }

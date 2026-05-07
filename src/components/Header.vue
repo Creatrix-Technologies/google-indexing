@@ -194,7 +194,7 @@ const accountStatusClass = computed(() => {
   font-family: var(--font-family);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .header {
     justify-content: space-between;
     gap: var(--space-2);
@@ -209,7 +209,7 @@ const accountStatusClass = computed(() => {
   min-width: 0;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .header-right {
     margin-left: 0;
     flex: 1;
@@ -319,7 +319,7 @@ const accountStatusClass = computed(() => {
   border-color: var(--warning-200);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .google-notice-bar {
     padding: 8px var(--space-4);
   }
@@ -450,7 +450,7 @@ const accountStatusClass = computed(() => {
   font-weight: var(--fw-medium);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .header {
     padding: 0 var(--space-4);
   }

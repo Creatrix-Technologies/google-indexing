@@ -744,11 +744,12 @@ const iconFor = (m: any): string => ICONS[iconKey(m) as keyof typeof ICONS] ?? I
   opacity: 1;
 }
 
-/* ----------------- Mobile ----------------- */
-@media (max-width: 768px) {
+/* Drawer layout — sync breakpoint with DefaultLayout DRAWER_BREAKPOINT_PX */
+@media (max-width: 1024px) {
   .sidebar {
     transform: translateX(-100%);
     width: min(86vw, 320px);
+    box-shadow: 8px 0 32px rgba(15, 23, 42, 0.18);
   }
 
   .sidebar:not(.collapsed) {

@@ -116,6 +116,24 @@
       </div>
     </div>
 
+    <div
+      v-if="!entitlementsStore.canUsePaidFeatures && !entitlementsStore.isChecking"
+      class="notice notice--warning"
+      role="alert"
+    >
+      <span class="notice__icon notice__icon--warning" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+          <line x1="12" y1="9" x2="12" y2="13" />
+          <line x1="12" y1="17" x2="12.01" y2="17" />
+        </svg>
+      </span>
+      <div class="notice__body">
+        <p class="notice__title notice__title--warning">Crawling unavailable</p>
+        <p class="notice__text notice__text--warning">{{ entitlementsStore.blockingReason }}</p>
+      </div>
+    </div>
+
     <!-- ============ TABLE ============ -->
     <div class="grid-card">
       <!-- Bulk-action bar (visible only when selection exists) -->
@@ -235,8 +253,8 @@
               </td>
 
               <td class="col-date">
-                <span :title="absoluteDate(site.crawlDate)">
-                  {{ relativeDate(site.crawlDate) }}
+                <span :title="lastCrawlTitle(site.crawlDate)">
+                  {{ formatLastCrawlDate(site.crawlDate) }}
                 </span>
               </td>
 
@@ -565,24 +583,23 @@ const siteInitial = (site: Site) => {
   return stripped.charAt(0).toUpperCase() || '?'
 }
 
-const absoluteDate = (date?: Date) => {
-  if (!date) return 'Never crawled'
-  return date.toLocaleString()
+/** e.g. Sep 18, 2025 - 2:45 PM */
+const formatLastCrawlDate = (date?: Date) => {
+  if (!date) return 'Never'
+  const month = date.toLocaleString('en-US', { month: 'short' })
+  const day = date.getDate()
+  const year = date.getFullYear()
+  const time = date.toLocaleString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  })
+  return `${month} ${day}, ${year} - ${time}`
 }
 
-const relativeDate = (date?: Date) => {
-  if (!date) return 'Never'
-  const now = Date.now()
-  const diff = Math.max(0, now - date.getTime())
-  const sec = Math.floor(diff / 1000)
-  if (sec < 60) return 'Just now'
-  const min = Math.floor(sec / 60)
-  if (min < 60) return `${min} min ago`
-  const hr = Math.floor(min / 60)
-  if (hr < 24) return `${hr} ${hr === 1 ? 'hour' : 'hours'} ago`
-  const day = Math.floor(hr / 24)
-  if (day < 7) return `${day} ${day === 1 ? 'day' : 'days'} ago`
-  return date.toLocaleDateString()
+const lastCrawlTitle = (date?: Date) => {
+  if (!date) return ''
+  return date.toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'medium' })
 }
 
 onMounted(async () => {
@@ -772,6 +789,10 @@ onMounted(async () => {
   background: var(--info-50);
   border-color: var(--info-100);
 }
+.notice--warning {
+  background: var(--warning-50);
+  border-color: var(--warning-100);
+}
 .notice__icon {
   flex-shrink: 0;
   display: inline-flex;
@@ -789,6 +810,12 @@ onMounted(async () => {
   stroke: currentColor;
   stroke-width: 2;
 }
+.notice__icon--warning {
+  color: var(--warning-700);
+}
+.notice__icon--warning svg {
+  fill: rgba(180, 83, 9, 0.12);
+}
 .notice__body { line-height: 1.4; }
 .notice__title {
   margin: 0;
@@ -802,6 +829,13 @@ onMounted(async () => {
   font-size: var(--fs-sm);
   color: var(--info-700);
   opacity: 0.9;
+}
+.notice__title--warning {
+  color: var(--warning-700);
+}
+.notice__text--warning {
+  color: var(--warning-700);
+  opacity: 0.95;
 }
 
 /* ============ Card / table shell ============ */
@@ -1125,9 +1159,13 @@ onMounted(async () => {
   stroke-width: 2;
   transition: transform 140ms ease;
 }
-.action-btn:hover {
+.action-btn:hover:not(:disabled) {
   background: var(--color-surface-2);
   border-color: var(--neutral-400);
+}
+.action-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 .action-btn--view {
   color: var(--color-text);

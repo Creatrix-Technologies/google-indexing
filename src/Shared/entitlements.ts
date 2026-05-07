@@ -1,6 +1,18 @@
 import { defineStore } from 'pinia'
 import api from '../api'
 
+function subscriptionExpired(state: {
+  subscriptionActive: boolean
+  trialAvailable: boolean
+  expiresAt: string | null
+}) {
+  if (state.subscriptionActive || state.trialAvailable) return false
+  if (!state.expiresAt) return false
+  const t = Date.parse(state.expiresAt)
+  if (Number.isNaN(t)) return false
+  return t < Date.now()
+}
+
 export const useEntitlementsStore = defineStore('entitlements', {
   state: () => ({
     subscriptionActive: false,
@@ -18,6 +30,9 @@ export const useEntitlementsStore = defineStore('entitlements', {
     },
     blockingReason: (state) => {
       if (state.subscriptionActive || state.trialAvailable) return ''
+      if (subscriptionExpired(state)) {
+        return 'Your subscription has expired. Please renew your plan to continue crawling.'
+      }
       return 'Choose a plan to use indexing, crawling, schedules, and site sync.'
     }
   },

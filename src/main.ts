@@ -1,4 +1,4 @@
-import { createApp } from "vue";
+import { createApp, nextTick } from "vue";
 import { createRouter, createWebHistory } from "vue-router";
 import App from "./App.vue";
 import "sweetalert2/dist/sweetalert2.min.css";
@@ -36,6 +36,7 @@ import { buildRoutes } from './Router/dynamicRoutes';
 
 import HighchartsVue from 'highcharts-vue'
 import { useUserLimitStore } from './Shared/userLimit'
+import { enhanceSalesMailtoLinks } from './utils/enhanceSalesMailto'
 
 import ConfirmEmail from "./pages/ConfirmEmail.vue";
 /* ---------------- ROUTES ---------------- */
@@ -209,6 +210,9 @@ router.afterEach((to) => {
   setMetaTag('meta[name="twitter:title"]', 'name', 'twitter:title', title)
   setMetaTag('meta[name="twitter:description"]', 'name', 'twitter:description', description)
   setCanonical(canonical)
+  void nextTick(() => {
+    enhanceSalesMailtoLinks()
+  })
 })
 
 /* ---------------- AUTH GUARD ---------------- */
