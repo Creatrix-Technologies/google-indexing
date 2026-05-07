@@ -86,6 +86,8 @@ import MarketingLegalShell from "../components/MarketingLegalShell.vue";
 
 <style scoped>
 .legal-prose {
+  max-width: 42rem;
+  margin-inline: auto;
   text-align: left;
 }
 
@@ -96,12 +98,14 @@ import MarketingLegalShell from "../components/MarketingLegalShell.vue";
   letter-spacing: -0.03em;
   margin: 0 0 0.75rem;
   color: #0a0a0c;
+  text-align: center;
 }
 
 .legal-prose__meta {
   font-size: 0.85rem;
   color: #5f6368;
   margin: 0 0 1.75rem;
+  text-align: center;
 }
 
 .legal-prose h2 {

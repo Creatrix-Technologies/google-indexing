@@ -890,10 +890,15 @@ onMounted(async () => {
                       'status--success': payment.status === 'Paid',
                       'status--failed': payment.status === 'Failed',
                       'status--pending': payment.status === '-' || payment.status === 'Pending' || !payment.status,
+                      'status--ended': payment.status === 'Canceled' || payment.status === 'Expired',
                     }"
                   >
                     <span class="status-dot"></span>
-                    {{ payment.status === '-' || !payment.status ? 'Pending' : payment.status }}
+                    {{
+                      payment.status === '-' || !payment.status
+                        ? 'Pending'
+                        : payment.status
+                    }}
                   </span>
                 </td>
               </tr>
@@ -1712,6 +1717,11 @@ onMounted(async () => {
   background: var(--warning-50);
   color: var(--warning-700);
   border-color: var(--warning-100);
+}
+.status--ended {
+  background: var(--neutral-100);
+  color: var(--neutral-700);
+  border-color: var(--neutral-200);
 }
 
 .history-empty {

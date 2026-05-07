@@ -453,11 +453,33 @@ button.modal-btn-danger:focus-visible,
 }
 
 /* =====================================================================
-   Marketing / public nav — hide secondary links on narrow viewports
-   (Features, How it works, FAQ, Contact). Pricing + Sign In stay visible.
+   Marketing / public nav — keep all links available; horizontal scroll
+   instead of hiding items (avoids “only Pricing visible” on tablets).
    ===================================================================== */
-@media (max-width: 900px) {
+.site-header > .logo {
+  flex-shrink: 0;
+}
+
+@media (max-width: 1024px) {
+  .site-header {
+    gap: 0.75rem;
+  }
+
+  .site-header .header-links,
+  .header-links {
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 1rem;
+    padding: 4px 2px 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
   .hide-below-tablet {
-    display: none !important;
+    display: inline-flex !important;
   }
 }

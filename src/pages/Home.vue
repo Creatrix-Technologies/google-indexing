@@ -503,10 +503,11 @@ onUnmounted(() => {
 
 /* ===== Header ===== */
 .site-header {
-  height: 70px;
+  min-height: 70px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
 }
 
 .logo {
@@ -519,12 +520,16 @@ onUnmounted(() => {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   text-decoration: none;
+  flex-shrink: 0;
 }
 
 .header-links {
   display: flex;
   align-items: center;
   gap: 2rem;
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: flex-end;
   flex-wrap: wrap;
 }
 

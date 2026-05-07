@@ -74,10 +74,11 @@ import MarketingSiteFooter from './MarketingSiteFooter.vue'
 }
 
 .site-header {
-  height: 70px;
+  min-height: 70px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
 }
 
 .logo {
@@ -90,12 +91,16 @@ import MarketingSiteFooter from './MarketingSiteFooter.vue'
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  flex-shrink: 0;
 }
 
 .header-links {
   display: flex;
   align-items: center;
   gap: 2rem;
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: flex-end;
   flex-wrap: wrap;
 }
 
@@ -129,6 +134,9 @@ import MarketingSiteFooter from './MarketingSiteFooter.vue'
 .legal-shell__main {
   padding: 1.5rem 0 3rem;
   max-width: 820px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 @media (max-width: 600px) {
