@@ -42,7 +42,7 @@
           <div v-if="m.actions && m.actions.length" class="bubble__actions">
             <button
               v-for="(a, ai) in m.actions"
-              :key="`${m.id}-${ai}-${a.label}-${a.to ?? ''}-${a.href ?? ''}-${a.openContact ? 'c' : ''}`"
+              :key="`${m.id}-${ai}-${a.label}-${a.to ?? ''}-${a.href ?? ''}`"
               type="button"
               class="bubble-cta"
               :class="{ 'bubble-cta--primary': a.primary }"
@@ -58,34 +58,13 @@
         </article>
       </div>
 
-      <div v-if="showContactForm" ref="contactSheetEl" class="sales-contact-sheet">
-        <div class="sales-contact-sheet__bar">
-          <span class="sales-contact-sheet__title">Contact sales</span>
-          <button
-            type="button"
-            class="sales-contact-sheet__close"
-            aria-label="Hide contact form"
-            @click="showContactForm = false"
-          >
-            ×
-          </button>
-        </div>
-        <div class="sales-contact-sheet__body">
-          <ContactForm
-            :key="contactFormKey"
-            :default-subject="contactDefaultSubject"
-            :default-plan-interest="contactDefaultPlanInterest"
-          />
-        </div>
-      </div>
-
       <form class="sales-input" @submit.prevent="ask(input)">
         <input v-model.trim="input" type="text" placeholder="Ask about plans, ROI, setup, security..." />
         <button type="submit" :disabled="!input">Send</button>
       </form>
 
       <p class="sales-foot">
-        Answers are rule-based on this device. Billing and contract topics use the secure contact form (submitted to our API).
+        Answers are rule-based on this device. Sales follow-ups use the site contact form (HTTPS POST).
       </p>
     </section>
   </div>
@@ -94,7 +73,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import ContactForm from "./ContactForm.vue";
 
 type Role = "user" | "assistant";
 interface Action {
@@ -102,9 +80,6 @@ interface Action {
   to?: string;
   href?: string;
   primary?: boolean;
-  openContact?: boolean;
-  contactSubject?: string;
-  contactPlanInterest?: string;
 }
 interface Message {
   id: number;
@@ -122,13 +97,8 @@ const input = ref("");
 const id = ref(1);
 const isThinking = ref(false);
 const threadEl = ref<HTMLElement | null>(null);
-const contactSheetEl = ref<HTMLElement | null>(null);
-const showContactForm = ref(false);
-const contactFormKey = ref(0);
-const contactDefaultSubject = ref("");
-const contactDefaultPlanInterest = ref("");
 
-const storageKey = "public-sales-assistant-v3";
+const storageKey = "public-sales-assistant-v4";
 const messages = ref<Message[]>(loadSaved());
 
 const PRODUCT = {
@@ -190,16 +160,15 @@ function openPanel() {
     if (route.path === "/pricing") {
       pushAssistant({
         text:
-          "You are on Pricing — compare Solo / Pro / Team, trial limits, and quotas below. Use Contact sales for annual billing, invoices, or custom terms.",
+          "You are on Pricing — compare Solo / Pro / Team, trial limits, and quotas below. Contact sales jumps to the form on this page.",
         bullets: [
           `${PRODUCT.typicalIndexDays.api} typical via API vs ${PRODUCT.typicalIndexDays.sitemap} via sitemap`,
           `${PRODUCT.successRate} success rate, ${PRODUCT.speedMultiple} average uplift`,
           `Trial: ${PRODUCT.trialRequests} indexing requests, ${PRODUCT.sites.trial} site`
         ],
         actions: [
-          { label: "Contact sales", openContact: true, primary: true },
-          { label: "Start free trial", to: "/login?plan=trial" },
-          { label: "Pricing contact section", to: "/pricing#pricing-contact" }
+          { label: "Contact sales", to: "/pricing#pricing-contact", primary: true },
+          { label: "Start free trial", to: "/login?plan=trial" }
         ]
       });
       return;
@@ -215,7 +184,7 @@ function openPanel() {
       actions: [
         { label: "See pricing", to: "/pricing", primary: true },
         { label: "Start free trial", to: "/login?plan=trial" },
-        { label: "Contact sales", openContact: true }
+        { label: "Contact sales", to: contactSalesDestination(), primary: false }
       ]
     });
   }
@@ -243,21 +212,9 @@ function pushAssistant(payload: Omit<Message, "id" | "role">) {
   messages.value.push({ id: id.value++, role: "assistant", ...payload });
 }
 
-function defaultContactSubject(): string {
-  if (route.path === "/pricing") return "Pricing inquiry";
-  return "GoogleIndexing.com inquiry";
-}
-
-function openContactSheet(subject?: string, planInterest?: string) {
-  contactDefaultSubject.value = subject ?? defaultContactSubject();
-  contactDefaultPlanInterest.value = planInterest ?? "";
-  contactFormKey.value += 1;
-  showContactForm.value = true;
-  nextTick(() => {
-    requestAnimationFrame(() => {
-      contactSheetEl.value?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    });
-  });
+/** Home → #contact; elsewhere (Pricing when assistant is shown) → pricing contact block */
+function contactSalesDestination(): string {
+  return route.path === "/" ? "/#contact" : "/pricing#pricing-contact";
 }
 
 function scrollToAnchor(anchorId: string) {
@@ -291,10 +248,6 @@ function navigateTo(to: string) {
 }
 
 function runAction(a: Action) {
-  if (a.openContact) {
-    openContactSheet(a.contactSubject, a.contactPlanInterest);
-    return;
-  }
   if (a.to) {
     navigateTo(a.to);
     isOpen.value = false;
@@ -322,9 +275,9 @@ function respond(q: string): Omit<Message, "id" | "role"> {
     ])
   ) {
     return {
-      text: "Use Contact sales to reach our team: pricing, annual billing, refunds, invoices, and custom terms.",
+      text: "Tap Contact sales to jump to the site contact form (Home contact section or Pricing contact block).",
       actions: [
-        { label: "Contact sales", openContact: true, primary: true },
+        { label: "Contact sales", to: contactSalesDestination(), primary: true },
         { label: "Pricing page", to: "/pricing" }
       ]
     };
@@ -348,13 +301,8 @@ function respond(q: string): Omit<Message, "id" | "role"> {
       text:
         "Team is the self-serve ceiling on this page. For consolidated billing, MSAs, or bespoke limits, send details through Contact sales.",
       actions: [
-        {
-          label: "Contact sales",
-          openContact: true,
-          primary: true,
-          contactSubject: "Enterprise / custom inquiry"
-        },
-        { label: "Pricing contact section", to: "/pricing#pricing-contact" }
+        { label: "Contact sales", to: contactSalesDestination(), primary: true },
+        { label: "Compare plans", to: "/pricing" }
       ]
     };
   }
@@ -376,12 +324,7 @@ function respond(q: string): Omit<Message, "id" | "role"> {
       text:
         "Stripe receipts are in your account after payment. For formal invoices, tax IDs, or procurement paperwork, use Contact sales.",
       actions: [
-        {
-          label: "Contact sales",
-          openContact: true,
-          primary: true,
-          contactSubject: "Billing / invoice request"
-        },
+        { label: "Contact sales", to: contactSalesDestination(), primary: true },
         { label: "Sign in", to: "/login" }
       ]
     };
@@ -460,9 +403,8 @@ function respond(q: string): Omit<Message, "id" | "role"> {
         "Annual billing available (saves 2 months)"
       ],
       actions: [
-        { label: "Contact sales", openContact: true, primary: true },
-        { label: "Open pricing page", to: "/pricing" },
-        { label: "Pricing form on page", to: "/pricing#pricing-contact" }
+        { label: "Contact sales", to: contactSalesDestination(), primary: true },
+        { label: "Open pricing page", to: "/pricing" }
       ]
     };
   }
@@ -543,12 +485,7 @@ function respond(q: string): Omit<Message, "id" | "role"> {
       text:
         "Cancel anytime from Subscription in the app. Refunds are evaluated case-by-case — submit account email and invoice details via Contact sales.",
       actions: [
-        {
-          label: "Contact sales",
-          openContact: true,
-          primary: true,
-          contactSubject: "Refund request"
-        },
+        { label: "Contact sales", to: contactSalesDestination(), primary: true },
         { label: "Sign in to subscription", to: "/login" }
       ]
     };
@@ -560,13 +497,8 @@ function respond(q: string): Omit<Message, "id" | "role"> {
       text:
         "Annual billing saves about two months versus monthly. Request a switch via Contact sales (include the Google account email on the workspace).",
       actions: [
-        {
-          label: "Contact sales",
-          openContact: true,
-          primary: true,
-          contactSubject: "Annual billing request"
-        },
-        { label: "See pricing", to: "/pricing#pricing-contact" }
+        { label: "Contact sales", to: contactSalesDestination(), primary: true },
+        { label: "See pricing", to: "/pricing" }
       ]
     };
   }
@@ -605,7 +537,7 @@ function respond(q: string): Omit<Message, "id" | "role"> {
     actions: [
       { label: "See pricing", to: "/pricing", primary: true },
       { label: "Start free trial", to: "/login?plan=trial" },
-      { label: "Contact sales", openContact: true }
+      { label: "Contact sales", to: contactSalesDestination(), primary: false }
     ]
   };
 }
@@ -871,70 +803,5 @@ function loadSaved(): Message[] {
   text-align: center;
   border-top: 1px solid #f1f5f9;
   background: #fafbfc;
-}
-
-.sales-contact-sheet {
-  flex-shrink: 0;
-  max-height: min(380px, 44vh);
-  overflow: auto;
-  border-top: 1px solid #f1f5f9;
-  background: #fafbfc;
-  padding: 10px 12px 12px;
-}
-.sales-contact-sheet__bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-.sales-contact-sheet__title {
-  font-size: 12px;
-  font-weight: 700;
-  color: #111827;
-}
-.sales-contact-sheet__close {
-  border: 0;
-  background: transparent;
-  font-size: 20px;
-  line-height: 1;
-  cursor: pointer;
-  color: #6b7280;
-  padding: 2px 6px;
-}
-.sales-contact-sheet__close:hover {
-  color: #111827;
-}
-
-.sales-contact-sheet :deep(.contact-form) {
-  gap: 10px;
-}
-.sales-contact-sheet :deep(.contact-form__row) {
-  gap: 8px;
-}
-@media (max-width: 420px) {
-  .sales-contact-sheet :deep(.contact-form__row) {
-    grid-template-columns: 1fr;
-  }
-}
-.sales-contact-sheet :deep(.contact-field__label) {
-  font-size: 0.72rem;
-}
-.sales-contact-sheet :deep(.contact-field input),
-.sales-contact-sheet :deep(.contact-field textarea),
-.sales-contact-sheet :deep(.contact-field select) {
-  padding: 8px 10px;
-  font-size: 0.82rem;
-  border-radius: 10px;
-}
-.sales-contact-sheet :deep(.contact-field textarea) {
-  min-height: 72px;
-}
-.sales-contact-sheet :deep(.contact-submit) {
-  padding: 10px 14px;
-  font-size: 0.82rem;
-}
-.sales-contact-sheet :deep(.contact-consent) {
-  font-size: 0.68rem;
 }
 </style>
