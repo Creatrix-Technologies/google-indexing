@@ -418,6 +418,7 @@ const saveSchedule = async () => {
       startTime: formData.value.startTime,
       endTime: formData.value.endTime,
       maxUrls: formData.value.maxUrls,
+      isActive: formData.value.isActive,
       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       date: dateOnlyUtc
     })

@@ -140,6 +140,7 @@ const accountStatusClass = computed(() => {
 .header-left {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   min-width: 0;
 }
 
@@ -182,6 +183,7 @@ const accountStatusClass = computed(() => {
   display: flex;
   justify-content: flex-end;
   align-items: center;
+  gap: var(--space-3);
   padding: 0 var(--space-5);
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: saturate(180%) blur(8px);
@@ -192,11 +194,27 @@ const accountStatusClass = computed(() => {
   font-family: var(--font-family);
 }
 
+@media (max-width: 768px) {
+  .header {
+    justify-content: space-between;
+    gap: var(--space-2);
+  }
+}
+
 .header-right {
   display: flex;
   align-items: center;
   gap: var(--space-4);
   margin-left: auto;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .header-right {
+    margin-left: 0;
+    flex: 1;
+    justify-content: flex-end;
+  }
 }
 
 .profile-actions {
@@ -439,7 +457,7 @@ const accountStatusClass = computed(() => {
   .account-card {
     padding: 4px 8px;
     gap: 8px;
-    max-width: calc(100vw - 180px);
+    max-width: min(200px, calc(100vw - 148px));
   }
   .user-name {
     display: none;

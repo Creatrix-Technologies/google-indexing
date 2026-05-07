@@ -666,6 +666,8 @@ main {
   flex-direction: column;
   gap: 0.85rem;
   padding-top: 0.5rem;
+  position: relative;
+  z-index: 2;
 }
 
 .pricing-contact__eyebrow {
@@ -743,6 +745,8 @@ main {
 
 .pricing-contact__form {
   padding: 2rem 1.85rem 1.75rem;
+  position: relative;
+  z-index: 1;
 }
 
 @media (max-width: 900px) {
@@ -775,6 +779,8 @@ main {
   color: #5f6368;
   font-size: 0.88rem;
   text-align: center;
+  position: relative;
+  z-index: 2;
 }
 
 .footer-inner a {

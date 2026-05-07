@@ -138,11 +138,6 @@
   opacity: 1 !important;
 }
 
-@media (max-width: 900px) {
-  .hide-below-tablet {
-    display: none !important;
-  }
-}
 
 .legal-shell__main {
   padding: 1.5rem 0 3rem;

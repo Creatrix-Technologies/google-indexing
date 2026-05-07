@@ -1108,6 +1108,7 @@ main {
   flex-direction: column;
   gap: 1.25rem;
   position: relative;
+  z-index: 1;
 }
 
 .contact-form-card__head {
@@ -1146,6 +1147,8 @@ main {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  position: relative;
+  z-index: 2;
 }
 
 .contact-side h4 {
@@ -1328,6 +1331,8 @@ main {
   -webkit-backdrop-filter: blur(16px);
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.8);
+  position: relative;
+  z-index: 1;
 }
 
 .contact-email {
@@ -1390,6 +1395,8 @@ main {
   gap: 0.75rem;
   color: #5f6368;
   font-size: 0.88rem;
+  position: relative;
+  z-index: 2;
 }
 
 .footer-inner a {

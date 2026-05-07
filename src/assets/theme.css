@@ -451,3 +451,13 @@ button.modal-btn-danger:focus-visible,
   from { opacity: 0; transform: translateY(8px) scale(0.985); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+/* =====================================================================
+   Marketing / public nav — hide secondary links on narrow viewports
+   (Features, How it works, FAQ, Contact). Pricing + Sign In stay visible.
+   ===================================================================== */
+@media (max-width: 900px) {
+  .hide-below-tablet {
+    display: none !important;
+  }
+}
