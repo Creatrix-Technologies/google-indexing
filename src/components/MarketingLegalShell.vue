@@ -19,27 +19,14 @@
         <slot />
       </main>
 
-      <footer class="legal-shell__footer">
-        <p class="legal-shell__copy">&copy; 2026 GoogleIndexing.com</p>
-        <p class="legal-shell__links">
-          <router-link to="/terms">Terms</router-link>
-          <span aria-hidden="true"> · </span>
-          <router-link to="/privacy">Privacy</router-link>
-          <span aria-hidden="true"> · </span>
-          <router-link to="/pricing">Pricing</router-link>
-          <span aria-hidden="true"> · </span>
-          <router-link to="/">Home</router-link>
-        </p>
-        <p class="legal-shell__muted">
-          Not affiliated with Google Inc. Questions:
-          <a href="mailto:sales@nopbooster.com">sales@nopbooster.com</a>
-        </p>
-      </footer>
+      <MarketingSiteFooter />
     </div>
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import MarketingSiteFooter from './MarketingSiteFooter.vue'
+</script>
 
 <style scoped>
 .legal-shell {
@@ -142,47 +129,6 @@
 .legal-shell__main {
   padding: 1.5rem 0 3rem;
   max-width: 820px;
-}
-
-.legal-shell__footer {
-  margin-top: 2rem;
-  padding-top: 2rem;
-  border-top: 1px solid rgba(15, 23, 42, 0.08);
-  font-size: 0.85rem;
-  color: #5f6368;
-}
-
-.legal-shell__copy {
-  margin: 0 0 0.5rem;
-}
-
-.legal-shell__links {
-  margin: 0 0 0.5rem;
-}
-
-.legal-shell__links a {
-  color: #0a0a0c;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.legal-shell__links a:hover {
-  text-decoration: underline;
-}
-
-.legal-shell__muted {
-  margin: 0;
-  font-size: 0.8rem;
-  color: #9aa0a6;
-}
-
-.legal-shell__muted a {
-  color: #4285f4;
-  text-decoration: none;
-}
-
-.legal-shell__muted a:hover {
-  text-decoration: underline;
 }
 
 @media (max-width: 600px) {

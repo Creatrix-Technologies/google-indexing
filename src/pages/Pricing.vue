@@ -177,23 +177,7 @@
         </section>
       </main>
 
-      <footer class="site-footer fade-in delay-3">
-        <div class="footer-inner">
-          <p>
-            &copy; 2026 GoogleIndexing.com —
-            <router-link to="/">Home</router-link>
-          </p>
-          <p class="footer-note">
-            <router-link to="/terms">Terms</router-link>
-            &middot;
-            <router-link to="/privacy">Privacy</router-link>
-            &middot;
-            Powered by <a href="https://nopbooster.com" target="_blank" rel="noopener">Nopbooster</a>.
-            Not affiliated with Google Inc.
-          </p>
-        </div>
-        <PaymentTrustBadges variant="footer-bar" />
-      </footer>
+      <MarketingSiteFooter class="fade-in delay-3" />
     </div>
 
     <button
@@ -210,8 +194,8 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
-import PaymentTrustBadges from '../components/PaymentTrustBadges.vue'
 import ContactForm from '../components/ContactForm.vue'
+import MarketingSiteFooter from '../components/MarketingSiteFooter.vue'
 
 const showScrollTop = ref(false)
 
@@ -762,35 +746,6 @@ main {
   .pricing-contact__form {
     padding: 1.5rem 1.25rem 1.25rem;
   }
-}
-
-.site-footer {
-  padding: 2.5rem 0 2rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.04);
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-}
-
-.footer-inner {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  color: #5f6368;
-  font-size: 0.88rem;
-  text-align: center;
-  position: relative;
-  z-index: 2;
-}
-
-.footer-inner a {
-  color: inherit;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.footer-note {
-  opacity: 0.85;
 }
 
 @keyframes fadeInUp {

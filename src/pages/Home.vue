@@ -364,28 +364,7 @@
         </section>
       </main>
 
-      <!-- Footer -->
-      <footer class="site-footer fade-in delay-5">
-        <div class="footer-inner">
-          <p>
-            &copy; 2026 GoogleIndexing.com &mdash; Powered by
-            <a href="https://nopbooster.com" target="_blank" rel="noopener">Nopbooster</a>
-          </p>
-          <p class="footer-note">
-            <router-link to="/pricing">Pricing</router-link>
-            &middot;
-            <router-link to="/terms">Terms</router-link>
-            &middot;
-            <router-link to="/privacy">Privacy</router-link>
-            &middot;
-            <a href="#contact">Contact</a>
-            &middot;
-            Not affiliated with Google Inc. Contact:
-            <a href="mailto:sales@nopbooster.com">sales@nopbooster.com</a>
-          </p>
-        </div>
-        <PaymentTrustBadges variant="footer-bar" />
-      </footer>
+      <MarketingSiteFooter class="fade-in delay-5" />
     </div>
 
     <button
@@ -402,8 +381,8 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
-import PaymentTrustBadges from '../components/PaymentTrustBadges.vue'
 import ContactForm from '../components/ContactForm.vue'
+import MarketingSiteFooter from '../components/MarketingSiteFooter.vue'
 
 const showScrollTop = ref(false)
 
@@ -690,12 +669,6 @@ main {
 
 .pricing-teaser :deep(a:hover) {
   color: #0a0a0c;
-}
-
-.footer-note :deep(a) {
-  color: inherit;
-  text-decoration: underline;
-  text-underline-offset: 2px;
 }
 
 /* ===== Trust bar ===== */
@@ -1378,40 +1351,6 @@ main {
   transform: translateY(-2px);
 }
 
-/* ===== Footer ===== */
-.site-footer {
-  padding: 3rem 0 2rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.04);
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-}
-
-.footer-inner {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  color: #5f6368;
-  font-size: 0.88rem;
-  position: relative;
-  z-index: 2;
-}
-
-.footer-inner a {
-  color: inherit;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  opacity: 0.8;
-}
-
-.footer-inner a:hover { opacity: 1; }
-
-.footer-note {
-  opacity: 0.75;
-}
-
 /* ===== Animations ===== */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(36px); }
@@ -1484,7 +1423,6 @@ main {
   .hero-subtext { font-size: 1.05rem; }
   .header-links { gap: 0.85rem; }
   .trust-logos { gap: 1.5rem; }
-  .footer-inner { flex-direction: column; text-align: center; }
   .contact-bottom { flex-direction: column; align-items: flex-start; }
   .contact-grid { grid-template-columns: 1fr; }
   .impact-metrics { grid-template-columns: 1fr 1fr; }
