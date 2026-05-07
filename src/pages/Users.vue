@@ -300,7 +300,7 @@ const avatarStyle = (user: User) => {
 // Fetch users
 const fetchUsers = async (page = 1) => {
   try {
-    const res = await api.get('/manage-users/list', { params: { page } })
+    const res = await api.get('/manage-users/list', { params: { pageNo: page } })
     if (res.data?.isSuccess) {
       users.value = res.data.data || []
       pageInfo.value = res.data.pageInfo
