@@ -115,7 +115,7 @@
                     <div class="queue-meta">
                       <span class="queue-meta__count">
                         {{ formatNumber(getProgress(item.websiteId)!.completed) }}
-                        <span class="queue-meta__total">/ {{ formatNumber(getProgress(item.websiteId)!.total) }}</span>
+                        <span class="queue-meta__total">/ {{ formatNumber(liveProgressDenom(getProgress(item.websiteId)!)) }}</span>
                       </span>
                       <span class="queue-meta__pct">{{ getProgressPercent(item.websiteId) }}%</span>
                     </div>
@@ -128,10 +128,13 @@
                 <template v-else-if="item.queued > 0">
                   <div class="queue-stack">
                     <div class="queue-meta">
-                      <span class="queue-meta__count">
-                        {{ formatNumber(item.queueCompleted) }}
-                        <span class="queue-meta__total">/ {{ formatNumber(item.queued) }}</span>
-                      </span>
+                      <div class="queue-meta__primary">
+                        <span class="queue-meta__count">
+                          {{ formatNumber(item.queueCompleted) }}
+                          <span class="queue-meta__total">/ {{ formatNumber(item.maxUrls) }}</span>
+                        </span>
+                        <span class="queue-meta__sub-muted">{{ formatNumber(item.queued) }} queued</span>
+                      </div>
                       <span class="queue-meta__pct queue-meta__pct--muted">{{ historicalPercent(item) }}%</span>
                     </div>
                     <div class="progress-track">
@@ -336,12 +339,16 @@ const listenToProgress = (websiteId: number) => {
 
   source.onmessage = (e) => {
     const data = JSON.parse(e.data)
+    const prev = progressMap.value[websiteId]
+    const rawT = data.Total ?? data.total
+    const rawC = data.Completed ?? data.completed
+    const rawF = data.Failed ?? data.failed
+    let total = typeof rawT === 'number' && !Number.isNaN(rawT) ? rawT : (prev?.total ?? 0)
+    let completed = typeof rawC === 'number' && !Number.isNaN(rawC) ? rawC : (prev?.completed ?? 0)
+    const failed = typeof rawF === 'number' && !Number.isNaN(rawF) ? rawF : (prev?.failed ?? 0)
+    if (completed > total) total = completed
 
-    progressMap.value[websiteId] = {
-      total: data.Total ?? progressMap.value[websiteId]?.total ?? 0,
-      completed: data.Completed ?? progressMap.value[websiteId]?.completed ?? 0,
-      failed: data.Failed ?? progressMap.value[websiteId]?.failed ?? 0
-    }
+    progressMap.value[websiteId] = { total, completed, failed }
 
     if (data.status === 'completed') {
       toast.success('Queue process completed')
@@ -466,6 +473,15 @@ const saveSchedule = async () => {
     if (response.data?.isSuccess) {
       toast.success('Schedule updated')
       showModal.value = false
+      const wid = editingId.value
+      if (wid != null) {
+        delete progressMap.value[wid]
+        const es = eventSources.get(wid)
+        if (es) {
+          es.close()
+          eventSources.delete(wid)
+        }
+      }
       fetchSchedules()
     } else {
       // Handle validation errors from API
@@ -518,10 +534,15 @@ const quotaToneClass = computed(() => {
 
 const getProgress = (websiteId: number) => progressMap.value[websiteId]
 
+const liveProgressDenom = (p: Progress): number =>
+  Math.max(p.total, p.completed)
+
 const getProgressPercent = (websiteId: number) => {
   const p = progressMap.value[websiteId]
-  if (!p || p.total === 0) return 0
-  return Math.round((p.completed / p.total) * 100)
+  if (!p) return 0
+  const denom = liveProgressDenom(p)
+  if (denom <= 0) return 0
+  return Math.min(100, Math.round((p.completed / denom) * 100))
 }
 
 /* ================= DISPLAY-ONLY HELPERS ================= */
@@ -554,8 +575,9 @@ const hasLiveProgress = (websiteId: number): boolean => {
 }
 
 const historicalPercent = (item: Schedule): number => {
-  if (!item.queued || item.queued === 0) return 0
-  return Math.round(((item.queueCompleted || 0) / item.queued) * 100)
+  const cap = item.maxUrls
+  if (!cap || cap <= 0) return 0
+  return Math.min(100, Math.round(((item.queueCompleted || 0) / cap) * 100))
 }
 
 const isItemRunning = (item: Schedule): boolean => {
@@ -905,10 +927,22 @@ onMounted(() => {
 }
 .queue-meta {
   display: flex;
-  align-items: baseline;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 6px;
   font-variant-numeric: tabular-nums;
+}
+.queue-meta__primary {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.queue-meta__sub-muted {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-regular);
+  color: var(--color-text-secondary);
+  line-height: 1.2;
 }
 .queue-meta__count {
   font-size: var(--fs-sm);

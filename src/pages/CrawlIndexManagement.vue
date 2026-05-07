@@ -146,7 +146,14 @@
         </div>
         <div class="bulk-bar__actions">
           <button class="btn-ghost" @click="clearSelection">Clear</button>
-          <button class="btn-primary" @click="queueForCrawl" :disabled="!entitlementsStore.canUsePaidFeatures || entitlementsStore.isChecking" :title="paidActionTitle">
+          <button
+            class="btn-primary"
+            type="button"
+            :class="{ 'btn-primary--blocked': isCrawlBlocked }"
+            :aria-disabled="isCrawlBlocked"
+            @click="queueForCrawl"
+            :title="paidActionTitle || 'Queue selected sites for crawl'"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <polygon points="5 3 19 12 5 21 5 3" />
             </svg>
@@ -262,10 +269,12 @@
                 <div class="action-cell">
                   <button
                     v-if="site.crawlStatus !== 'In Progress'"
+                    type="button"
                     class="action-btn"
+                    :class="{ 'action-btn--blocked': isCrawlBlocked }"
+                    :aria-disabled="isCrawlBlocked"
                     @click="startCrawl(site.id)"
                     :title="paidActionTitle || `Crawl ${site.url}`"
-                    :disabled="!entitlementsStore.canUsePaidFeatures || entitlementsStore.isChecking"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                       <polyline points="23 4 23 10 17 10" />
@@ -329,6 +338,11 @@ const googleConfigStore = useGoogleConfigStore()
 const subscriptionStore = useSubscriptionStore()
 const entitlementsStore = useEntitlementsStore()
 const paidActionTitle = computed(() => entitlementsStore.canUsePaidFeatures ? '' : entitlementsStore.blockingReason)
+
+/** Native disabled + title is unreliable (no pointer, tooltips). Blocked styling + ensurePaidAccess on click. */
+const isCrawlBlocked = computed(
+  () => !entitlementsStore.canUsePaidFeatures || entitlementsStore.isChecking
+)
 
 const ensurePaidAccess = async () => {
   await entitlementsStore.refresh()
@@ -922,10 +936,21 @@ onMounted(async () => {
   stroke: currentColor;
   stroke-width: 1;
 }
-.btn-primary:hover:not(:disabled) {
+.btn-primary:hover:not(:disabled):not(.btn-primary--blocked) {
   background: var(--color-accent-hover);
 }
-.btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary:disabled,
+.btn-primary--blocked {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.btn-primary--blocked:hover {
+  background: var(--color-accent);
+  cursor: not-allowed;
+}
+.btn-primary[aria-disabled="true"] {
+  cursor: not-allowed;
+}
 .btn-primary:focus-visible {
   outline: none;
   box-shadow: var(--ring-accent);
@@ -1159,13 +1184,22 @@ onMounted(async () => {
   stroke-width: 2;
   transition: transform 140ms ease;
 }
-.action-btn:hover:not(:disabled) {
+.action-btn:hover:not(:disabled):not(.action-btn--blocked) {
   background: var(--color-surface-2);
   border-color: var(--neutral-400);
 }
-.action-btn:disabled {
+.action-btn:disabled,
+.action-btn--blocked {
   cursor: not-allowed;
   opacity: 0.45;
+}
+.action-btn--blocked:hover {
+  background: var(--color-card-bg);
+  border-color: var(--color-border-strong);
+  cursor: not-allowed;
+}
+.action-btn[aria-disabled="true"] {
+  cursor: not-allowed;
 }
 .action-btn--view {
   color: var(--color-text);
