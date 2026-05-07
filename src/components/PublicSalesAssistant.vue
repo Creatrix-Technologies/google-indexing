@@ -22,7 +22,18 @@
             <p class="sales-subtitle">{{ contextLabel }}</p>
           </div>
         </div>
-        <button class="sales-close" type="button" aria-label="Close assistant" @click="isOpen = false">×</button>
+        <div class="sales-head__actions">
+          <button
+            v-if="messages.length > 0"
+            type="button"
+            class="sales-clear"
+            aria-label="Clear conversation"
+            @click="clearChat"
+          >
+            Clear chat
+          </button>
+          <button type="button" class="sales-close" aria-label="Close assistant" @click="isOpen = false">×</button>
+        </div>
       </header>
 
       <div class="sales-chips">
@@ -64,14 +75,14 @@
       </form>
 
       <p class="sales-foot">
-        Answers are rule-based on this device. Sales follow-ups use the site contact form (HTTPS POST).
+        Rule-based answers on this device; sales paths use the site contact form (HTTPS POST). Chat resets on refresh — not saved. Clear chat starts over without reloading.
       </p>
     </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 type Role = "user" | "assistant";
@@ -98,8 +109,7 @@ const id = ref(1);
 const isThinking = ref(false);
 const threadEl = ref<HTMLElement | null>(null);
 
-const storageKey = "public-sales-assistant-v4";
-const messages = ref<Message[]>(loadSaved());
+const messages = ref<Message[]>([]);
 
 const PRODUCT = {
   trialRequests: 100,
@@ -141,18 +151,40 @@ const chips = computed(() => {
 });
 
 watch(messages, () => {
-  try {
-    localStorage.setItem(storageKey, JSON.stringify(messages.value.slice(-30)));
-  } catch {
-    // local storage unavailable - non-fatal
-  }
-}, { deep: true });
-
-watch(messages, () => {
   nextTick(() => {
     if (threadEl.value) threadEl.value.scrollTop = threadEl.value.scrollHeight;
   });
 }, { deep: true });
+
+function clearChat() {
+  messages.value = [];
+  id.value = 1;
+  input.value = "";
+  isThinking.value = false;
+}
+
+function resetAssistantSession() {
+  clearChat();
+  isOpen.value = false;
+}
+
+function handlePageShow(ev: PageTransitionEvent) {
+  if (ev.persisted) {
+    resetAssistantSession();
+  }
+}
+
+onMounted(() => {
+  const nav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+  if (nav?.type === "reload") {
+    resetAssistantSession();
+  }
+  window.addEventListener("pageshow", handlePageShow);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("pageshow", handlePageShow);
+});
 
 function openPanel() {
   isOpen.value = true;
@@ -545,17 +577,6 @@ function respond(q: string): Omit<Message, "id" | "role"> {
 function matches(q: string, keys: string[]): boolean {
   return keys.some((k) => q.includes(k));
 }
-
-function loadSaved(): Message[] {
-  try {
-    const raw = localStorage.getItem(storageKey);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as Message[];
-    return Array.isArray(parsed) ? parsed.slice(-30) : [];
-  } catch {
-    return [];
-  }
-}
 </script>
 
 <style scoped>
@@ -609,6 +630,26 @@ function loadSaved(): Message[] {
   justify-content: space-between;
   align-items: flex-start;
   gap: 8px;
+}
+.sales-head__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.sales-clear {
+  border: 0;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+.sales-clear:hover {
+  color: #111827;
+  background: #f3f4f6;
 }
 .sales-head__main {
   display: flex;

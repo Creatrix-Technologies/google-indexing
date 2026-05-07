@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useMenuStore } from "../Store/menu";
 import { useSubscriptionStore } from "../Shared/subscription";
@@ -95,6 +95,32 @@ watch(
   },
   { deep: true }
 );
+
+function clearPersistedAssistantState() {
+  messages.value = [];
+  nextId.value = 1;
+  inputValue.value = "";
+  isOpen.value = false;
+  try {
+    localStorage.removeItem(storageKey);
+  } catch {
+    /* ignore */
+  }
+}
+
+function handlePageShow(ev: PageTransitionEvent) {
+  if (ev.persisted) {
+    clearPersistedAssistantState();
+  }
+}
+
+onMounted(() => {
+  window.addEventListener("pageshow", handlePageShow);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("pageshow", handlePageShow);
+});
 
 function openAssistant() {
   isOpen.value = true;

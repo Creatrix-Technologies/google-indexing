@@ -21,7 +21,7 @@ import DefaultLayout from "./layout/DefaultLayout.vue";
 import AuthLayout from "./layout/AuthLayout.vue";
 
 // Axios
-import api from './api';
+import api, { refreshApi } from './api';
 
 // Pinia
 import { createPinia } from 'pinia';
@@ -256,6 +256,11 @@ const initApp = async () => {
 
   if (authStore.isLoggedIn) {
     try {
+      try {
+        await refreshApi.post('/refresh-token');
+      } catch {
+        /* access cookie may still be valid */
+      }
       await api.get('/auth-check');
 
       await menuStore.fetchMenus();

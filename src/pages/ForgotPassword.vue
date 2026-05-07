@@ -11,17 +11,19 @@
         Back to login
       </router-link>
 
-      <div class="auth-card__icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="4" width="20" height="16" rx="2"/>
-          <polyline points="2 4 12 13 22 4"/>
-        </svg>
-      </div>
+      <div class="auth-card__hero">
+        <div class="auth-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 7.5h16c.83 0 1.5.67 1.5 1.5v9c0 .83-.67 1.5-1.5 1.5H4A1.5 1.5 0 0 1 2.5 18V9c0-.83.67-1.5 1.5-1.5Z" />
+            <path d="m2.5 9 7.35 5.51a1.5 1.5 0 0 0 1.8 0L21.5 9" />
+          </svg>
+        </div>
 
-      <header class="auth-card__head">
-        <h2 class="title">Forgot password?</h2>
-        <p class="subtitle">Enter your email and we'll send you a reset link.</p>
-      </header>
+        <header class="auth-card__head">
+          <h2 class="title">Forgot password?</h2>
+          <p class="subtitle">Enter your email and we'll send you a reset link.</p>
+        </header>
+      </div>
 
       <template v-if="!successMessage">
         <div class="form-group">
@@ -174,6 +176,15 @@ const handleSubmit = async () => {
 .back-link svg { width: 14px; height: 14px; }
 .back-link:hover { color: #0a0a0c; }
 
+/* ===== Hero (icon + title block, centered) ===== */
+.auth-card__hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+}
+
 /* ===== Icon ===== */
 .auth-card__icon {
   width: 46px;
@@ -186,11 +197,20 @@ const handleSubmit = async () => {
   justify-content: center;
   margin-bottom: 1.25rem;
   color: #4285F4;
+  flex-shrink: 0;
 }
-.auth-card__icon svg { width: 22px; height: 22px; }
+.auth-card__icon svg {
+  display: block;
+  width: 22px;
+  height: 22px;
+}
 
 /* ===== Header ===== */
-.auth-card__head { margin-bottom: 1.75rem; }
+.auth-card__head {
+  margin-bottom: 1.75rem;
+  width: 100%;
+  text-align: center;
+}
 
 .title {
   font-family: 'Syne', 'Inter', sans-serif;

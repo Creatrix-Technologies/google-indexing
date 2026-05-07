@@ -139,6 +139,13 @@ const pagedPaymentHistory = computed(() => {
   return sortedPaymentHistory.value.slice(start, start + historyPageSize.value)
 })
 
+const paymentHistoryRowKey = (payment: Payment) => {
+  const inv = payment.invoiceId?.trim()
+  if (inv) return `inv:${inv}`
+  const iso = payment.dateIso || payment.date || ''
+  return [iso, payment.plan, payment.amount, payment.status].join('|')
+}
+
 const historyStart = computed(() =>
   sortedPaymentHistory.value.length === 0 ? 0 : (historyPage.value - 1) * historyPageSize.value + 1
 )
@@ -871,7 +878,7 @@ onMounted(async () => {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(payment, index) in pagedPaymentHistory" :key="index">
+              <tr v-for="payment in pagedPaymentHistory" :key="paymentHistoryRowKey(payment)">
                 <td class="date-cell">{{ formatPaymentDate(payment.dateIso || payment.date) }}</td>
                 <td class="plan-cell">{{ payment.plan }}</td>
                 <td class="invoice-cell">{{ payment.invoiceId || '-' }}</td>
