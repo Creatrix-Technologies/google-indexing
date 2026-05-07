@@ -178,7 +178,7 @@
         <div class="pagination-controls">
           <button
             class="pagination-btn"
-            :disabled="!pageInfo.hasPreviousPage"
+            :disabled="usersLoading || !pageInfo.hasPreviousPage"
             @click="previousPage"
             aria-label="Previous page"
           >
@@ -194,7 +194,7 @@
 
           <button
             class="pagination-btn"
-            :disabled="!pageInfo.hasNextPage"
+            :disabled="usersLoading || !pageInfo.hasNextPage"
             @click="nextPage"
             aria-label="Next page"
           >
@@ -242,6 +242,8 @@ interface PageInfo {
 
 const users = ref<User[]>([])
 const roles = ref<string[]>([])
+const usersLoading = ref(false)
+let usersFetchSeq = 0
 
 const pageInfo = ref<PageInfo>({
   page: 1,
@@ -299,17 +301,30 @@ const avatarStyle = (user: User) => {
 
 // Fetch users
 const fetchUsers = async (page = 1) => {
+  const seq = ++usersFetchSeq
+  usersLoading.value = true
   try {
     const res = await api.get('/manage-users/list', { params: { pageNo: page } })
+    if (seq !== usersFetchSeq) return
     if (res.data?.isSuccess) {
       users.value = res.data.data || []
-      pageInfo.value = res.data.pageInfo
+      const pi = res.data.pageInfo
+      pageInfo.value = {
+        page: Number(pi?.page) || 1,
+        pageSize: Number(pi?.pageSize) || 10,
+        totalCount: Number(pi?.totalCount) || 0,
+        hasNextPage: Boolean(pi?.hasNextPage),
+        hasPreviousPage: Boolean(pi?.hasPreviousPage),
+      }
     } else {
       toast.error('Failed to load users!')
     }
   } catch (err) {
+    if (seq !== usersFetchSeq) return
     console.error('Error fetching users', err)
     toast.error('Error fetching users!')
+  } finally {
+    if (seq === usersFetchSeq) usersLoading.value = false
   }
 }
 
@@ -376,7 +391,7 @@ onMounted(() => {
 })
 
 // Refetch when page changes
-watch(() => pageInfo.value.page, fetchUsers)
+watch(() => pageInfo.value.page, (p) => void fetchUsers(p))
 </script>
 
 <style scoped>

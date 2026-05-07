@@ -291,7 +291,7 @@
       <div class="table-footer">
         <div class="page-size-wrapper">
           <label for="pageSize">Rows</label>
-          <select id="pageSize" v-model.number="pageInfo.pageSize">
+          <select id="pageSize" v-model.number="pageInfo.pageSize" :disabled="urlsFetching" @change="onPageSizeChange">
             <option :value="10">10</option>
             <option :value="25">25</option>
             <option :value="50">50</option>
@@ -305,17 +305,17 @@
         </span>
 
         <div class="pagination-wrapper">
-          <button class="pagination-btn" :disabled="!pageInfo.hasPreviousPage" @click="firstPage">
+          <button class="pagination-btn" :disabled="urlsFetching || !pageInfo.hasPreviousPage" @click="firstPage">
             First
           </button>
-          <button class="pagination-btn" :disabled="!pageInfo.hasPreviousPage" @click="previousPage">
+          <button class="pagination-btn" :disabled="urlsFetching || !pageInfo.hasPreviousPage" @click="previousPage">
             Prev
           </button>
           <span class="pagination-info">Page {{ pageInfo.page }} / {{ totalPages }}</span>
-          <button class="pagination-btn" :disabled="!pageInfo.hasNextPage" @click="nextPage">
+          <button class="pagination-btn" :disabled="urlsFetching || !pageInfo.hasNextPage" @click="nextPage">
             Next
           </button>
-          <button class="pagination-btn" :disabled="!pageInfo.hasNextPage" @click="lastPage">
+          <button class="pagination-btn" :disabled="urlsFetching || !pageInfo.hasNextPage" @click="lastPage">
             Last
           </button>
         </div>
@@ -463,8 +463,8 @@ const selectedFilter = ref<string>("ALL");
   watch(searchQuery, () => {
   clearTimeout(debounceTimer)
   debounceTimer = setTimeout(() => {
-    pageInfo.value.page = 1
-    fetchCrawlDetails()
+    if (pageInfo.value.page !== 1) pageInfo.value.page = 1
+    else void fetchCrawlDetails()
   }, 500)
 })
 //   const fetchCrawlDetails = async () => {
@@ -485,8 +485,8 @@ const selectedFilter = ref<string>("ALL");
 
 const applyFilter = (filter: string | null) => {
   selectedFilter.value = filter ?? "ALL"
-  pageInfo.value.page = 1
-  fetchCrawlDetails()
+  if (pageInfo.value.page !== 1) pageInfo.value.page = 1
+  else void fetchCrawlDetails()
 }
 ///google sync
 
@@ -761,6 +761,9 @@ const urls = ref<CrawledUrl[]>([])
 const selectedIds = ref<Set<number>>(new Set())
 const siteInfo = ref<SiteInfo | null>(null)
 const isLoading = ref(false)
+/** True while URL grid request is in flight — avoids overlapping pagination races. */
+const urlsFetching = ref(false)
+let crawlDetailsFetchSeq = 0
 
 const pageInfo = ref<PageInfo>({
   page: 1,
@@ -770,11 +773,10 @@ const pageInfo = ref<PageInfo>({
   hasPreviousPage: false
 })
 
-
-watch(() => pageInfo.value.pageSize, () => {
+const onPageSizeChange = () => {
   pageInfo.value.page = 1
-  fetchCrawlDetails()
-});
+}
+
 
 const counts = ref<CrawlCount>({
   totalCount: 0,
@@ -790,29 +792,45 @@ const counts = ref<CrawlCount>({
 
 /* API */
 const fetchCrawlDetails = async () => {
-  const res = await api.get(
-    `/crawl/${siteId}/details`,
-    {
-      params: {
-      SearchBy: searchQuery.value,     // ✅ match backend
-      Filter: selectedFilter.value === "ALL" ? null : selectedFilter.value,    // ✅ match backend
-      SortBy: null,                   // or your sorting value
-      PageNo: pageInfo.value.page,
-      PageSize: pageInfo.value.pageSize
-    }
-    }
+  const seq = ++crawlDetailsFetchSeq
+  urlsFetching.value = true
+  try {
+    const res = await api.get(
+      `/crawl/${siteId}/details`,
+      {
+        params: {
+          SearchBy: searchQuery.value,
+          Filter: selectedFilter.value === "ALL" ? null : selectedFilter.value,
+          SortBy: null,
+          PageNo: pageInfo.value.page,
+          PageSize: pageInfo.value.pageSize
+        }
+      }
+    )
+    if (seq !== crawlDetailsFetchSeq) return
 
-  )
-  urls.value = res.data.data
+    urls.value = res.data.data
 
-  const p = res.data.pageInfo
-
-  pageInfo.value.page = p.page
-  pageInfo.value.pageSize = p.pageSize
-  pageInfo.value.totalCount = p.totalCount
-  pageInfo.value.hasNextPage = p.hasNextPage
-  pageInfo.value.hasPreviousPage = p.hasPreviousPage
+    const p = res.data.pageInfo
+    pageInfo.value.page = Number(p?.page) || 1
+    pageInfo.value.pageSize = Number(p?.pageSize) || 10
+    pageInfo.value.totalCount = Number(p?.totalCount) || 0
+    pageInfo.value.hasNextPage = Boolean(p?.hasNextPage)
+    pageInfo.value.hasPreviousPage = Boolean(p?.hasPreviousPage)
+  } catch (err) {
+    if (seq !== crawlDetailsFetchSeq) return
+    console.error(err)
+  } finally {
+    if (seq === crawlDetailsFetchSeq) urlsFetching.value = false
+  }
 }
+
+watch(
+  [() => pageInfo.value.page, () => pageInfo.value.pageSize],
+  () => {
+    void fetchCrawlDetails()
+  }
+)
 
 const fetchCrawlCounts = async () => {
   const res = await api.get(`/crawl/${siteId}/details-count`)
@@ -1159,7 +1177,6 @@ onBeforeUnmount(() => {
   document.removeEventListener("click", closeRowDropdown)
 })
 
-watch(() => pageInfo.value.page, fetchCrawlDetails)
 </script>
 
  <style scoped>
