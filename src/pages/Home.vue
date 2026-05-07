@@ -374,6 +374,10 @@
           <p class="footer-note">
             <router-link to="/pricing">Pricing</router-link>
             &middot;
+            <router-link to="/terms">Terms</router-link>
+            &middot;
+            <router-link to="/privacy">Privacy</router-link>
+            &middot;
             <a href="#contact">Contact</a>
             &middot;
             Not affiliated with Google Inc. Contact:

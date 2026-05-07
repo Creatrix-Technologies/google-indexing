@@ -68,6 +68,28 @@ const routes = [
       robots: 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1'
     }
   },
+  {
+    path: "/terms",
+    component: () => import("./pages/TermsOfService.vue"),
+    meta: {
+      public: true,
+      title: "Terms of Service | GoogleIndexing.com",
+      description: "Terms of Service for GoogleIndexing.com indexing automation and subscription.",
+      canonical: `${SITE_URL}/terms`,
+      robots: "index,follow,max-snippet:-1"
+    }
+  },
+  {
+    path: "/privacy",
+    component: () => import("./pages/PrivacyPolicy.vue"),
+    meta: {
+      public: true,
+      title: "Privacy Policy | GoogleIndexing.com",
+      description: "Privacy Policy describing how GoogleIndexing.com collects and uses personal data.",
+      canonical: `${SITE_URL}/privacy`,
+      robots: "index,follow,max-snippet:-1"
+    }
+  },
 
   {
     path: "/app",
@@ -97,11 +119,6 @@ const routes = [
   { path: "/google-callback", component: GoogleCallback, meta: { robots: 'noindex,nofollow' } },
 
   {
-    path: "/:pathMatch(.*)*",
-    component: AuthLayout,
-    children: [{ path: "", component: () => import('./pages/NotFound.vue'), meta: { public: true, robots: 'noindex,nofollow' } }],
-  },
-  {
     path: "/confirm-email",
     component: AuthLayout,
     children: [
@@ -123,6 +140,11 @@ const routes = [
     name: "ResetPassword",
     component: () => import("./pages/ResetPassword.vue"),
     meta: { public: true, robots: 'noindex,nofollow' }
+  },
+  {
+    path: "/:pathMatch(.*)*",
+    component: AuthLayout,
+    children: [{ path: "", component: () => import("./pages/NotFound.vue"), meta: { public: true, robots: 'noindex,nofollow' } }]
   }
 ];
 
@@ -141,6 +163,8 @@ const router = createRouter({
 const PUBLIC_PATHS = [
   "/",
   "/pricing",
+  "/terms",
+  "/privacy",
   "/login",
   "/signup",
   "/verify-required",

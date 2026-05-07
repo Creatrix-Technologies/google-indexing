@@ -184,6 +184,10 @@
             <router-link to="/">Home</router-link>
           </p>
           <p class="footer-note">
+            <router-link to="/terms">Terms</router-link>
+            &middot;
+            <router-link to="/privacy">Privacy</router-link>
+            &middot;
             Powered by <a href="https://nopbooster.com" target="_blank" rel="noopener">Nopbooster</a>.
             Not affiliated with Google Inc.
           </p>

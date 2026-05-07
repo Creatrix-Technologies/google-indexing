@@ -136,8 +136,8 @@
           <!-- Terms -->
           <div class="terms">
             By creating an account, you agree to our
-            <a href="#" @click.prevent>Terms of Service</a> and
-            <a href="#" @click.prevent>Privacy Policy</a>.
+            <router-link to="/terms">Terms of Service</router-link> and
+            <router-link to="/privacy">Privacy Policy</router-link>.
           </div>
 
           <button
@@ -602,11 +602,13 @@ const handleGoogleSignup = () => {
   margin: 0.5rem 0 1.25rem;
   line-height: 1.5;
 }
-.terms a {
+.terms :deep(a) {
   color: #4285F4;
   text-decoration: none;
 }
-.terms a:hover { text-decoration: underline; }
+.terms :deep(a:hover) {
+  text-decoration: underline;
+}
 
 /* ===== Buttons ===== */
 .btn-primary {
