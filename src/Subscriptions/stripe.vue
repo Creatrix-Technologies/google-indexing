@@ -241,12 +241,20 @@ const fetchSubscriptionLogs = async () => {
 }
 
 /* ---------------- FETCH SAVED CARD ---------------- */
-const fetchSavedCard = async () => {
+const fetchSavedCard = async (retries = 0) => {
   try {
     const res = await api.get('/payments/payment-method')
     savedCard.value = res.data?.data || null
   } catch {
     savedCard.value = null
+  }
+
+  // Retry logic: if no card found and we have retries left, wait and retry
+  // This handles the race condition after first subscription where backend
+  // needs time to attach the payment method to the customer
+  if (!savedCard.value && retries > 0) {
+    await new Promise(r => setTimeout(r, 1000))
+    await fetchSavedCard(retries - 1)
   }
 }
 
@@ -412,10 +420,12 @@ const confirmSubscription = async () => {
         // The webhook will eventually backfill the row.
       }
 
+      // Retry up to 3 times with 1s delay to handle race condition
+      // where backend hasn't attached payment method yet
       await Promise.all([
         fetchPlans(),
         fetchSubscriptionLogs(),
-        fetchSavedCard(),
+        fetchSavedCard(3),
         subscriptionStore.checkSubscription()
       ])
     } else if (result.error) {
@@ -477,6 +487,17 @@ const confirmUpdateCard = async () => {
 
 /* ---------------- REMOVE CARD ---------------- */
 const removeSavedCard = async () => {
+  // Prevent removal if there's an active subscription (Stripe requires a payment method)
+  if (currentPlan.value) {
+    await Swal.fire({
+      title: 'Cannot remove card',
+      text: 'Please cancel your active subscription before removing your payment method.',
+      icon: 'info',
+      confirmButtonText: 'Got it',
+    })
+    return
+  }
+
   const result = await Swal.fire({
     title: 'Remove saved card?',
     text: 'You will need to enter card details on your next subscription.',
@@ -492,9 +513,13 @@ const removeSavedCard = async () => {
     toast.success('Saved card removed.')
     await fetchSavedCard()
   } catch (err: any) {
-    toast.error(
-      err.response?.data?.error?.description || 'Failed to remove card'
-    )
+    const errorMsg = err.response?.data?.error?.description || err.message || 'Failed to remove card'
+    // Show more helpful error for subscription-related failures
+    if (errorMsg.toLowerCase().includes('subscription') || errorMsg.toLowerCase().includes('attached')) {
+      toast.error('Cannot remove card: still attached to an active subscription. Please cancel your subscription first.')
+    } else {
+      toast.error(errorMsg)
+    }
   }
 }
 
