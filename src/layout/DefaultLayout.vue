@@ -29,10 +29,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
+import { getCurrentInstance, ref, onMounted, onUnmounted } from "vue";
 import Sidebar from "../components/Sidebar.vue";
 import Header from "../components/Header.vue";
 import FrontendAssistant from "../components/FrontendAssistant.vue";
+
+const inst = getCurrentInstance();
+if (inst) {
+  const root = inst.appContext.app;
+  const marked = root as unknown as { __registeredHighcharts?: boolean };
+  if (!marked.__registeredHighcharts) {
+    const { default: HighchartsVue } = await import("highcharts-vue");
+    root.use(HighchartsVue);
+    marked.__registeredHighcharts = true;
+  }
+}
 
 /** Sidebar overlay drawer below this width (split-screen half desktops ~960–1024px). Keep CSS media queries in sync. */
 const DRAWER_BREAKPOINT_PX = 1024;

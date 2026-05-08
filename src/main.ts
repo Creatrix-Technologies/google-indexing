@@ -8,18 +8,6 @@ import "./style.css";
 import Toast, { POSITION } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
 
-// Pages
-import Login from "./pages/Login.vue";
-import Signup from "./pages/Signup.vue";
-import VerifyRequired from "./pages/VerifyRequired.vue";
-import Home from "./pages/Home.vue";
-import Pricing from "./pages/Pricing.vue";
-import GoogleCallback from './pages/GoogleCallback.vue';
-
-// Layouts
-import DefaultLayout from "./layout/DefaultLayout.vue";
-import AuthLayout from "./layout/AuthLayout.vue";
-
 // Axios
 import api, { refreshApi } from './api';
 
@@ -34,11 +22,8 @@ import { useMenuStore } from './Store/menu';
 // Dynamic routes
 import { buildRoutes } from './Router/dynamicRoutes';
 
-import HighchartsVue from 'highcharts-vue'
 import { useUserLimitStore } from './Shared/userLimit'
 import { enhanceSalesMailtoLinks } from './utils/enhanceSalesMailto'
-
-import ConfirmEmail from "./pages/ConfirmEmail.vue";
 /* ---------------- ROUTES ---------------- */
 
 const SITE_URL = 'https://googleindexing.com';
@@ -49,7 +34,7 @@ const DEFAULT_DESCRIPTION =
 const routes = [
   {
     path: "/",
-    component: Home,
+    component: () => import("./pages/Home.vue"),
     meta: {
       public: true,
       title: DEFAULT_TITLE,
@@ -60,7 +45,7 @@ const routes = [
   },
   {
     path: "/pricing",
-    component: Pricing,
+    component: () => import("./pages/Pricing.vue"),
     meta: {
       public: true,
       title: 'Pricing | GoogleIndexing.com',
@@ -95,37 +80,37 @@ const routes = [
   {
     path: "/app",
     redirect: "/dashboard",
-    component: DefaultLayout,
+    component: () => import("./layout/DefaultLayout.vue"),
     name: "DefaultLayout",
     children: [] // filled dynamically via addRoute
   },
 
   {
     path: "/login",
-    component: AuthLayout,
-    children: [{ path: "", component: Login, meta: { public: true, robots: 'noindex,nofollow' } }],
+    component: () => import("./layout/AuthLayout.vue"),
+    children: [{ path: "", component: () => import("./pages/Login.vue"), meta: { public: true, robots: 'noindex,nofollow' } }],
   },
 
   {
     path: "/signup",
-    component: Signup,
+    component: () => import("./pages/Signup.vue"),
     meta: { public: true, robots: 'noindex,nofollow' }
   },
   {
     path: "/verify-required",
-    component: VerifyRequired,
+    component: () => import("./pages/VerifyRequired.vue"),
     meta: { public: true, robots: 'noindex,nofollow' }
   },
 
-  { path: "/google-callback", component: GoogleCallback, meta: { robots: 'noindex,nofollow' } },
+  { path: "/google-callback", component: () => import('./pages/GoogleCallback.vue'), meta: { robots: 'noindex,nofollow' } },
 
   {
     path: "/confirm-email",
-    component: AuthLayout,
+    component: () => import("./layout/AuthLayout.vue"),
     children: [
       {
         path: "",
-        component: ConfirmEmail,
+        component: () => import("./pages/ConfirmEmail.vue"),
         meta: { public: true, robots: 'noindex,nofollow' } // 🔥 IMPORTANT
       }
     ]
@@ -144,7 +129,7 @@ const routes = [
   },
   {
     path: "/:pathMatch(.*)*",
-    component: AuthLayout,
+    component: () => import("./layout/AuthLayout.vue"),
     children: [{ path: "", component: () => import("./pages/NotFound.vue"), meta: { public: true, robots: 'noindex,nofollow' } }]
   }
 ];
@@ -236,8 +221,6 @@ router.beforeEach(async (to, _, next) => {
     } catch {
       return next({ path: "/login", query: { redirect: to.fullPath } });
     }
-
-  next();
 });
 
 /* ---------------- APP INIT ---------------- */
@@ -247,35 +230,59 @@ pinia.use(piniaPluginPersistedstate);
 
 const app = createApp(App);
 app.use(pinia);
-app.use(HighchartsVue);
 app.use(Toast, { position: POSITION.BOTTOM_RIGHT, timeout: 3000 });
+
+function registerDynamicRoutesFromMenus(menus: Parameters<typeof buildRoutes>[0]) {
+  const dynamicRoutes = buildRoutes(menus);
+  for (const r of dynamicRoutes) {
+    const name = r.name != null ? String(r.name) : "";
+    if (name && !router.hasRoute(name)) {
+      router.addRoute("DefaultLayout", r);
+    }
+  }
+}
+
+async function reconcileAuthSession() {
+  const authStore = useAuthStore();
+  const menuStore = useMenuStore();
+  try {
+    try {
+      await refreshApi.post('/refresh-token');
+    } catch {
+      /* access cookie may still be valid */
+    }
+    await api.get('/auth-check');
+
+    await menuStore.fetchMenus();
+
+    registerDynamicRoutesFromMenus(menuStore.menus);
+  } catch {
+    authStore.clearUser();
+    menuStore.clearMenus();
+    if (!PUBLIC_PATHS.includes(window.location.pathname)) {
+      router.push('/login');
+    }
+  }
+}
 
 const initApp = async () => {
   const authStore = useAuthStore();
   const menuStore = useMenuStore();
 
-  if (authStore.isLoggedIn) {
-    try {
-      try {
-        await refreshApi.post('/refresh-token');
-      } catch {
-        /* access cookie may still be valid */
-      }
-      await api.get('/auth-check');
-
-      await menuStore.fetchMenus();
-
-      const dynamicRoutes = buildRoutes(menuStore.menus);
-      dynamicRoutes.forEach(r => router.addRoute("DefaultLayout", r));
-
-    } catch {
-      authStore.clearUser();
-      menuStore.clearMenus();
-      if (!PUBLIC_PATHS.includes(window.location.pathname)) {
-        router.push('/login');
-      }
-    }
+  if (!authStore.isLoggedIn) {
+    return;
   }
+
+  const path = window.location.pathname;
+  const onPublicMarketing = PUBLIC_PATHS.includes(path);
+
+  if (onPublicMarketing && menuStore.loaded && menuStore.menus.length > 0) {
+    registerDynamicRoutesFromMenus(menuStore.menus);
+    void reconcileAuthSession();
+    return;
+  }
+
+  await reconcileAuthSession();
 };
 
 
