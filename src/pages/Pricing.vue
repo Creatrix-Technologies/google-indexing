@@ -803,6 +803,27 @@ main {
 }
 
 @media (max-width: 1024px) {
+  .site-header {
+    min-height: auto;
+    padding-top: 0.75rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.65rem;
+  }
+  .header-links {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 2px 0 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .header-links::-webkit-scrollbar {
+    display: none;
+  }
+
   .pricing-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -821,8 +842,31 @@ main {
     padding: 0 1.25rem;
   }
 
+  .site-header {
+    min-height: auto;
+    padding-top: 0.75rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+  }
+
+  .logo {
+    font-size: 1.2rem;
+  }
+
   .header-links {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 2px 0 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
     gap: 0.85rem;
+  }
+  .header-links::-webkit-scrollbar {
+    display: none;
   }
 
   .pricing-grid {

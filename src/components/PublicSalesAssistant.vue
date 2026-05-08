@@ -32,7 +32,7 @@
           >
             Clear chat
           </button>
-          <button type="button" class="sales-close" aria-label="Close assistant" @click="isOpen = false">×</button>
+          <button type="button" class="sales-close" aria-label="Close assistant" @click="closePanel">×</button>
         </div>
       </header>
 
@@ -165,7 +165,7 @@ function clearChat() {
 
 function resetAssistantSession() {
   clearChat();
-  isOpen.value = false;
+  closePanel();
 }
 
 function handlePageShow(ev: PageTransitionEvent) {
@@ -220,6 +220,10 @@ function openPanel() {
       ]
     });
   }
+}
+
+function closePanel() {
+  isOpen.value = false;
 }
 
 function ask(raw: string) {
@@ -282,7 +286,7 @@ function navigateTo(to: string) {
 function runAction(a: Action) {
   if (a.to) {
     navigateTo(a.to);
-    isOpen.value = false;
+    closePanel();
     return;
   }
   if (a.href) window.open(a.href, "_blank", "noopener");
@@ -621,6 +625,7 @@ function matches(q: string, keys: string[]): boolean {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  touch-action: pan-y;
 }
 
 .sales-head {
@@ -712,6 +717,8 @@ function matches(q: string, keys: string[]): boolean {
   flex: 1;
   min-height: 0;
   overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 12px;
   display: flex;
   flex-direction: column;

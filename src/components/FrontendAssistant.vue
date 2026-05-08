@@ -16,7 +16,18 @@
           <p class="assistant-title">Assistant</p>
           <p class="assistant-subtitle">{{ contextSummary }}</p>
         </div>
-        <button class="assistant-close" type="button" aria-label="Close assistant" @click="isOpen = false">×</button>
+        <div class="assistant-head-actions">
+          <button
+            v-if="messages.length > 0"
+            class="assistant-clear"
+            type="button"
+            aria-label="Clear chat"
+            @click="clearPersistedAssistantState"
+          >
+            Clear chat
+          </button>
+          <button class="assistant-close" type="button" aria-label="Close assistant" @click="closeAssistant">×</button>
+        </div>
       </header>
 
       <div class="assistant-quick">
@@ -72,7 +83,7 @@ const googleConfigStore = useGoogleConfigStore();
 const isOpen = ref(false);
 const inputValue = ref("");
 const nextId = ref(1);
-const storageKey = "frontend-assistant-history-v1";
+const storageKey = "frontend-assistant-history-v2";
 
 const messages = ref<ChatMessage[]>(loadHistory());
 
@@ -91,7 +102,7 @@ const contextSummary = computed(() => {
 watch(
   messages,
   () => {
-    localStorage.setItem(storageKey, JSON.stringify(messages.value.slice(-30)));
+    sessionStorage.setItem(storageKey, JSON.stringify(messages.value.slice(-30)));
   },
   { deep: true }
 );
@@ -100,9 +111,9 @@ function clearPersistedAssistantState() {
   messages.value = [];
   nextId.value = 1;
   inputValue.value = "";
-  isOpen.value = false;
+  closeAssistant();
   try {
-    localStorage.removeItem(storageKey);
+    sessionStorage.removeItem(storageKey);
   } catch {
     /* ignore */
   }
@@ -115,6 +126,10 @@ function handlePageShow(ev: PageTransitionEvent) {
 }
 
 onMounted(() => {
+  const nav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+  if (nav?.type === "reload") {
+    clearPersistedAssistantState();
+  }
   window.addEventListener("pageshow", handlePageShow);
 });
 
@@ -129,6 +144,10 @@ function openAssistant() {
       `You are on ${contextSummary.value}. Ask for steps and I will use your current page context.`
     );
   }
+}
+
+function closeAssistant() {
+  isOpen.value = false;
 }
 
 function submitQuestion(raw: string) {
@@ -222,7 +241,7 @@ function cleanLabel(v: string) {
 
 function loadHistory(): ChatMessage[] {
   try {
-    const raw = localStorage.getItem(storageKey);
+    const raw = sessionStorage.getItem(storageKey);
     if (!raw) return [];
     const parsed = JSON.parse(raw) as ChatMessage[];
     if (!Array.isArray(parsed)) return [];
@@ -263,6 +282,7 @@ function loadHistory(): ChatMessage[] {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  touch-action: pan-y;
 }
 
 .assistant-head {
@@ -272,6 +292,28 @@ function loadHistory(): ChatMessage[] {
   align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
+}
+
+.assistant-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.assistant-clear {
+  border: 0;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.assistant-clear:hover {
+  color: var(--color-text);
+  background: var(--color-surface-2);
 }
 
 .assistant-title {
@@ -318,6 +360,8 @@ function loadHistory(): ChatMessage[] {
   flex: 1;
   min-height: 0;
   overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 10px;
   display: flex;
   flex-direction: column;
