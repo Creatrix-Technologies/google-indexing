@@ -255,8 +255,10 @@
 
     togglingMode.value = true
     try {
+      // 0 = Live, 1 = Sandbox (matches C# enum values)
+      const modeValue = mode === 'Live' ? 0 : 1
       await api.post('/settings/toggle-stripe-mode', {
-        mode: mode  // Send as string: "Live" or "Sandbox"
+        mode: modeValue
       })
 
       activeMode.value = mode
