@@ -217,7 +217,8 @@
       const data = res.data?.data || res.data
 
       if (data) {
-        activeMode.value = data.activeMode || 'Sandbox'
+        // Use activeModeName (string: "Live" or "Sandbox") if available, fallback to activeMode
+        activeMode.value = data.activeModeName || data.activeMode?.toString() || 'Sandbox'
 
         // Populate Sandbox keys
         if (data.sandbox) {
