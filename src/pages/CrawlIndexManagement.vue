@@ -597,12 +597,24 @@ const siteInitial = (site: Site) => {
   return stripped.charAt(0).toUpperCase() || '?'
 }
 
-/** e.g. Sep 18, 2025 - 2:45 PM */
+/** e.g. Sep 18, 2025 - 2:45 PM or just date if time is midnight */
 const formatLastCrawlDate = (date?: Date) => {
   if (!date) return 'Never'
   const month = date.toLocaleString('en-US', { month: 'short' })
   const day = date.getDate()
   const year = date.getFullYear()
+
+  // Check if time is exactly midnight (00:00:00) - indicates date-only from backend
+  const isMidnight = date.getHours() === 0 && date.getMinutes() === 0 && date.getSeconds() === 0
+
+  if (isMidnight) {
+    // Check if it's today
+    const today = new Date()
+    const isToday = date.toDateString() === today.toDateString()
+    if (isToday) return `${month} ${day}, ${year} - Today`
+    return `${month} ${day}, ${year}`
+  }
+
   const time = date.toLocaleString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
