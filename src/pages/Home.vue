@@ -5,7 +5,7 @@
 
     <div class="container">
       <!-- Header -->
-      <header class="site-header fade-in">
+      <header class="site-header fade-in-motion">
         <router-link to="/" class="logo" aria-label="GoogleIndexing.com home">GoogleIndexing</router-link>
         <nav class="header-links">
           <a href="#features" class="hide-below-tablet">Features</a>
@@ -19,25 +19,26 @@
 
       <main>
         <!-- Hero -->
-        <section class="hero fade-in">
+        <!-- Hero: no opacity-hiding — fixes Lighthouse NO_LCP / LCP on SPA -->
+        <section class="hero">
           <div class="badge">INDEXING API AUTOMATION</div>
           <h1>Google <span class="accent">SEO Indexing</span><br>Made Simple</h1>
-          <p class="hero-subtext fade-in delay-1">
+          <p class="hero-subtext fade-in-motion delay-1">
             Crawl URLs and help Google discover updates faster through official indexing signals.<br>
             Monitor pages, improve SEO, and stay discoverable — all from one dashboard.
           </p>
-          <div class="hero-actions fade-in delay-2">
+          <div class="hero-actions fade-in-motion delay-2">
             <router-link to="/login" class="btn-hero-primary">Get Started Free</router-link>
             <a href="#how-it-works" class="btn-hero-secondary">See how it works</a>
           </div>
-          <p class="pricing-teaser fade-in delay-3">
+          <p class="pricing-teaser fade-in-motion delay-3">
             <router-link to="/pricing">Pricing</router-link>
             — free trial with 100 requests; paid from $17/mo.
           </p>
         </section>
 
         <!-- Trust bar -->
-        <div class="trust-section fade-in delay-3">
+        <div class="trust-section fade-in-motion delay-3">
           <p>Works with any platform</p>
           <div class="trust-logos">
             <span>WordPress</span>
@@ -48,10 +49,10 @@
           </div>
         </div>
 
-        <div class="hero-divider fade-in delay-3"></div>
+        <div class="hero-divider fade-in-motion delay-3"></div>
 
         <!-- Features -->
-        <section id="features" class="features-section fade-in delay-4">
+        <section id="features" class="features-section fade-in-motion delay-4">
           <div class="section-header">
             <h2>Everything you need to rank faster</h2>
             <p>A complete toolset built on Google's official Indexing API.</p>
@@ -90,7 +91,7 @@
           </div>
         </section>
 
-        <div class="hero-divider fade-in delay-5"></div>
+        <div class="hero-divider fade-in-motion delay-5"></div>
 
         <!-- Impact metrics -->
         <section class="impact-section reveal-hidden">
@@ -364,7 +365,7 @@
         </section>
       </main>
 
-      <MarketingSiteFooter class="fade-in delay-5" />
+      <MarketingSiteFooter class="fade-in-motion delay-5" />
     </div>
 
     <button
@@ -1356,22 +1357,37 @@ main {
   transform: translateY(-2px);
 }
 
-/* ===== Animations ===== */
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(36px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* ===== Animations (opacity never 0 — avoids Lighthouse NO_LCP on hero) ===== */
+@keyframes slideUpSoft {
+  from {
+    transform: translateY(16px);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
-.fade-in {
-  opacity: 0;
-  animation: fadeInUp 1.1s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+.fade-in-motion {
+  opacity: 1;
+  animation: slideUpSoft 0.55s cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 
-.delay-1 { animation-delay: 0.2s; }
-.delay-2 { animation-delay: 0.4s; }
-.delay-3 { animation-delay: 0.6s; }
-.delay-4 { animation-delay: 0.8s; }
-.delay-5 { animation-delay: 1s; }
+.delay-1 { animation-delay: 0.08s; }
+.delay-2 { animation-delay: 0.14s; }
+.delay-3 { animation-delay: 0.2s; }
+.delay-4 { animation-delay: 0.26s; }
+.delay-5 { animation-delay: 0.32s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-in-motion {
+    animation: none !important;
+  }
+  .home-page.is-enhanced .reveal-hidden {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
 
 .scroll-top-btn {
   position: fixed;

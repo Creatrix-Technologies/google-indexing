@@ -4,7 +4,7 @@
     <div class="grain-overlay"></div>
 
     <div class="container">
-      <header class="site-header fade-in">
+      <header class="site-header fade-in-motion">
         <router-link to="/" class="logo">GoogleIndexing</router-link>
         <nav class="header-links">
           <router-link :to="{ path: '/', hash: '#features' }" class="hide-below-tablet">Features</router-link>
@@ -17,14 +17,14 @@
       </header>
 
       <main>
-        <section class="pricing-hero fade-in">
+        <section class="pricing-hero">
           <h1>Simple, transparent <span class="accent">pricing</span></h1>
           <p class="pricing-subtext">
             Choose the plan that fits your indexing needs. Works with <strong>any website</strong> — WordPress, Shopify, nopCommerce, Next.js, corporate sites, or fully custom-built. All plans use Google's official Indexing API.
           </p>
         </section>
 
-        <div class="api-limit-note fade-in delay-1">
+        <div class="api-limit-note fade-in-motion delay-1">
           <span class="api-limit-icon">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           </span>
@@ -33,7 +33,7 @@
           </span>
         </div>
 
-        <div class="pricing-grid fade-in delay-1">
+        <div class="pricing-grid fade-in-motion delay-1">
           <article class="pricing-card glass-card">
             <div class="card-glow"></div>
             <div class="pricing-card-header">
@@ -123,7 +123,7 @@
           </article>
         </div>
 
-        <div class="compat-strip fade-in delay-2">
+        <div class="compat-strip fade-in-motion delay-2">
           <span class="compat-label">Works with any website</span>
           <span class="compat-divider" aria-hidden="true"></span>
           <span class="compat-item">WordPress</span>
@@ -135,12 +135,12 @@
           <span class="compat-item">Any public URL</span>
         </div>
 
-        <p class="pricing-annual fade-in delay-2">
+        <p class="pricing-annual fade-in-motion delay-2">
           Save 2 months with annual billing —
           <a href="#pricing-contact">contact us</a> for annual plans.
         </p>
 
-        <section id="pricing-contact" class="pricing-contact fade-in delay-2">
+        <section id="pricing-contact" class="pricing-contact fade-in-motion delay-2">
           <div class="pricing-contact__intro">
             <span class="pricing-contact__eyebrow">Talk to sales</span>
             <h2>Questions, custom quotes, or enterprise needs?</h2>
@@ -177,7 +177,7 @@
         </section>
       </main>
 
-      <MarketingSiteFooter class="fade-in delay-3" />
+      <MarketingSiteFooter class="fade-in-motion delay-3" />
     </div>
 
     <button
@@ -753,30 +753,34 @@ main {
   }
 }
 
-@keyframes fadeInUp {
+@keyframes slideUpSoft {
   from {
-    opacity: 0;
-    transform: translateY(36px);
+    transform: translateY(16px);
   }
   to {
-    opacity: 1;
     transform: translateY(0);
   }
 }
 
-.fade-in {
-  opacity: 0;
-  animation: fadeInUp 1.1s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+.fade-in-motion {
+  opacity: 1;
+  animation: slideUpSoft 0.55s cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 
 .delay-1 {
-  animation-delay: 0.2s;
+  animation-delay: 0.08s;
 }
 .delay-2 {
-  animation-delay: 0.45s;
+  animation-delay: 0.14s;
 }
 .delay-3 {
-  animation-delay: 0.65s;
+  animation-delay: 0.2s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-in-motion {
+    animation: none !important;
+  }
 }
 
 .scroll-top-btn {
