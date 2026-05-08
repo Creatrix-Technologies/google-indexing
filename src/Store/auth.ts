@@ -4,6 +4,7 @@ import api from '../api';
 const toast = useToast();
 
 import { useMenuStore } from '../Store/menu';
+import { buildRoutes } from '../Router/dynamicRoutes';
 
 
 import { defineStore } from 'pinia';
@@ -167,7 +168,18 @@ export async function loginWithGoogle(code: string, router: any): Promise<boolea
     });
 
     toast.success('Welcome! Login successful!');
-    location.href="/dashboard";
+
+    const menuStore = useMenuStore();
+    await api.get('/auth-check', { withCredentials: true });
+    await menuStore.fetchMenus();
+    const dynamicRoutes = buildRoutes(menuStore.menus);
+    dynamicRoutes.forEach((route: { name?: string | symbol | undefined }) => {
+      if (route.name != null && !router.hasRoute(String(route.name))) {
+        router.addRoute('DefaultLayout', route);
+      }
+    });
+
+    await router.push('/dashboard');
     return true;
   } catch (err) {
     console.error(err);
