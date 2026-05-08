@@ -509,7 +509,17 @@ const removeSavedCard = async () => {
   if (!result.isConfirmed) return
 
   try {
-    await api.delete('/payments/payment-method')
+    // Try DELETE first (preferred), fall back to POST for older API versions
+    try {
+      await api.delete('/payments/payment-method')
+    } catch (deleteErr: any) {
+      // If DELETE returns 405 Method Not Allowed, try POST endpoint
+      if (deleteErr.response?.status === 405) {
+        await api.post('/payments/payment-method/remove')
+      } else {
+        throw deleteErr
+      }
+    }
     toast.success('Saved card removed.')
     await fetchSavedCard()
   } catch (err: any) {
