@@ -31,9 +31,9 @@ export const useEntitlementsStore = defineStore('entitlements', {
     blockingReason: (state) => {
       if (state.subscriptionActive || state.trialAvailable) return ''
       if (subscriptionExpired(state)) {
-        return 'Your subscription has expired. Please renew your plan to continue crawling.'
+        return 'Your subscription has expired. Renew your plan to continue crawling, scheduling, and indexing.'
       }
-      return 'Choose a plan to use indexing, crawling, schedules, and site sync.'
+      return 'An active subscription or remaining trial quota (100 free indexing requests) is required for crawling, schedules, and the indexing queue. Upgrade or complete signup if you have not started a trial.'
     }
   },
 

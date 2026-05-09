@@ -21,7 +21,7 @@
 
     <div class="alert-grid">
   <!-- QUOTA ALERT -->
-  <div v-if="isQuotaExceeded" class="alert-box quota">
+  <div v-if="showQuotaBanner" class="alert-box quota">
     <div class="alert-title">⚠️ Quota Limit</div>
     <div class="alert-text">
       Quota exceeded. Resets daily at midnight (Pacific Time).
@@ -790,6 +790,10 @@ const counts = ref<CrawlCount>({
   site: { type:'', name:'', url:'', scheduleMessage:'' }
 })
 
+const showQuotaBanner = computed(
+  () => isQuotaExceeded.value || Boolean(counts.value?.hasDailyQuotaExceed)
+)
+
 /* API */
 const fetchCrawlDetails = async () => {
   const seq = ++crawlDetailsFetchSeq
@@ -1159,13 +1163,23 @@ const lastPage = () => {
   if (pageInfo.value.hasNextPage) pageInfo.value.page = totalPages.value
 }
 
+const refreshQuotaOnFocus = () => {
+  if (document.visibilityState !== "visible") return
+  void fetchCrawlCounts()
+  void fetchIndexLimit()
+}
+
+let quotaPoll: ReturnType<typeof setInterval> | undefined
+
 onMounted(() => {
   entitlementsStore.refresh()
   fetchCrawlDetails()
   fetchCrawlCounts()
-  fetchIndexLimit()  
+  fetchIndexLimit()
   connectSSE()
   document.addEventListener("click", closeRowDropdown)
+  document.addEventListener("visibilitychange", refreshQuotaOnFocus)
+  quotaPoll = setInterval(refreshQuotaOnFocus, 90_000)
 })
 
 onBeforeUnmount(() => {
@@ -1175,6 +1189,8 @@ onBeforeUnmount(() => {
     eventSource = null
   }
   document.removeEventListener("click", closeRowDropdown)
+  document.removeEventListener("visibilitychange", refreshQuotaOnFocus)
+  if (quotaPoll) clearInterval(quotaPoll)
 })
 
 </script>

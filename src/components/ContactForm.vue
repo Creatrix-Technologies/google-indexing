@@ -298,12 +298,16 @@ async function submit() {
     form.planInterest = props.defaultPlanInterest;
     form.website = "";
   } catch (err: any) {
-    const message = err?.response?.data?.error?.message
-      || err?.response?.data?.message
+    const d = err?.response?.data
+    const message =
+      d?.error?.description
+      || d?.error?.message
+      || d?.message
+      || d?.meta
       || err?.message
-      || "";
-    errorBanner.value = message ? `${message}.` : "Please try again in a moment.";
-    status.value = "error";
+      || ""
+    errorBanner.value = message ? String(message).replace(/\.$/, "") + "." : "Please try again in a moment."
+    status.value = "error"
   } finally {
     isSubmitting.value = false;
   }

@@ -271,7 +271,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import api from '../api'
 import { useToast } from 'vue-toastification'
 import Swal from 'sweetalert2'
@@ -456,8 +456,8 @@ const saveSchedule = async () => {
 
   try {
     const now = new Date()
-    const utcDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()))
-    const dateOnlyUtc = utcDate.toISOString().split('T')[0] // "yyyy-MM-dd" in UTC
+    const pad = (n: number) => String(n).padStart(2, '0')
+    const dateOnlyLocal = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
 
     const response = await api.post('/schedule/update', {
       websiteId: editingId.value,
@@ -467,7 +467,7 @@ const saveSchedule = async () => {
       maxUrls: formData.value.maxUrls,
       isActive: formData.value.isActive,
       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      date: dateOnlyUtc
+      date: dateOnlyLocal
     })
 
     if (response.data?.isSuccess) {
@@ -559,9 +559,22 @@ const siteInitial = (url: string): string => {
   }
 }
 
+const parseMinutes = (t?: string | null): number | null => {
+  if (!t || !t.includes(':')) return null
+  const parts = t.split(':').map((x) => Number(x))
+  const h = parts[0]
+  const m = parts[1]
+  if (h == null || Number.isNaN(h) || Number.isNaN(m ?? 0)) return null
+  return h * 60 + (m || 0)
+}
+
 const formatWindow = (start: string | null, end: string | null) => {
   if (!start && !end) return '—'
-  return `${formatTime(start)} → ${formatTime(end)}`
+  const a = parseMinutes(start)
+  const b = parseMinutes(end)
+  const overnight = a != null && b != null && b <= a
+  const line = `${formatTime(start)} → ${formatTime(end)}`
+  return overnight ? `${line} · overnight` : line
 }
 
 const formatNumber = (n: number | null | undefined): string => {
@@ -596,9 +609,27 @@ const runActionLabel = (item: Schedule): string => {
   return 'Run instantly'
 }
 
+let refreshTimer: ReturnType<typeof setInterval> | undefined
+
+const onDocVisibility = () => {
+  if (document.visibilityState === 'visible') {
+    void fetchSchedules()
+    void entitlementsStore.refresh()
+  }
+}
+
 onMounted(() => {
-  entitlementsStore.refresh()
-  fetchSchedules()
+  void entitlementsStore.refresh()
+  void fetchSchedules()
+  document.addEventListener('visibilitychange', onDocVisibility)
+  refreshTimer = setInterval(() => {
+    if (document.visibilityState === 'visible') void fetchSchedules()
+  }, 60_000)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('visibilitychange', onDocVisibility)
+  if (refreshTimer) clearInterval(refreshTimer)
 })
 </script>
 

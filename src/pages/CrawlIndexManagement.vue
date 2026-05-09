@@ -497,9 +497,7 @@ const fetchCrawlSites = async () => {
         crawlStatus: item.crawlStatus,
         isIndexable: item.isIndexable ? 'Yes' : 'No',
         crawlFailedReason: item.crawlFailedReason || '',
-        crawlDate: item.crawlCompletedDate
-          ? new Date(item.crawlCompletedDate)
-          : undefined
+        crawlDate: parseCrawlCompletedDate(item.crawlCompletedDate)
       }
 
       if (site.crawlStatus === 'In Progress') {
@@ -597,30 +595,21 @@ const siteInitial = (site: Site) => {
   return stripped.charAt(0).toUpperCase() || '?'
 }
 
-/** e.g. Sep 18, 2025 - 2:45 PM or just date if time is midnight */
+/** Parse API datetime (often UTC ISO without offset) into a correct Date in local TZ for display. */
+const parseCrawlCompletedDate = (raw: unknown): Date | undefined => {
+  if (raw == null) return undefined
+  if (raw instanceof Date) return Number.isNaN(raw.getTime()) ? undefined : raw
+  const s = String(raw).trim()
+  if (!s) return undefined
+  const hasTz = /[zZ]|[+-]\d{2}:?\d{2}$/.test(s)
+  const normalized = s.includes('T') && !hasTz ? `${s}Z` : s
+  const d = new Date(normalized)
+  return Number.isNaN(d.getTime()) ? undefined : d
+}
+
 const formatLastCrawlDate = (date?: Date) => {
   if (!date) return 'Never'
-  const month = date.toLocaleString('en-US', { month: 'short' })
-  const day = date.getDate()
-  const year = date.getFullYear()
-
-  // Check if time is exactly midnight (00:00:00) - indicates date-only from backend
-  const isMidnight = date.getHours() === 0 && date.getMinutes() === 0 && date.getSeconds() === 0
-
-  if (isMidnight) {
-    // Check if it's today
-    const today = new Date()
-    const isToday = date.toDateString() === today.toDateString()
-    if (isToday) return `${month} ${day}, ${year} - Today`
-    return `${month} ${day}, ${year}`
-  }
-
-  const time = date.toLocaleString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
-  })
-  return `${month} ${day}, ${year} - ${time}`
+  return date.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
 }
 
 const lastCrawlTitle = (date?: Date) => {
@@ -1214,14 +1203,18 @@ onMounted(async () => {
   cursor: not-allowed;
 }
 .action-btn--view {
-  color: var(--color-text);
+  color: var(--color-accent, var(--accent-600));
+  border-color: var(--accent-200, var(--color-border-strong));
 }
-.action-btn--view:hover {
-  background: var(--neutral-900);
-  border-color: var(--neutral-900);
-  color: #fff;
+.action-btn--view:hover:not(:disabled):not(.action-btn--blocked) {
+  background: var(--accent-50, var(--color-surface-2));
+  border-color: var(--color-accent, var(--accent-600));
+  color: var(--color-accent-hover, var(--accent-700));
+  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.2);
 }
-.action-btn--view:hover svg { transform: translateX(2px); }
+.action-btn--view:hover:not(:disabled):not(.action-btn--blocked) svg {
+  transform: translateX(2px);
+}
 
 /* Empty state */
 .empty-cell {

@@ -465,8 +465,13 @@ const accountStatusClass = computed(() => {
   .user-email {
     display: none;
   }
+  /* Keep subscription/trial badge visible on small screens (was hidden — users lost status context). */
   .account-status {
-    display: none;
+    font-size: 10px;
+    padding: 2px 6px;
+    max-width: 72px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .logout-text {
     display: none;
