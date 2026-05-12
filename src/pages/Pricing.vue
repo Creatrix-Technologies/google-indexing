@@ -34,7 +34,10 @@
         </div>
 
         <div class="pricing-grid fade-in-motion delay-1">
-          <article class="pricing-card glass-card">
+          <article
+            v-if="showDefaultTrial"
+            class="pricing-card glass-card"
+          >
             <div class="card-glow"></div>
             <div class="pricing-card-header">
               <h3>Trial</h3>
@@ -52,75 +55,48 @@
             <router-link to="/login?plan=trial" class="pricing-cta pricing-cta-outline">Start trial</router-link>
           </article>
 
-          <article class="pricing-card glass-card">
+          <article
+            v-for="plan in displayPlans"
+            :key="plan.id"
+            class="pricing-card glass-card"
+            :class="{
+              'main-card pricing-popular': isPopularPlan(plan),
+            }"
+          >
             <div class="card-glow"></div>
+            <div v-if="isPopularPlan(plan)" class="popular-badge">Most popular</div>
             <div class="pricing-card-header">
-              <h3>Solo</h3>
+              <h3>{{ plan.name }}</h3>
               <div class="price">
-                <span class="currency">$</span><span class="amount">17</span><span class="period">/mo</span>
+                <template v-if="isTrialPlan(plan)">
+                  <span class="amount">Free</span>
+                </template>
+                <template v-else>
+                  <span class="currency">{{ currencySymbol(plan.currency) }}</span>
+                  <span class="amount">{{ formatAmount(plan.amount) }}</span>
+                  <span v-if="formatPeriod(plan.duration)" class="period">/{{ formatPeriod(plan.duration) }}</span>
+                </template>
               </div>
-              <p class="price-note">~$0.003 per request</p>
             </div>
-            <ul class="pricing-features">
-              <li>6,000 indexings/month</li>
-              <li>3 sites</li>
-              <li>API access</li>
-              <li>WordPress, Shopify, nopCommerce &amp; more</li>
-            </ul>
-            <div class="verify-hint">
+            <div
+              v-if="plan.description"
+              class="pricing-card__desc"
+              v-html="plan.description"
+            ></div>
+            <div v-if="!isTrialPlan(plan)" class="verify-hint">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
               Verify email, then pay securely
             </div>
-            <router-link to="/signup?plan=solo" class="pricing-cta">Get Solo</router-link>
+            <router-link
+              :to="planCtaPath(plan)"
+              class="pricing-cta"
+              :class="planCtaClass(plan)"
+            >
+              {{ planCtaLabel(plan) }}
+            </router-link>
           </article>
 
-          <article class="pricing-card glass-card main-card pricing-popular">
-            <div class="card-glow"></div>
-            <div class="popular-badge">Most popular</div>
-            <div class="pricing-card-header">
-              <h3>Pro</h3>
-              <div class="price">
-                <span class="currency">$</span><span class="amount">47</span><span class="period">/mo</span>
-              </div>
-              <p class="price-note">Full Google quota · 10 sites</p>
-            </div>
-            <ul class="pricing-features">
-              <li>6,000 indexings/month</li>
-              <li>10 sites</li>
-              <li>API + integrations</li>
-              <li>Email alerts</li>
-              <li>Priority support</li>
-            </ul>
-            <div class="verify-hint">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-              Verify email, then pay securely
-            </div>
-            <router-link to="/signup?plan=pro" class="pricing-cta pricing-cta-primary">Get Pro</router-link>
-          </article>
-
-          <article class="pricing-card glass-card">
-            <div class="card-glow"></div>
-            <div class="pricing-card-header">
-              <h3>Team</h3>
-              <div class="price">
-                <span class="currency">$</span><span class="amount">88</span><span class="period">/mo</span>
-              </div>
-              <p class="price-note">Full Google quota · 30 sites</p>
-            </div>
-            <ul class="pricing-features">
-              <li>6,000 indexings/month</li>
-              <li>30 sites</li>
-              <li>Up to 8 team seats</li>
-              <li>API + all integrations</li>
-              <li>Priority support</li>
-              <li>Custom onboarding</li>
-            </ul>
-            <div class="verify-hint">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-              Verify email, then pay securely
-            </div>
-            <router-link to="/signup?plan=team" class="pricing-cta">Get Team</router-link>
-          </article>
+          <p v-if="plansError" class="pricing-load-error">{{ plansError }}</p>
         </div>
 
         <div class="compat-strip fade-in-motion delay-2">
@@ -193,11 +169,101 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import ContactForm from '../components/ContactForm.vue'
 import MarketingSiteFooter from '../components/MarketingSiteFooter.vue'
+import { refreshApi } from '../api'
+
+interface PublicPlan {
+  id: number
+  name: string
+  description: string
+  amount: number
+  currency: string
+  duration: string
+}
 
 const showScrollTop = ref(false)
+const plans = ref<PublicPlan[]>([])
+const plansError = ref('')
+
+const planSlugAliases: Record<string, string[]> = {
+  trial: ['trial', 'free'],
+  solo: ['solo', 'basic'],
+  pro: ['pro', 'professional'],
+  team: ['team', 'enterprise', 'business'],
+}
+
+const isTrialPlan = (plan: PublicPlan) => {
+  const name = plan.name.toLowerCase()
+  return plan.amount <= 0 || planSlugAliases.trial.some((alias) => name.includes(alias))
+}
+
+const displayPlans = computed(() =>
+  [...plans.value].sort((a, b) => {
+    if (isTrialPlan(a) !== isTrialPlan(b)) return isTrialPlan(a) ? -1 : 1
+    return a.amount - b.amount
+  })
+)
+
+const showDefaultTrial = computed(() => !displayPlans.value.some((plan) => isTrialPlan(plan)))
+
+const isPopularPlan = (plan: PublicPlan) => plan.name.toLowerCase().includes('pro')
+
+const currencySymbol = (currency?: string) => {
+  const normalized = (currency || 'USD').toUpperCase()
+  return normalized === 'USD' ? '$' : `${normalized} `
+}
+
+const formatAmount = (amount: number) => {
+  const value = Number(amount)
+  if (Number.isNaN(value)) return '0'
+  return value.toLocaleString('en-US', {
+    minimumFractionDigits: Number.isInteger(value) ? 0 : 2,
+    maximumFractionDigits: 2,
+  })
+}
+
+const formatPeriod = (duration?: string) => {
+  const normalized = (duration || '').toLowerCase()
+  if (normalized.includes('year')) return 'yr'
+  if (normalized.includes('month')) return 'mo'
+  if (normalized.includes('week')) return 'wk'
+  if (normalized.includes('day')) return 'day'
+  return ''
+}
+
+const resolvePlanSlug = (name: string) => {
+  const lower = name.toLowerCase()
+  for (const [slug, aliases] of Object.entries(planSlugAliases)) {
+    if (aliases.some((alias) => lower.includes(alias))) return slug
+  }
+  return lower.trim().replace(/\s+/g, '-')
+}
+
+const planCtaPath = (plan: PublicPlan) => {
+  const slug = resolvePlanSlug(plan.name)
+  return isTrialPlan(plan) ? `/login?plan=${slug}` : `/signup?plan=${slug}`
+}
+
+const planCtaLabel = (plan: PublicPlan) => (isTrialPlan(plan) ? 'Start trial' : `Get ${plan.name}`)
+
+const planCtaClass = (plan: PublicPlan) => {
+  if (isTrialPlan(plan)) return 'pricing-cta-outline'
+  if (isPopularPlan(plan)) return 'pricing-cta-primary'
+  return ''
+}
+
+const fetchPlans = async () => {
+  plansError.value = ''
+  try {
+    const res = await refreshApi.get('/payments/public-subscription-plans')
+    plans.value = res.data?.data || []
+  } catch {
+    plansError.value = 'Unable to load current pricing. Please refresh or contact sales.'
+    plans.value = []
+  }
+}
 
 const onScroll = () => {
   showScrollTop.value = window.scrollY > 320
@@ -208,6 +274,7 @@ const scrollToTop = () => {
 }
 
 onMounted(() => {
+  void fetchPlans()
   const mesh = document.querySelector('.pricing-page .mesh-gradient') as HTMLElement | null
   if (mesh) {
     document.addEventListener('mousemove', (e) => {
@@ -389,7 +456,7 @@ main {
 
 .pricing-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 1.5rem;
   max-width: 1200px;
   margin: 0 auto 2rem;
@@ -518,6 +585,47 @@ main {
   border-radius: 50%;
   opacity: 0.6;
   flex-shrink: 0;
+}
+
+.pricing-card__desc {
+  flex: 1;
+  color: #5f6368;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.pricing-card__desc :deep(p) {
+  margin: 0 0 0.5rem;
+}
+
+.pricing-card__desc :deep(ul) {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pricing-card__desc :deep(li) {
+  padding: 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pricing-card__desc :deep(li::before) {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: #4285f4;
+  border-radius: 50%;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.pricing-load-error {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #b3261e;
+  margin: 0;
 }
 
 .verify-hint {
