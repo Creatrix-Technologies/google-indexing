@@ -187,7 +187,9 @@ const showScrollTop = ref(false)
 const plans = ref<PublicPlan[]>([])
 const plansError = ref('')
 
-const planSlugAliases: Record<string, string[]> = {
+type PlanSlugKey = 'trial' | 'solo' | 'pro' | 'team'
+
+const planSlugAliases: Record<PlanSlugKey, string[]> = {
   trial: ['trial', 'free'],
   solo: ['solo', 'basic'],
   pro: ['pro', 'professional'],
