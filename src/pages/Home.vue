@@ -33,7 +33,15 @@
           </div>
           <p class="pricing-teaser fade-in-motion delay-3">
             <router-link to="/pricing">Pricing</router-link>
-            — free trial with 100 requests; paid from $17/mo.
+            —
+            free trial with 100 requests;
+            <template v-if="paidFromMonthly != null">
+              paid from ${{ formatPublicPlanAmount(paidFromMonthly) }}/mo.
+            </template>
+            <template v-else>
+              paid plans — see
+              <router-link to="/pricing">pricing</router-link>.
+            </template>
           </p>
         </section>
 
@@ -384,8 +392,15 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import ContactForm from '../components/ContactForm.vue'
 import MarketingSiteFooter from '../components/MarketingSiteFooter.vue'
+import { refreshApi } from '../api'
+import {
+  fetchPublicSubscriptionPlans,
+  formatPublicPlanAmount,
+  lowestPaidMonthlyAmount,
+} from '../Shared/publicPlans'
 
 const showScrollTop = ref(false)
+const paidFromMonthly = ref<number | null>(null)
 
 const onScroll = () => {
   showScrollTop.value = window.scrollY > 420
@@ -396,6 +411,15 @@ const scrollToTop = () => {
 }
 
 onMounted(() => {
+  void (async () => {
+    try {
+      const plans = await fetchPublicSubscriptionPlans(refreshApi)
+      paidFromMonthly.value = lowestPaidMonthlyAmount(plans)
+    } catch {
+      paidFromMonthly.value = null
+    }
+  })()
+
   document.querySelector('.home-page')?.classList.add('is-enhanced')
   // Scroll-reveal observer
   const observer = new IntersectionObserver(

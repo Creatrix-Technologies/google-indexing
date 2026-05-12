@@ -173,15 +173,8 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import ContactForm from '../components/ContactForm.vue'
 import MarketingSiteFooter from '../components/MarketingSiteFooter.vue'
 import { refreshApi } from '../api'
-
-interface PublicPlan {
-  id: number
-  name: string
-  description: string
-  amount: number
-  currency: string
-  duration: string
-}
+import type { PublicPlan } from '../Shared/publicPlans'
+import { fetchPublicSubscriptionPlans, isTrialPlan } from '../Shared/publicPlans'
 
 const showScrollTop = ref(false)
 const plans = ref<PublicPlan[]>([])
@@ -194,11 +187,6 @@ const planSlugAliases: Record<PlanSlugKey, string[]> = {
   solo: ['solo', 'basic'],
   pro: ['pro', 'professional'],
   team: ['team', 'enterprise', 'business'],
-}
-
-const isTrialPlan = (plan: PublicPlan) => {
-  const name = plan.name.toLowerCase()
-  return plan.amount <= 0 || planSlugAliases.trial.some((alias) => name.includes(alias))
 }
 
 const displayPlans = computed(() =>
@@ -259,8 +247,7 @@ const planCtaClass = (plan: PublicPlan) => {
 const fetchPlans = async () => {
   plansError.value = ''
   try {
-    const res = await refreshApi.get('/payments/public-subscription-plans')
-    plans.value = res.data?.data || []
+    plans.value = await fetchPublicSubscriptionPlans(refreshApi)
   } catch {
     plansError.value = 'Unable to load current pricing. Please refresh or contact sales.'
     plans.value = []
