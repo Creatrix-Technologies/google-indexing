@@ -185,6 +185,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { register as apiRegister, redirectToGoogleLogin } from "../Store/auth";
+import { trackGoogleAdsSignupConversion } from "../utils/googleAdsConversion";
 
 const router = useRouter();
 const route = useRoute();
@@ -296,6 +297,7 @@ const handleRegister = async () => {
     const success = await apiRegister(payload);
 
     if (success) {
+      trackGoogleAdsSignupConversion();
       const pendingPlan = localStorage.getItem('selectedPlan');
       localStorage.removeItem('selectedPlan');
 

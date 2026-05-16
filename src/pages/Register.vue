@@ -109,6 +109,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from "vue";
 import { register as apiRegister } from "../Store/auth";
+import { trackGoogleAdsSignupConversion } from "../utils/googleAdsConversion";
 import { useToast } from "vue-toastification";
 import { useRouter } from "vue-router";
 
@@ -261,6 +262,7 @@ const handleRegister = async () => {
     const success = await apiRegister(payload);
 
     if (success) {
+      trackGoogleAdsSignupConversion();
       // 1. close modal FIRST (important)
       close();
 

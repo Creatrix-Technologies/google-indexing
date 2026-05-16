@@ -1,8 +1,8 @@
-// auth.tsimport api from '../api';
 import { useToast } from 'vue-toastification';
 import api from '../api';
 const toast = useToast();
 
+import { trackGoogleAdsSignupConversion } from '../utils/googleAdsConversion';
 import { useMenuStore } from '../Store/menu';
 import { buildRoutes } from '../Router/dynamicRoutes';
 
@@ -158,7 +158,15 @@ export async function loginWithGoogle(code: string, router: any): Promise<boolea
     // Send the code to your backend
     const response = await api.post('/google-login', null, { params: { code }, withCredentials: true });
 
-    const userData = response.data.data; // make sure backend returns { name, email }
+    const userData = response.data.data as {
+      name: string
+      email: string
+      isNewRegistration?: boolean
+    };
+
+    if (userData.isNewRegistration) {
+      trackGoogleAdsSignupConversion();
+    }
 
     // Save in authStore (same as normal login)
     const authStore = useAuthStore();
