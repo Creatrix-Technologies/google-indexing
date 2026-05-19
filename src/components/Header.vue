@@ -65,9 +65,15 @@
     <div class="gnb-inner">
       <span class="gnb-dot" aria-hidden="true"></span>
       <p class="gnb-text">
-        Google Search Console is not connected —
-        <router-link to="/settings/google-configuration" class="gnb-inline-link">complete setup</router-link>
-        to enable indexing and populate your dashboard.
+        <template v-if="googleConfigStore.hasCredentials">
+          Your API key is saved, but Search Console returned no sites —
+          add the service account email in Search Console → Users and permissions (Full access).
+        </template>
+        <template v-else>
+          Google Search Console is not connected —
+          <router-link to="/settings/google-configuration" class="gnb-inline-link">complete setup</router-link>
+          to enable indexing and populate your dashboard.
+        </template>
         <span v-if="googleNoticeIssues.length" class="gnb-issue">{{ googleNoticeIssues[0] }}</span>
       </p>
       <router-link to="/settings/google-configuration" class="gnb-cta">

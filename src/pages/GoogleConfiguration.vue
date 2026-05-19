@@ -221,7 +221,7 @@ const uploadKey = async () => {
       return
     }
 
-    toast.success('Key uploaded successfully')
+    toast.success(response.data?.message || 'Key uploaded successfully')
     fetchCredentials()
     await googleConfigStore.check()
     
