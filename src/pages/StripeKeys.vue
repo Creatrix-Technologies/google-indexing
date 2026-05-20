@@ -33,7 +33,7 @@
                 </button>
               </div>
               <p v-if="!canSwitchToLive && activeMode === 'Sandbox'" class="mode-hint warning">
-                Configure Live keys below to enable Live mode
+                Configure both Live keys below to enable Live mode
               </p>
             </div>
 
@@ -143,6 +143,7 @@
                   <input
                     type="checkbox"
                     v-model="activateAfterSave"
+                    :disabled="!canActivateEditingMode"
                   />
                   Switch to {{ editingMode }} mode after saving
                 </label>
@@ -204,9 +205,17 @@
     return activeMode.value === 'Sandbox' ? sandboxKeys : liveKeys
   })
 
+  const hasRequiredStripeKeys = (keys: { publishableKey: string; secretKey: string }) => {
+    return Boolean(keys.publishableKey.trim() && keys.secretKey.trim())
+  }
+
   // Can we switch to live mode?
   const canSwitchToLive = computed(() => {
-    return !!liveKeys.secretKey
+    return hasRequiredStripeKeys(liveKeys)
+  })
+
+  const canActivateEditingMode = computed(() => {
+    return hasRequiredStripeKeys(editingKeys.value)
   })
 
   /* GET Stripe Keys */
@@ -253,6 +262,10 @@
   /* TOGGLE Stripe Mode */
   const toggleMode = async (mode: string) => {
     if (mode === activeMode.value) return
+    if (mode === 'Live' && !canSwitchToLive.value) {
+      toast.error('Configure both Live publishable and secret keys before switching to Live mode')
+      return
+    }
 
     togglingMode.value = true
     try {
@@ -278,6 +291,11 @@
 
   /* UPDATE Stripe Keys */
   const updateKeys = async () => {
+    if (activateAfterSave.value && !canActivateEditingMode.value) {
+      toast.error(`Configure both ${editingMode.value} publishable and secret keys before switching modes`)
+      return
+    }
+
     loading.value = true
 
     try {
