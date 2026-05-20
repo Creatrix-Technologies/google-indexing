@@ -157,7 +157,7 @@
   </template>
   
   <script setup lang="ts">
-  import { reactive, ref, onMounted, computed } from 'vue'
+  import { reactive, ref, onMounted, computed, watch } from 'vue'
   import api from '../api'
   import { useToast } from 'vue-toastification'
   import SettingsLayout from '../components/SettingsLayout.vue'
@@ -216,6 +216,10 @@
 
   const canActivateEditingMode = computed(() => {
     return hasRequiredStripeKeys(editingKeys.value)
+  })
+
+  watch(canActivateEditingMode, (canActivate) => {
+    if (!canActivate) activateAfterSave.value = false
   })
 
   /* GET Stripe Keys */
