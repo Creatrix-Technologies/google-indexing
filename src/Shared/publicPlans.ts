@@ -9,7 +9,38 @@ export interface PublicPlan {
   duration: string
 }
 
+const fallbackPlans: PublicPlan[] = [
+  {
+    id: -1,
+    name: 'Solo',
+    description: '<ul><li>6,000 indexings/month</li><li>3 sites</li><li>API access</li><li>WordPress, Shopify, nopCommerce &amp; more</li></ul>',
+    amount: 17,
+    currency: 'USD',
+    duration: 'month',
+  },
+  {
+    id: -2,
+    name: 'Pro',
+    description: '<ul><li>6,000 indexings/month</li><li>10 sites</li><li>API + integrations</li><li>Email alerts</li><li>Priority support</li></ul>',
+    amount: 47,
+    currency: 'USD',
+    duration: 'month',
+  },
+  {
+    id: -3,
+    name: 'Team',
+    description: '<ul><li>6,000 indexings/month</li><li>30 sites</li><li>Up to 8 team seats</li><li>API + all integrations</li><li>Priority support</li><li>Custom onboarding</li></ul>',
+    amount: 88,
+    currency: 'USD',
+    duration: 'month',
+  },
+]
+
 const trialNameAliases = ['trial', 'free'] as const
+
+export function fallbackPublicSubscriptionPlans(): PublicPlan[] {
+  return fallbackPlans.map((plan) => ({ ...plan }))
+}
 
 export function isTrialPlan(plan: PublicPlan): boolean {
   const name = plan.name.toLowerCase()

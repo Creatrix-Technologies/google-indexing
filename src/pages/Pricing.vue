@@ -174,7 +174,7 @@ import ContactForm from '../components/ContactForm.vue'
 import MarketingSiteFooter from '../components/MarketingSiteFooter.vue'
 import { refreshApi } from '../api'
 import type { PublicPlan } from '../Shared/publicPlans'
-import { fetchPublicSubscriptionPlans, isTrialPlan } from '../Shared/publicPlans'
+import { fallbackPublicSubscriptionPlans, fetchPublicSubscriptionPlans, isTrialPlan } from '../Shared/publicPlans'
 
 const showScrollTop = ref(false)
 const plans = ref<PublicPlan[]>([])
@@ -250,7 +250,7 @@ const fetchPlans = async () => {
     plans.value = await fetchPublicSubscriptionPlans(refreshApi)
   } catch {
     plansError.value = 'Unable to load current pricing. Please refresh or contact sales.'
-    plans.value = []
+    plans.value = fallbackPublicSubscriptionPlans()
   }
 }
 
