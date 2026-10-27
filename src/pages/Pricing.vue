@@ -4,17 +4,7 @@
     <div class="grain-overlay"></div>
 
     <div class="container">
-      <header class="site-header fade-in-motion">
-        <router-link to="/" class="logo">GoogleIndexing</router-link>
-        <nav class="header-links">
-          <router-link :to="{ path: '/', hash: '#features' }" class="hide-below-tablet">Features</router-link>
-          <router-link :to="{ path: '/', hash: '#how-it-works' }" class="hide-below-tablet">How it works</router-link>
-          <router-link :to="{ path: '/', hash: '#faq' }" class="hide-below-tablet">FAQ</router-link>
-          <router-link :to="{ path: '/', hash: '#contact' }" class="hide-below-tablet">Contact</router-link>
-          <router-link to="/pricing">Pricing</router-link>
-          <router-link to="/login" class="cta-pill">Sign In</router-link>
-        </nav>
-      </header>
+      <MarketingHeader class="fade-in-motion" />
 
       <main>
         <section class="pricing-hero">
@@ -172,6 +162,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import ContactForm from '../components/ContactForm.vue'
 import MarketingSiteFooter from '../components/MarketingSiteFooter.vue'
+import MarketingHeader from '../components/marketing/MarketingHeader.vue'
 import { refreshApi } from '../api'
 import type { PublicPlan } from '../Shared/publicPlans'
 import { fetchPublicSubscriptionPlans, isTrialPlan } from '../Shared/publicPlans'

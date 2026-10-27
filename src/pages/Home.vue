@@ -5,44 +5,56 @@
 
     <div class="container">
       <!-- Header -->
-      <header class="site-header fade-in-motion">
-        <router-link to="/" class="logo" aria-label="GoogleIndexing.com home">GoogleIndexing</router-link>
-        <nav class="header-links">
-          <a href="#features" class="hide-below-tablet">Features</a>
-          <a href="#how-it-works" class="hide-below-tablet">How it works</a>
-          <a href="#faq" class="hide-below-tablet">FAQ</a>
-          <a href="#contact" class="hide-below-tablet">Contact</a>
-          <router-link to="/pricing">Pricing</router-link>
-          <router-link to="/login" class="cta-pill">Sign In</router-link>
-        </nav>
-      </header>
+      <MarketingHeader class="fade-in-motion" />
 
       <main>
         <!-- Hero -->
         <!-- Hero: no opacity-hiding — fixes Lighthouse NO_LCP / LCP on SPA -->
         <section class="hero">
-          <div class="badge">INDEXING API AUTOMATION</div>
-          <h1>Google <span class="accent">SEO Indexing</span><br>Made Simple</h1>
-          <p class="hero-subtext fade-in-motion delay-1">
-            Crawl URLs and help Google discover updates faster through official indexing signals.<br>
-            Monitor pages, improve SEO, and stay discoverable — all from one dashboard.
-          </p>
-          <div class="hero-actions fade-in-motion delay-2">
-            <router-link to="/login" class="btn-hero-primary">Get Started Free</router-link>
-            <a href="#how-it-works" class="btn-hero-secondary">See how it works</a>
+          <div class="hero-grid">
+            <div class="hero-copy">
+              <div class="badge">INDEXING API AUTOMATION</div>
+              <h1>Google <span class="accent">SEO Indexing</span><br>you can watch succeed</h1>
+              <p class="hero-subtext fade-in-motion delay-1">
+                Crawl your URLs, submit them through Google's official Indexing API, and follow every
+                page from queued to indexed — live, with Google's own status to confirm it.
+              </p>
+              <div class="hero-actions fade-in-motion delay-2">
+                <router-link to="/login" class="btn-hero-primary">Get Started Free</router-link>
+                <a href="#how-it-works" class="btn-hero-secondary">See how it works</a>
+              </div>
+              <ul class="hero-proof fade-in-motion delay-3" aria-label="Highlights">
+                <li>
+                  <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" /></svg>
+                  Live progress on every run
+                </li>
+                <li>
+                  <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" /></svg>
+                  Status verified with Google's URL Inspection
+                </li>
+                <li>
+                  <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" /></svg>
+                  Auto-retries and a quota-aware queue
+                </li>
+              </ul>
+              <p class="pricing-teaser fade-in-motion delay-3">
+                <router-link to="/pricing">Pricing</router-link>
+                —
+                free trial with 100 requests;
+                <template v-if="paidFromMonthly != null">
+                  paid from ${{ formatPublicPlanAmount(paidFromMonthly) }}/mo.
+                </template>
+                <template v-else>
+                  paid plans — see
+                  <router-link to="/pricing">pricing</router-link>.
+                </template>
+              </p>
+            </div>
+
+            <div class="hero-visual fade-in-motion delay-2">
+              <IndexingPipelineDemo />
+            </div>
           </div>
-          <p class="pricing-teaser fade-in-motion delay-3">
-            <router-link to="/pricing">Pricing</router-link>
-            —
-            free trial with 100 requests;
-            <template v-if="paidFromMonthly != null">
-              paid from ${{ formatPublicPlanAmount(paidFromMonthly) }}/mo.
-            </template>
-            <template v-else>
-              paid plans — see
-              <router-link to="/pricing">pricing</router-link>.
-            </template>
-          </p>
         </section>
 
         <!-- Trust bar -->
@@ -101,56 +113,18 @@
 
         <div class="hero-divider fade-in-motion delay-5"></div>
 
-        <!-- Impact metrics -->
-        <section class="impact-section reveal-hidden">
+        <!-- Progress: time to index -->
+        <section id="results" class="impact-section reveal-hidden">
           <div class="impact-header">
-            <h2>Indexing speed comparison</h2>
-            <p>Real-world data on how much faster the Indexing API is versus standard sitemap discovery.</p>
+            <span class="section-eyebrow">Progress you can measure</span>
+            <h2>From published to indexed, faster</h2>
+            <p>
+              Indexing API submissions are usually picked up by Google within 1–3 days.
+              Sitemap-only discovery typically takes 3–14. Hover the chart to compare any day.
+            </p>
           </div>
           <div class="chart-container glass-card">
-            <div class="chart-header">
-              <div class="chart-label">Average Time to Indexing (Days)</div>
-              <div class="chart-legend">
-                <span class="legend-item stagnant">Standard Sitemap</span>
-                <span class="legend-item active">GoogleIndexing API</span>
-              </div>
-            </div>
-            <div class="chart-svg-wrapper">
-              <svg viewBox="0 0 800 320" class="impact-chart">
-                <defs>
-                  <linearGradient id="apiGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" style="stop-color:#4285F4;stop-opacity:1"/>
-                    <stop offset="100%" style="stop-color:#34A853;stop-opacity:1"/>
-                  </linearGradient>
-                  <filter id="glow">
-                    <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
-                    <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                  </filter>
-                </defs>
-                <g stroke="rgba(0,0,0,0.04)" stroke-width="1">
-                  <line x1="50" y1="30" x2="750" y2="30"/>
-                  <line x1="50" y1="90" x2="750" y2="90"/>
-                  <line x1="50" y1="150" x2="750" y2="150"/>
-                  <line x1="50" y1="210" x2="750" y2="210"/>
-                  <line x1="50" y1="270" x2="750" y2="270"/>
-                </g>
-                <text x="40" y="35" class="chart-axis-label" text-anchor="end">14d</text>
-                <text x="40" y="95" class="chart-axis-label" text-anchor="end">10d</text>
-                <text x="40" y="155" class="chart-axis-label" text-anchor="end">7d</text>
-                <text x="40" y="215" class="chart-axis-label" text-anchor="end">3d</text>
-                <text x="40" y="275" class="chart-axis-label" text-anchor="end">0d</text>
-                <text x="50" y="298" class="chart-axis-label">Publish</text>
-                <text x="283" y="298" class="chart-axis-label" text-anchor="middle">Day 3</text>
-                <text x="516" y="298" class="chart-axis-label" text-anchor="middle">Day 7</text>
-                <text x="750" y="298" class="chart-axis-label" text-anchor="end">Day 14</text>
-                <path class="chart-line stagnant" d="M 50 270 L 200 270 L 283 210 L 400 155 L 516 90 L 650 50 L 750 38" fill="none" stroke-dasharray="5"/>
-                <path class="chart-line api-line" d="M 50 270 L 80 260 L 110 240 L 145 210 L 175 175 L 210 130 L 250 90 L 283 65 L 350 55 L 750 50" fill="none" stroke="url(#apiGrad)" filter="url(#glow)"/>
-                <circle class="chart-point" cx="175" cy="175" r="5"/>
-                <text x="185" y="170" class="chart-note">API avg: 2 days</text>
-                <circle class="chart-point" cx="516" cy="90" r="5"/>
-                <text x="526" y="85" class="chart-note">Sitemap avg: 7 days</text>
-              </svg>
-            </div>
+            <CoverageChart />
             <div class="impact-metrics">
               <div class="metric">
                 <span class="metric-number">1–3 days</span>
@@ -207,6 +181,11 @@
 
         <div class="hero-divider"></div>
 
+        <!-- Reliability -->
+        <ReliabilitySection class="reveal-hidden" />
+
+        <div class="hero-divider"></div>
+
         <!-- FAQ -->
         <section id="faq" class="faq-section reveal-hidden">
           <div class="section-header">
@@ -238,7 +217,7 @@
           <div class="cta-card glass-card">
             <div class="card-glow"></div>
             <h2>Ready to get indexed faster?</h2>
-            <p>Join thousands of SEO teams using GoogleIndexing.com to stay ahead.</p>
+            <p>Start with 100 free indexing requests and watch your first URLs move from queued to indexed.</p>
             <router-link to="/login" class="btn-hero-primary">Start for Free</router-link>
           </div>
         </section>
@@ -297,6 +276,24 @@
           </div>
 
           <div class="contact-grid">
+            <!-- Nepal -->
+            <div class="contact-card glass-card">
+              <div class="card-glow"></div>
+              <img src="https://flagcdn.com/40x30/np.png" width="40" height="30" alt="Nepal" class="contact-card__flag" />
+              <h3>Kathmandu</h3>
+              <p class="contact-card__region">Nepal</p>
+              <ul class="contact-card__details">
+                <li>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.57 3.4 2 2 0 0 1 3.54 1.26h3a2 2 0 0 1 2 1.72c.12.96.36 1.9.71 2.81a2 2 0 0 1-.45 2.11L7.91 8.8a16 16 0 0 0 6.29 6.29l.9-.9a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.71A2 2 0 0 1 22 16.92z"/></svg>
+                  <a href="tel:+9779851357889">+977 9851357889</a>
+                </li>
+                <li>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <a href="https://maps.google.com/?q=Lalitpur,Kathmandu,Nepal" target="_blank" rel="noopener">Lalitpur, Kathmandu, Nepal</a>
+                </li>
+              </ul>
+            </div>
+
             <!-- Minneapolis -->
             <div class="contact-card glass-card">
               <div class="card-glow"></div>
@@ -329,24 +326,6 @@
                 <li>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                   <a href="https://maps.google.com/?q=Dubai,UAE" target="_blank" rel="noopener">Dubai, UAE</a>
-                </li>
-              </ul>
-            </div>
-
-            <!-- Nepal -->
-            <div class="contact-card glass-card">
-              <div class="card-glow"></div>
-              <img src="https://flagcdn.com/40x30/np.png" width="40" height="30" alt="Nepal" class="contact-card__flag" />
-              <h3>Kathmandu</h3>
-              <p class="contact-card__region">Nepal</p>
-              <ul class="contact-card__details">
-                <li>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.57 3.4 2 2 0 0 1 3.54 1.26h3a2 2 0 0 1 2 1.72c.12.96.36 1.9.71 2.81a2 2 0 0 1-.45 2.11L7.91 8.8a16 16 0 0 0 6.29 6.29l.9-.9a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.71A2 2 0 0 1 22 16.92z"/></svg>
-                  <a href="tel:+9779851357889">+977 9851357889</a>
-                </li>
-                <li>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                  <a href="https://maps.google.com/?q=Lalitpur,Kathmandu,Nepal" target="_blank" rel="noopener">Lalitpur, Kathmandu, Nepal</a>
                 </li>
               </ul>
             </div>
@@ -392,6 +371,10 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import ContactForm from '../components/ContactForm.vue'
 import MarketingSiteFooter from '../components/MarketingSiteFooter.vue'
+import MarketingHeader from '../components/marketing/MarketingHeader.vue'
+import IndexingPipelineDemo from '../components/marketing/IndexingPipelineDemo.vue'
+import CoverageChart from '../components/marketing/CoverageChart.vue'
+import ReliabilitySection from '../components/marketing/ReliabilitySection.vue'
 import { refreshApi } from '../api'
 import {
   fetchPublicSubscriptionPlans,
@@ -594,8 +577,74 @@ main {
 }
 
 .hero {
-  max-width: 820px;
+  width: 100%;
   margin-bottom: 3rem;
+  text-align: left;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.18fr) minmax(0, 0.82fr);
+  gap: 3rem;
+  align-items: center;
+}
+
+.hero-copy {
+  min-width: 0;
+}
+
+.hero-visual {
+  min-width: 0;
+  position: relative;
+}
+
+.hero-visual::before {
+  content: '';
+  position: absolute;
+  inset: 10% -6% -8% -6%;
+  background: radial-gradient(60% 60% at 50% 40%, rgba(66, 133, 244, 0.18), transparent 70%);
+  filter: blur(30px);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.hero-proof {
+  list-style: none;
+  padding: 0;
+  margin: 1.75rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+}
+
+.hero-proof li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #3c4043;
+}
+
+.hero-proof svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: #1e8e3e;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+.section-eyebrow {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #4285F4;
+  margin-bottom: 0.75rem;
 }
 
 .badge {
@@ -613,16 +662,16 @@ main {
 
 .hero h1 {
   font-family: 'Syne', 'Inter', sans-serif;
-  font-size: clamp(2.8rem, 8vw, 5.5rem);
-  line-height: 0.95;
-  letter-spacing: -3px;
+  font-size: clamp(2.3rem, 3.7vw, 3.3rem);
+  line-height: 1.02;
+  letter-spacing: -2px;
   font-weight: 800;
   margin-bottom: 1.5rem;
   color: #0a0a0c;
 }
 
 .hero h1 .accent {
-  opacity: 0.38;
+  opacity: 0.5;
   font-weight: 400;
 }
 
@@ -638,7 +687,7 @@ main {
 .hero-actions {
   display: flex;
   gap: 1rem;
-  justify-content: center;
+  justify-content: flex-start;
   flex-wrap: wrap;
 }
 
@@ -683,7 +732,7 @@ main {
 
 .pricing-teaser {
   max-width: 34rem;
-  margin: 1.5rem auto 0;
+  margin: 1.25rem 0 0;
   font-size: 0.9375rem;
   line-height: 1.55;
   color: #5f6368;
@@ -852,101 +901,16 @@ main {
 .impact-header p {
   color: #5f6368;
   font-size: 1.05rem;
+  max-width: 64ch;
+  line-height: 1.6;
 }
 
 .chart-container {
-  padding: 2.5rem !important;
+  padding: 2rem 2.25rem 2.25rem !important;
 }
 
-.chart-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.chart-label {
-  font-weight: 600;
-  color: #0a0a0c;
-  font-size: 0.95rem;
-}
-
-.chart-legend {
-  display: flex;
-  gap: 1.5rem;
-  font-size: 0.85rem;
-  color: #5f6368;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.legend-item::before {
-  content: '';
-  width: 14px;
-  height: 3px;
-  border-radius: 2px;
-  display: block;
-}
-
-.legend-item.stagnant::before { background: #e0e0e0; }
-.legend-item.active::before { background: #4285F4; }
-
-.chart-svg-wrapper {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.impact-chart {
-  width: 100%;
-  min-width: 560px;
-  height: auto;
-}
-
-.chart-line {
-  fill: none;
-  stroke-width: 3;
-  stroke-linecap: round;
-}
-
-.chart-line.stagnant {
-  stroke: #e8e8e8;
-  stroke-width: 4;
-}
-
-.api-line {
-  fill: none;
-  stroke-width: 3;
-  stroke-linecap: round;
-  stroke-dasharray: 1000;
-  stroke-dashoffset: 1000;
-  transition: stroke-dashoffset 2.2s cubic-bezier(0.16, 1, 0.3, 1);
-  filter: drop-shadow(0 4px 12px rgba(66, 133, 244, 0.4));
-}
-
-.chart-point {
-  fill: white;
-  stroke: #4285F4;
-  stroke-width: 3;
-  filter: drop-shadow(0 0 8px rgba(66, 133, 244, 0.3));
-}
-
-.chart-axis-label {
-  font-size: 11px;
-  fill: #5f6368;
-  font-weight: 500;
-}
-
-.chart-note {
-  font-size: 11px;
-  fill: #0a0a0c;
-  font-weight: 700;
+.chart-container:hover {
+  transform: none;
 }
 
 .impact-metrics {
@@ -1471,6 +1435,11 @@ main {
 }
 
 @media (max-width: 1024px) {
+  .hero { text-align: center; }
+  .hero-grid { grid-template-columns: 1fr; gap: 2.25rem; }
+  .hero-actions, .hero-proof { justify-content: center; }
+  .pricing-teaser { margin-left: auto; margin-right: auto; }
+  .hero-visual { width: 100%; max-width: 560px; margin: 0 auto; }
   .features-grid { grid-template-columns: 1fr; gap: 1.5rem; }
   .impact-metrics { grid-template-columns: repeat(2, 1fr); }
   .contact-grid { grid-template-columns: 1fr; gap: 1.25rem; }
@@ -1506,8 +1475,10 @@ main {
     scrollbar-width: none;
   }
   .header-links::-webkit-scrollbar { display: none; }
-  .hero h1 { font-size: 3rem; letter-spacing: -2px; }
+  .hero h1 { font-size: 2.3rem; letter-spacing: -1.5px; }
   .hero-subtext { font-size: 1.05rem; }
+  .hero-proof { flex-direction: column; align-items: center; gap: 0.5rem; }
+  .chart-container { padding: 1.25rem 1rem 1.5rem !important; }
   .header-links { gap: 0.85rem; }
   .trust-logos { gap: 1.5rem; }
   .contact-bottom { flex-direction: column; align-items: flex-start; }

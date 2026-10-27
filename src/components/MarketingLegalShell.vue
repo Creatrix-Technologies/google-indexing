@@ -3,17 +3,7 @@
     <div class="legal-shell__mesh" aria-hidden="true"></div>
     <div class="legal-shell__grain" aria-hidden="true"></div>
     <div class="container">
-      <header class="site-header">
-        <router-link to="/" class="logo" aria-label="GoogleIndexing.com home">GoogleIndexing</router-link>
-        <nav class="header-links">
-          <router-link :to="{ path: '/', hash: '#features' }" class="hide-below-tablet">Features</router-link>
-          <router-link :to="{ path: '/', hash: '#how-it-works' }" class="hide-below-tablet">How it works</router-link>
-          <router-link :to="{ path: '/', hash: '#faq' }" class="hide-below-tablet">FAQ</router-link>
-          <router-link :to="{ path: '/', hash: '#contact' }" class="hide-below-tablet">Contact</router-link>
-          <router-link to="/pricing">Pricing</router-link>
-          <router-link to="/login" class="cta-pill">Sign In</router-link>
-        </nav>
-      </header>
+      <MarketingHeader />
 
       <main class="legal-shell__main">
         <slot />
@@ -26,6 +16,7 @@
 
 <script setup lang="ts">
 import MarketingSiteFooter from './MarketingSiteFooter.vue'
+import MarketingHeader from './marketing/MarketingHeader.vue'
 </script>
 
 <style scoped>

@@ -15,11 +15,11 @@
           <p class="desc">
             Crawl your URLs and get them indexed on Google in hours, not weeks. Monitor pages, improve SEO, and stay discoverable — all from one dashboard.
           </p>
-          <div class="feature-pills">
-            <span>⚡ Sub-2 day indexing</span>
-            <span>📊 Real-time monitoring</span>
-            <span>🔁 Auto recrawls</span>
-          </div>
+          <ul class="feature-list">
+            <li>Indexed in under two days</li>
+            <li>Live status for every URL</li>
+            <li>Automatic recrawls</li>
+          </ul>
         </div>
 
         <!-- Login card -->
@@ -354,16 +354,30 @@ const handleGoogleLogin = () => {
   font-weight: 300;
 }
 
-.feature-pills {
+.feature-list {
+  list-style: none;
+  margin: 2rem 0 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  margin-top: 2rem;
 }
-.feature-pills span {
+.feature-list li {
+  position: relative;
+  padding-left: 1.1rem;
   font-size: 0.85rem;
   color: #5f6368;
   font-weight: 400;
+}
+.feature-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #4285F4;
 }
 
 /* ===== Login card (glass) ===== */
@@ -602,7 +616,9 @@ const handleGoogleLogin = () => {
 @media (max-width: 860px) {
   .content-wrapper { flex-direction: column; gap: 2.5rem; padding: 2rem 1.5rem; }
   .welcome-text { text-align: center; align-items: center; max-width: 480px; }
-  .feature-pills { align-items: center; }
+  .feature-list { align-items: center; }
+  .feature-list li { padding-left: 0; }
+  .feature-list li::before { display: none; }
   .back-link { align-self: flex-start; }
 }
 @media (max-width: 480px) {
