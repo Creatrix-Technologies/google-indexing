@@ -22,6 +22,14 @@
           {{ pageInfo.totalCount }} total
         </span>
       </div>
+
+      <button
+        class="trial-btn"
+        :disabled="resettingTrial === 'self'"
+        @click="resetTrial(null, 'your own account')"
+      >
+        Reset my trial
+      </button>
     </div>
 
     <!-- User List Table -->
@@ -34,6 +42,7 @@
               <th class="col-role">Role</th>
               <th class="col-status">Status</th>
               <th class="col-sites">Sites</th>
+              <th class="col-trial">Free trial</th>
             </tr>
           </thead>
           <tbody>
@@ -102,6 +111,26 @@
                   </button>
                   <span v-else class="sites-empty">— no sites</span>
                 </td>
+
+                <!-- Free trial -->
+                <td class="col-trial">
+                  <div class="trial-cell">
+                    <span
+                      class="status-pill"
+                      :class="user.trialActive ? 'status-pill--active' : 'status-pill--inactive'"
+                    >
+                      <span class="status-dot"></span>
+                      {{ user.trialActive ? 'Active' : 'Used' }}
+                    </span>
+                    <button
+                      class="trial-btn"
+                      :disabled="resettingTrial === user.userId"
+                      @click="resetTrial(user.userId, user.email || user.name)"
+                    >
+                      Reset
+                    </button>
+                  </div>
+                </td>
               </tr>
 
               <!-- Expanded sites detail row -->
@@ -109,7 +138,7 @@
                 v-if="user.sites.length && isExpanded(user.userId)"
                 class="detail-row"
               >
-                <td colspan="4">
+                <td colspan="5">
                   <div class="detail-shell">
                     <div class="detail-header">
                       <span class="detail-title">Connected sites</span>
@@ -144,7 +173,7 @@
 
             <!-- Empty state -->
             <tr v-if="users.length === 0">
-              <td colspan="4" class="empty-cell">
+              <td colspan="5" class="empty-cell">
                 <div class="empty-state">
                   <div class="empty-icon" aria-hidden="true">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
@@ -213,6 +242,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import api from '../api'
 import { useToast } from 'vue-toastification'
+import Swal from 'sweetalert2'
 
 const toast = useToast()
 
@@ -229,7 +259,8 @@ interface User {
   role: string
   isActive: boolean,
   siteCount: number,
-  sites: Site[]
+  sites: Site[],
+  trialActive: boolean
 }
 
 interface PageInfo {
@@ -377,6 +408,35 @@ const updateUserStatus = async (user: User) => {
   }
 }
 
+// Reset free trial (100 indexing requests). userId null = the signed-in admin.
+const resettingTrial = ref<string | null>(null)
+const resetTrial = async (userId: string | null, label: string) => {
+  const confirm = await Swal.fire({
+    title: 'Reset free trial?',
+    text: `This gives ${label} a fresh 100 free indexing requests.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Reset trial'
+  })
+  if (!confirm.isConfirmed) return
+
+  resettingTrial.value = userId ?? 'self'
+  try {
+    const res = await api.post('/manage-users/reset-trial', { userId })
+    if (res.data?.isSuccess) {
+      toast.success('Free trial reset')
+      await fetchUsers(pageInfo.value.page)
+    } else {
+      toast.error(res.data?.error?.description || 'Failed to reset trial')
+    }
+  } catch (err) {
+    console.error('Error resetting trial', err)
+    toast.error('Error resetting trial')
+  } finally {
+    resettingTrial.value = null
+  }
+}
+
 // Pagination handlers
 const nextPage = () => {
   if (pageInfo.value.hasNextPage) pageInfo.value.page++
@@ -521,6 +581,34 @@ watch(() => pageInfo.value.page, (p) => void fetchUsers(p))
 .col-role   { width: 160px; }
 .col-status { width: 200px; }
 .col-sites  { width: 180px; white-space: nowrap; }
+.col-trial  { width: 200px; white-space: nowrap; }
+
+/* ----------------- Free trial ----------------- */
+.trial-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.trial-btn {
+  padding: 4px 12px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-card-bg);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+.trial-btn:hover:not(:disabled) {
+  background: var(--color-surface-2);
+  border-color: var(--neutral-400);
+}
+.trial-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 
 /* ----------------- User cell ----------------- */
 .user-cell {
