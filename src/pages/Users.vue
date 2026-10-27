@@ -9,17 +9,17 @@
         </p>
       </div>
 
-      <div class="header-meta" v-if="pageInfo.totalCount">
+      <div class="header-meta" v-if="summary.total">
         <span class="meta-pill">
           <span class="meta-dot meta-dot--active"></span>
-          {{ activeCount }} active
+          {{ summary.active }} active
         </span>
         <span class="meta-pill">
           <span class="meta-dot meta-dot--inactive"></span>
-          {{ inactiveCount }} inactive
+          {{ summary.inactive }} inactive
         </span>
         <span class="meta-pill meta-pill--total">
-          {{ pageInfo.totalCount }} total
+          {{ summary.total }} total
         </span>
       </div>
 
@@ -32,17 +32,67 @@
       </button>
     </div>
 
+    <!-- Toolbar: search, filters, page size -->
+    <div class="toolbar">
+      <input
+        v-model="searchInput"
+        class="toolbar-search"
+        type="search"
+        placeholder="Search by email or name"
+        aria-label="Search users"
+      />
+
+      <select v-model="roleFilter" class="toolbar-select" aria-label="Filter by role">
+        <option value="">All roles</option>
+        <option v-for="role in roles" :key="role" :value="role">{{ role }}</option>
+      </select>
+
+      <select v-model="statusFilter" class="toolbar-select" aria-label="Filter by status">
+        <option value="">Any status</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+
+      <select v-model="trialFilter" class="toolbar-select" aria-label="Filter by free trial">
+        <option value="">Any trial state</option>
+        <option value="active">Trial available</option>
+        <option value="used">Trial used</option>
+      </select>
+
+      <button v-if="hasActiveFilters" class="toolbar-clear" @click="clearFilters">Clear filters</button>
+
+      <span class="toolbar-spacer"></span>
+
+      <span class="toolbar-result" v-if="!usersLoading">
+        {{ hasActiveFilters ? `${pageInfo.totalCount} matching` : `${pageInfo.totalCount} users` }}
+      </span>
+
+      <select v-model.number="pageSize" class="toolbar-select" aria-label="Rows per page">
+        <option v-for="n in [10, 25, 50, 100]" :key="n" :value="n">{{ n }} / page</option>
+      </select>
+    </div>
+
     <!-- User List Table -->
     <div class="table-card">
       <div class="table-scroll">
         <table class="users-table">
           <thead>
             <tr>
-              <th class="col-user">User</th>
-              <th class="col-role">Role</th>
-              <th class="col-status">Status</th>
-              <th class="col-sites">Sites</th>
-              <th class="col-trial">Free trial</th>
+              <th class="col-user sortable" :aria-sort="ariaSort('email')" @click="toggleSort('email')">
+                User <span class="sort-arrow">{{ sortArrow('email') }}</span>
+              </th>
+              <th class="col-role sortable" :aria-sort="ariaSort('role')" @click="toggleSort('role')">
+                Role <span class="sort-arrow">{{ sortArrow('role') }}</span>
+              </th>
+              <th class="col-status sortable" :aria-sort="ariaSort('status')" @click="toggleSort('status')">
+                Status <span class="sort-arrow">{{ sortArrow('status') }}</span>
+              </th>
+              <th class="col-sites sortable" :aria-sort="ariaSort('sites')" @click="toggleSort('sites')">
+                Sites <span class="sort-arrow">{{ sortArrow('sites') }}</span>
+              </th>
+              <th class="col-trial sortable" :aria-sort="ariaSort('trial')" @click="toggleSort('trial')">
+                Free trial <span class="sort-arrow">{{ sortArrow('trial') }}</span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -66,7 +116,7 @@
                 <!-- Role -->
                 <td class="col-role">
                   <div class="role-select">
-                    <select v-model="user.role" @change="updateUserRole(user)">
+                    <select v-model="user.role" @change="onRoleChange(user)">
                       <option v-for="role in roles" :key="role" :value="role">{{ role }}</option>
                     </select>
                   </div>
@@ -80,7 +130,7 @@
                         type="checkbox"
                         v-model="user.isActive"
                         :aria-label="`Toggle status for ${user.name || user.email}`"
-                        @change="updateUserStatus(user)"
+                        @change="onStatusChange(user)"
                       />
                       <span class="slider"></span>
                     </label>
@@ -183,8 +233,16 @@
                       <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                     </svg>
                   </div>
-                  <p class="empty-title">No users yet</p>
-                  <p class="empty-desc">Users will appear here once they sign up.</p>
+                  <template v-if="hasActiveFilters">
+                    <p class="empty-title">No users match your filters</p>
+                    <p class="empty-desc">
+                      <button class="toolbar-clear" @click="clearFilters">Clear filters</button>
+                    </p>
+                  </template>
+                  <template v-else>
+                    <p class="empty-title">No users yet</p>
+                    <p class="empty-desc">Users will appear here once they sign up.</p>
+                  </template>
                 </div>
               </td>
             </tr>
@@ -284,6 +342,53 @@ const pageInfo = ref<PageInfo>({
   hasPreviousPage: false
 })
 
+// Header totals (all users, ignoring filters) come from the API
+const summary = ref({ total: 0, active: 0, inactive: 0 })
+
+// Search / filters / sort / page size
+const searchInput = ref('')
+const search = ref('')
+const roleFilter = ref('')
+const statusFilter = ref('')
+const trialFilter = ref('')
+const sortBy = ref('email')
+const sortDir = ref<'asc' | 'desc'>('asc')
+const pageSize = ref(10)
+
+const hasActiveFilters = computed(
+  () => !!(search.value || roleFilter.value || statusFilter.value || trialFilter.value)
+)
+
+let searchTimer: ReturnType<typeof setTimeout> | undefined
+watch(searchInput, (value) => {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => { search.value = value.trim() }, 300)
+})
+
+const clearFilters = () => {
+  searchInput.value = ''
+  search.value = ''
+  roleFilter.value = ''
+  statusFilter.value = ''
+  trialFilter.value = ''
+}
+
+const toggleSort = (column: string) => {
+  if (sortBy.value === column) {
+    sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortBy.value = column
+    sortDir.value = 'asc'
+  }
+}
+const sortArrow = (column: string) =>
+  sortBy.value === column ? (sortDir.value === 'asc' ? '▲' : '▼') : ''
+const ariaSort = (column: string) =>
+  sortBy.value === column ? (sortDir.value === 'asc' ? 'ascending' : 'descending') : 'none'
+
+// Last server-confirmed role per user, so a cancelled or failed change can be reverted
+const roleBaseline = new Map<string, string>()
+
 // Accordion state
 const expandedUsers = ref<Set<string>>(new Set())
 const isExpanded = (userId: string) => expandedUsers.value.has(userId)
@@ -303,9 +408,6 @@ const rangeStart = computed(() =>
 const rangeEnd = computed(() =>
   Math.min(pageInfo.value.page * pageInfo.value.pageSize, pageInfo.value.totalCount)
 )
-
-const activeCount = computed(() => users.value.filter(u => u.isActive).length)
-const inactiveCount = computed(() => users.value.filter(u => !u.isActive).length)
 
 // Avatar helpers (display-only)
 const initials = (user: User) => {
@@ -335,10 +437,31 @@ const fetchUsers = async (page = 1) => {
   const seq = ++usersFetchSeq
   usersLoading.value = true
   try {
-    const res = await api.get('/manage-users/list', { params: { pageNo: page } })
+    const res = await api.get('/manage-users/list', {
+      params: {
+        pageNo: page,
+        pageSize: pageSize.value,
+        searchBy: search.value || undefined,
+        role: roleFilter.value || undefined,
+        status: statusFilter.value || undefined,
+        trial: trialFilter.value || undefined,
+        sortBy: sortBy.value,
+        sortDir: sortDir.value,
+      }
+    })
     if (seq !== usersFetchSeq) return
     if (res.data?.isSuccess) {
       users.value = res.data.data || []
+      roleBaseline.clear()
+      users.value.forEach(u => roleBaseline.set(u.userId, u.role))
+      const meta = res.data.meta
+      if (meta) {
+        summary.value = {
+          total: Number(meta.total) || 0,
+          active: Number(meta.active) || 0,
+          inactive: Number(meta.inactive) || 0,
+        }
+      }
       const pi = res.data.pageInfo
       pageInfo.value = {
         page: Number(pi?.page) || 1,
@@ -374,19 +497,59 @@ const fetchRoles = async () => {
   }
 }
 
-// Update user role
-const updateUserRole = async (user: User) => {
+// Update user role (asks first; reverts the dropdown if cancelled or failed)
+const onRoleChange = async (user: User) => {
+  const previous = roleBaseline.get(user.userId) ?? user.role
+  if (user.role === previous) return
+
+  const confirm = await Swal.fire({
+    title: 'Change role?',
+    text: `Change ${user.email || user.name} from ${previous} to ${user.role}?` +
+      (user.role === 'Admin' ? ' Admins can manage all users and settings.' : ''),
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Change role'
+  })
+  if (!confirm.isConfirmed) {
+    user.role = previous
+    return
+  }
+
   try {
     const res = await api.post('/update-role', {
       userId: user.userId,
       role: user.role
     })
-    if (res.data?.isSuccess) toast.success('Role updated successfully')
-    else toast.error('Failed to update role')
+    if (res.data?.isSuccess) {
+      roleBaseline.set(user.userId, user.role)
+      toast.success(`${user.email || user.name} is now ${user.role}`)
+    } else {
+      user.role = previous
+      toast.error(res.data?.error?.description || 'Failed to update role')
+    }
   } catch (err) {
     console.error('Error updating role', err)
+    user.role = previous
     toast.error('Error updating role')
   }
+}
+
+// Deactivating blocks sign-in, so ask first; activating needs no confirmation
+const onStatusChange = async (user: User) => {
+  if (!user.isActive) {
+    const confirm = await Swal.fire({
+      title: 'Deactivate user?',
+      text: `${user.email || user.name} will no longer be able to sign in.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Deactivate'
+    })
+    if (!confirm.isConfirmed) {
+      user.isActive = true
+      return
+    }
+  }
+  await updateUserStatus(user)
 }
 
 // Update user status
@@ -396,9 +559,11 @@ const updateUserStatus = async (user: User) => {
       userId: user.userId,
       isActive: user.isActive
     })
-    if (res.data?.isSuccess) toast.success('Status updated successfully')
-    else {
-      toast.error('Failed to update status')
+    if (res.data?.isSuccess) {
+      toast.success(`${user.email || user.name} is now ${user.isActive ? 'active' : 'inactive'}`)
+      await fetchUsers(pageInfo.value.page) // refresh header totals and any status filter
+    } else {
+      toast.error(res.data?.error?.description || 'Failed to update status')
       user.isActive = !user.isActive
     }
   } catch (err) {
@@ -452,6 +617,12 @@ onMounted(() => {
 
 // Refetch when page changes
 watch(() => pageInfo.value.page, (p) => void fetchUsers(p))
+
+// Any filter / sort / page-size change goes back to page 1
+watch([search, roleFilter, statusFilter, trialFilter, sortBy, sortDir, pageSize], () => {
+  if (pageInfo.value.page === 1) void fetchUsers(1)
+  else pageInfo.value.page = 1
+})
 </script>
 
 <style scoped>
@@ -582,6 +753,62 @@ watch(() => pageInfo.value.page, (p) => void fetchUsers(p))
 .col-status { width: 200px; }
 .col-sites  { width: 180px; white-space: nowrap; }
 .col-trial  { width: 200px; white-space: nowrap; }
+
+/* ----------------- Toolbar ----------------- */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+}
+.toolbar-search,
+.toolbar-select {
+  padding: 7px 10px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-card-bg);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--fs-sm);
+}
+.toolbar-search { flex: 1 1 240px; min-width: 200px; max-width: 360px; }
+.toolbar-search:focus,
+.toolbar-select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: var(--ring-accent);
+}
+.toolbar-clear {
+  padding: 6px 10px;
+  border: none;
+  background: transparent;
+  color: var(--color-accent);
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+}
+.toolbar-clear:hover { text-decoration: underline; }
+.toolbar-spacer { flex: 1 1 auto; }
+.toolbar-result {
+  font-size: var(--fs-sm);
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Sortable headers */
+.users-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+.users-table th.sortable:hover { color: var(--color-text); }
+.sort-arrow {
+  display: inline-block;
+  min-width: 10px;
+  font-size: 9px;
+  margin-left: 2px;
+}
 
 /* ----------------- Free trial ----------------- */
 .trial-cell {
