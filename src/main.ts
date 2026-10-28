@@ -26,7 +26,15 @@ import { buildRoutes } from './Router/dynamicRoutes';
 import { enhanceSalesMailtoLinks } from './utils/enhanceSalesMailto'
 /* ---------------- ROUTES ---------------- */
 
-const SITE_URL = 'https://googleindexing.com';
+import seo from './seo/publicPages.json'
+
+const SITE_URL = seo.siteUrl;
+type SeoPath = keyof typeof seo.pages;
+/** Route meta for public marketing pages, from the same file the build uses to write static HTML. */
+const seoMeta = (path: SeoPath) => {
+  const page = seo.pages[path];
+  return { public: true, title: page.title, description: page.description, canonical: `${SITE_URL}${path === '/' ? '/' : path}`, robots: page.robots };
+};
 const DEFAULT_TITLE = 'GoogleIndexing.com | Google SEO Indexing API Automation';
 const DEFAULT_DESCRIPTION =
   "GoogleIndexing.com helps SEO teams crawl URLs, submit indexing signals through Google's official Indexing API, monitor coverage, and automate scheduled recrawls.";
@@ -35,46 +43,27 @@ const routes = [
   {
     path: "/",
     component: () => import("./pages/Home.vue"),
-    meta: {
-      public: true,
-      title: DEFAULT_TITLE,
-      description: DEFAULT_DESCRIPTION,
-      canonical: `${SITE_URL}/`,
-      robots: 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1'
-    }
+    meta: seoMeta('/')
   },
   {
     path: "/pricing",
     component: () => import("./pages/Pricing.vue"),
-    meta: {
-      public: true,
-      title: 'Pricing | GoogleIndexing.com',
-      description: "Simple pricing for GoogleIndexing.com. Start with a free trial, then choose Solo, Pro, or Team plans for Google Indexing API automation.",
-      canonical: `${SITE_URL}/pricing`,
-      robots: 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1'
-    }
+    meta: seoMeta('/pricing')
+  },
+  {
+    path: "/tools/indexability-checker",
+    component: () => import("./pages/IndexabilityChecker.vue"),
+    meta: seoMeta('/tools/indexability-checker')
   },
   {
     path: "/terms",
     component: () => import("./pages/TermsOfService.vue"),
-    meta: {
-      public: true,
-      title: "Terms of Service | GoogleIndexing.com",
-      description: "Terms of Service for GoogleIndexing.com indexing automation and subscription.",
-      canonical: `${SITE_URL}/terms`,
-      robots: "index,follow,max-snippet:-1"
-    }
+    meta: seoMeta('/terms')
   },
   {
     path: "/privacy",
     component: () => import("./pages/PrivacyPolicy.vue"),
-    meta: {
-      public: true,
-      title: "Privacy Policy | GoogleIndexing.com",
-      description: "Privacy Policy describing how GoogleIndexing.com collects and uses personal data.",
-      canonical: `${SITE_URL}/privacy`,
-      robots: "index,follow,max-snippet:-1"
-    }
+    meta: seoMeta('/privacy')
   },
 
   {
@@ -151,8 +140,10 @@ const router = createRouter({
 const PUBLIC_PATHS = [
   "/unauthorized", "/",
   "/pricing",
+  "/tools/indexability-checker",
   "/terms",
   "/privacy",
+  "/unsubscribe",
   "/login",
   "/signup",
   "/verify-required",

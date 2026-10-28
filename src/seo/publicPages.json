@@ -1,0 +1,49 @@
+{
+  "siteUrl": "https://www.googleindexing.com",
+  "pages": {
+    "/": {
+      "title": "GoogleIndexing.com | Google SEO Indexing API Automation",
+      "description": "Crawl your site, submit new pages through Google's official Indexing API on a schedule, and see URL by URL what Google actually indexed. Free plan available.",
+      "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1",
+      "h1": "Get your pages into Google, and see which ones made it",
+      "text": [
+        "GoogleIndexing.com crawls your site, submits new and changed pages through Google's official Indexing API on a schedule, and checks every URL with Google's URL Inspection so you know what is actually indexed.",
+        "Start free: a 14-day trial with 100 URL submissions, then 50 a month. Works with WordPress, Shopify, nopCommerce, Next.js and custom sites."
+      ]
+    },
+    "/pricing": {
+      "title": "Pricing | GoogleIndexing.com",
+      "description": "Start free with 50 URL submissions a month. Paid plans submit up to 200 URLs a day per Google project, with scheduled crawls and per-URL index status.",
+      "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1",
+      "h1": "Simple, transparent pricing",
+      "text": [
+        "Start free with a 14-day trial of 100 URL submissions, then 50 submissions every month. Paid plans submit up to 200 URLs a day per Google Cloud project, Google's own limit.",
+        "Every plan includes scheduled crawls, automatic submission and index status verified with Google's URL Inspection."
+      ]
+    },
+    "/tools/indexability-checker": {
+      "title": "Free Google Indexability Checker: Why Isn't My Page Indexed? | GoogleIndexing.com",
+      "description": "Free tool: check if Google can index any page. Tests robots.txt, noindex tags, X-Robots-Tag, canonical, redirects, status codes and thin content, with a plain-English fix for each issue.",
+      "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1",
+      "h1": "Free Google indexability checker",
+      "text": [
+        "Paste any page address to see whether Google can index it. The checker tests the HTTP status and redirects, robots.txt rules for Googlebot, the X-Robots-Tag header, meta robots noindex, the canonical tag and how much content is in the HTML.",
+        "Each problem comes with a plain-English fix. No sign-up needed."
+      ]
+    },
+    "/terms": {
+      "title": "Terms of Service | GoogleIndexing.com",
+      "description": "Terms of Service for GoogleIndexing.com indexing automation and subscription.",
+      "robots": "index,follow,max-snippet:-1",
+      "h1": "Terms of Service",
+      "text": ["The terms that apply to using GoogleIndexing.com."]
+    },
+    "/privacy": {
+      "title": "Privacy Policy | GoogleIndexing.com",
+      "description": "Privacy Policy describing how GoogleIndexing.com collects and uses personal data.",
+      "robots": "index,follow,max-snippet:-1",
+      "h1": "Privacy Policy",
+      "text": ["How GoogleIndexing.com collects and uses personal data."]
+    }
+  }
+}

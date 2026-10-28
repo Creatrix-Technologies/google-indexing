@@ -79,6 +79,8 @@
       </p>
     </div>
 
+    <FunnelPanel />
+
     <!-- ============ SIGNUPS + ACTIVITY ============ -->
     <div class="grid-2">
       <!-- Signups chart -->
@@ -215,6 +217,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import api from '../api'
+import FunnelPanel from '../components/admin/FunnelPanel.vue'
 import { useGoogleConfigStore } from '../Shared/googleConfig'
 import { useSubscriptionStore } from '../Shared/subscription'
 

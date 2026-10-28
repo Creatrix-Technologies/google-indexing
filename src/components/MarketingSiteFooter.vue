@@ -6,6 +6,8 @@
         <a href="https://nopbooster.com" target="_blank" rel="noopener">Nopbooster</a>
       </p>
       <p class="marketing-site-footer__note">
+        <router-link to="/tools/indexability-checker">Free indexability checker</router-link>
+        &middot;
         <router-link to="/pricing">Pricing</router-link>
         &middot;
         <router-link to="/terms">Terms</router-link>

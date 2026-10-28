@@ -13,6 +13,7 @@
       >
         {{ link.label }}
       </router-link>
+      <router-link to="/tools/indexability-checker" class="mk-nav__link">Free checker</router-link>
       <router-link to="/pricing" class="mk-nav__link">Pricing</router-link>
       <router-link to="/login" class="mk-nav__cta">Sign In</router-link>
 
@@ -46,6 +47,10 @@
           @click="closeMenu"
         >
           {{ link.label }}
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+        </router-link>
+        <router-link to="/tools/indexability-checker" class="mk-mobile__link" @click="closeMenu">
+          Free indexability checker
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
         </router-link>
         <router-link to="/pricing" class="mk-mobile__link" @click="closeMenu">
