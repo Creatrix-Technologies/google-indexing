@@ -33,6 +33,13 @@ for (const [path, page] of Object.entries(seo.pages)) {
   html = html.replace(/<meta property="og:url" content="[^"]*"\s*\/?>/, `<meta property="og:url" content="${esc(canonical)}" />`)
   html = html.replace(/<meta name="twitter:title" content="[^"]*"\s*\/?>/, `<meta name="twitter:title" content="${esc(page.title)}" />`)
   html = html.replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/, `<meta name="twitter:description" content="${esc(page.description)}" />`)
+  if (page.ogImage) {
+    const img = `${seo.siteUrl}${page.ogImage}`
+    html = html.replace(/<meta property="og:image" content="[^"]*"\s*\/?>/, `<meta property="og:image" content="${esc(img)}" />`)
+    html = html.replace(/<meta property="og:image:secure_url" content="[^"]*"\s*\/?>/, `<meta property="og:image:secure_url" content="${esc(img)}" />`)
+    html = html.replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/, `<meta name="twitter:image" content="${esc(img)}" />`)
+    html = html.replace(/<meta property="og:image:alt" content="[^"]*"\s*\/?>/, `<meta property="og:image:alt" content="${esc(page.title)}" />`)
+  }
 
   // Real text inside #app; Vue replaces it when it mounts.
   const body = `<main style="max-width:720px;margin:12vh auto;padding:0 1.5rem;font-family:system-ui,sans-serif;color:#0a0a0c">`
