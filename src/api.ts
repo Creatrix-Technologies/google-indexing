@@ -89,7 +89,7 @@ api.interceptors.response.use(
         // Keep the deep link so the user returns where they were after signing in. Public pages never
         // need a session, so a failed check there is not an "expired session".
         const here = window.location.pathname + window.location.search
-        const isPublic = ['/', '/login', '/signup', '/pricing', '/terms', '/privacy', '/verify-required', '/confirm-email', '/forgot-password', '/reset-password', '/unauthorized'].includes(window.location.pathname)
+        const isPublic = ['/', '/login', '/signup', '/pricing', '/tools/indexability-checker', '/unsubscribe', '/terms', '/privacy', '/verify-required', '/confirm-email', '/forgot-password', '/reset-password', '/unauthorized'].includes(window.location.pathname)
         if (!isPublic) {
           toast.error('Please sign in to continue.')
           window.location.href = '/login?redirect=' + encodeURIComponent(here)

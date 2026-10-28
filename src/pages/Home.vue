@@ -38,6 +38,9 @@
                 </li>
               </ul>
               <p class="pricing-teaser fade-in-motion delay-3">
+                <router-link to="/tools/indexability-checker">Free tool: check if Google can index any page</router-link>
+              </p>
+              <p class="pricing-teaser fade-in-motion delay-3">
                 <router-link to="/pricing">Pricing</router-link>
                 —
                 free plan: a 14-day trial with 100 URL submissions, then 50 a month;

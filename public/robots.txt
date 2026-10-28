@@ -16,4 +16,4 @@ Disallow: /site-management
 Disallow: /schedule-configuration
 Disallow: /google-callback
 
-Sitemap: https://googleindexing.com/sitemap.xml
+Sitemap: https://www.googleindexing.com/sitemap.xml

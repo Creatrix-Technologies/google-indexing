@@ -13,10 +13,10 @@
           </router-link>
           <h1>Google<br><span class="accent">Indexing</span></h1>
           <p class="desc">
-            Crawl your URLs and get them indexed on Google in hours, not weeks. Monitor pages, improve SEO, and stay discoverable — all from one dashboard.
+            Crawl your site, submit new pages to Google on a schedule, and see URL by URL what Google actually indexed, all from one dashboard.
           </p>
           <ul class="feature-list">
-            <li>Indexed in under two days</li>
+            <li>Submissions through Google's Indexing API</li>
             <li>Live status for every URL</li>
             <li>Automatic recrawls</li>
           </ul>
