@@ -6,6 +6,7 @@ import api from '../api'
 import { loadStripe } from '@stripe/stripe-js'
 import type { Stripe } from '@stripe/stripe-js'
 import Swal from 'sweetalert2'
+import { useEntitlementsStore } from '../Shared/entitlements'
 import Loading from 'vue-loading-overlay'
 import 'vue-loading-overlay/dist/css/index.css'
 import { useSubscriptionStore } from '../Shared/subscription'
@@ -48,6 +49,8 @@ interface SavedCard {
 }
 
 /* ---------------- STATE ---------------- */
+const entitlements = useEntitlementsStore()
+entitlements.refresh()
 const plans = ref<Plan[]>([])
 const paymentHistory = ref<Payment[]>([])
 const historyPage = ref(1)
@@ -222,7 +225,8 @@ const autoSelectPlan = (planIdentifier: string) => {
   })
 
   if (matchingPlan && !matchingPlan.isCurrentPlan) {
-    // Small delay to ensure UI is ready
+    // Pre-select the plan chosen on the pricing page. startSubscribe opens the card form or asks for
+    // confirmation before charging a saved card; it never charges silently.
     setTimeout(() => {
       startSubscribe(matchingPlan)
     }, 300)
@@ -293,6 +297,20 @@ const startSubscribe = async (plan: Plan) => {
   // charge it directly. Stripe will use the stored default payment method
   // and Subscription.Status will return as "active" right away.
   if (savedCard.value) {
+    // Never charge a stored card without an explicit confirmation.
+    const priceText = plan.amount != null ? ` for $${plan.amount}/${plan.duration || 'month'}` : ''
+    const confirm = await Swal.fire({
+      title: `Subscribe to ${plan.name}?`,
+      text: `Your saved card${savedCard.value?.last4 ? ' ending in ' + savedCard.value.last4 : ''} will be charged${priceText}.`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Confirm and pay',
+      cancelButtonText: 'Not now'
+    })
+    if (!confirm.isConfirmed) {
+      subscribingPlan.value = null
+      return
+    }
     await chargeWithSavedCard()
     return
   }
@@ -313,9 +331,7 @@ const chargeWithSavedCard = async () => {
   try {
     isLoading.value = true
 
-    const res = await api.get(
-      `/payments/stripe-user-subscription?plan=${subscribingPlan.value.id}`
-    )
+    const res = await api.post('/payments/stripe-user-subscription', { plan: subscribingPlan.value.id })
 
     const data = res.data?.data || {}
     const status = String(data.status || '').toLowerCase()
@@ -393,9 +409,7 @@ const confirmSubscription = async () => {
   try {
     isLoading.value = true
 
-    const res = await api.get(
-      `/payments/stripe-user-subscription?plan=${subscribingPlan.value.id}`
-    )
+    const res = await api.post('/payments/stripe-user-subscription', { plan: subscribingPlan.value.id })
 
     const clientSecret = res.data?.data?.clientSecret
     if (!clientSecret) throw new Error('Failed to create subscription')
@@ -533,31 +547,65 @@ const removeSavedCard = async () => {
   }
 }
 
-/* ---------------- CANCEL SUBSCRIPTION ---------------- */
+/* ---------------- CANCEL / RESUME SUBSCRIPTION ---------------- */
+const CANCEL_REASONS: Record<string, string> = {
+  too_expensive: 'Too expensive',
+  missing_features: 'Missing a feature I need',
+  not_working: 'Pages are not getting indexed',
+  switched: 'Switched to another tool',
+  temporary: 'Pausing for now',
+  other: 'Other',
+}
+
 const cancelSubscription = async () => {
+  const ends = entitlements.data.subscriptionEndsAt ? formatDate(entitlements.data.subscriptionEndsAt) : 'the end of the current period'
   const result = await Swal.fire({
-    title: 'Cancel Subscription?',
-    text: 'Are you sure you want to cancel your subscription?',
+    title: 'Cancel your subscription?',
+    html: `<p style="margin:0 0 12px">You keep full access until <strong>${ends}</strong>; nothing is charged after that and you can resume any time before then.</p>
+      <p style="margin:0 0 6px;text-align:left;font-size:13px">Help us improve: why are you cancelling?</p>
+      <select id="cancel-reason" class="swal2-select" style="margin:0 0 8px;width:100%">
+        <option value="">Choose a reason (optional)</option>
+        ${Object.entries(CANCEL_REASONS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}
+      </select>
+      <textarea id="cancel-comment" class="swal2-textarea" style="margin:0;width:100%" rows="2" placeholder="Anything else? (optional)"></textarea>`,
     icon: 'warning',
     showCancelButton: true,
-    confirmButtonText: 'Yes, cancel it',
-    cancelButtonText: 'No, keep it',
-    reverseButtons: false
+    confirmButtonText: 'Cancel at period end',
+    cancelButtonText: 'Keep my plan',
+    preConfirm: () => ({
+      reason: (document.getElementById('cancel-reason') as HTMLSelectElement | null)?.value || null,
+      comment: (document.getElementById('cancel-comment') as HTMLTextAreaElement | null)?.value?.trim() || null,
+    }),
   })
 
   if (result.isConfirmed) {
     try {
-      await api.get('/payments/cancel-subscription')
-      toast.success('Subscription canceled')
+      await api.post('/payments/cancel-subscription', result.value)
+      toast.success(`Cancellation scheduled. You keep access until ${ends}.`)
+      await entitlements.refresh(true)
       fetchPlans()
       fetchSubscriptionLogs()
     } catch (err: any) {
-      toast.error(
-        err.response?.data?.error?.description ||
-          'Failed to cancel subscription'
-      )
+      toast.error(err.response?.data?.error?.description || 'Failed to cancel subscription')
     }
   }
+}
+
+const resumeSubscription = async () => {
+  try {
+    await api.post('/payments/resume-subscription')
+    toast.success('Your subscription will renew as usual.')
+    await entitlements.refresh(true)
+    fetchPlans()
+    fetchSubscriptionLogs()
+  } catch (err: any) {
+    toast.error(err.response?.data?.error?.description || 'Failed to resume subscription')
+  }
+}
+
+const formatDate = (iso: string) => {
+  const d = new Date(iso)
+  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
 /* ---------------- CLOSE MODAL ---------------- */
@@ -606,6 +654,7 @@ onMounted(async () => {
 
     <!-- ============ CURRENT PLAN BANNER ============ -->
     <section v-if="currentPlan" class="current-card">
+      <p v-if="entitlements.usageSummary" class="usage-line">{{ entitlements.usageSummary }}</p>
       <div class="current-card__main">
         <div class="current-card__icon" aria-hidden="true">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
@@ -625,7 +674,17 @@ onMounted(async () => {
         </div>
       </div>
       <div class="current-card__actions">
-        <button class="btn-ghost-danger" @click="cancelSubscription">
+        <p v-if="entitlements.data.cancelAt" class="cancel-note">
+          Cancellation scheduled: you keep full access until
+          <strong>{{ formatDate(entitlements.data.cancelAt) }}</strong>, then the plan ends.
+        </p>
+        <p v-else-if="entitlements.data.subscriptionEndsAt" class="cancel-note cancel-note--muted">
+          Renews on {{ formatDate(entitlements.data.subscriptionEndsAt) }}.
+        </p>
+        <button v-if="entitlements.data.cancelAt" class="btn-primary" @click="resumeSubscription">
+          Resume subscription
+        </button>
+        <button v-else class="btn-ghost-danger" @click="cancelSubscription">
           Cancel subscription
         </button>
       </div>
@@ -1844,4 +1903,7 @@ onMounted(async () => {
   .section-header { align-items: flex-start; }
   .history-summary { width: 100%; }
 }
+.usage-line { margin: 0 0 10px; font-size: 13px; color: #475569; }
+.cancel-note { margin: 0 0 10px; font-size: 13px; color: #b45309; }
+.cancel-note--muted { color: #64748b; }
 </style>

@@ -86,8 +86,14 @@ api.interceptors.response.use(
           await refreshApi.post('/logout')
         } catch {}
 
-        toast.error('Session expired. Please login again.')
-        window.location.href = '/login'
+        // Keep the deep link so the user returns where they were after signing in. Public pages never
+        // need a session, so a failed check there is not an "expired session".
+        const here = window.location.pathname + window.location.search
+        const isPublic = ['/', '/login', '/signup', '/pricing', '/terms', '/privacy', '/verify-required', '/confirm-email', '/forgot-password', '/reset-password', '/unauthorized'].includes(window.location.pathname)
+        if (!isPublic) {
+          toast.error('Please sign in to continue.')
+          window.location.href = '/login?redirect=' + encodeURIComponent(here)
+        }
         return Promise.reject(err)
       } finally {
         isRefreshing = false

@@ -11,7 +11,7 @@
         </div>
         <div v-if="!collapsed" class="logo-copy">
           <span class="logo-text">GoogleIndexing.com</span>
-          <span class="logo-subtext">Admin Console</span>
+          <span class="logo-subtext">Indexing console</span>
         </div>
       </div>
       <button
@@ -118,6 +118,10 @@
       <p v-if="visibleMenus.length === 0" class="menu-empty" role="status">
         No menu items
       </p>
+      <a class="menu-item help-link" href="/#contact" target="_blank" rel="noopener">
+        <span class="menu-icon" aria-hidden="true">?</span>
+        <span class="menu-label">Help &amp; support</span>
+      </a>
     </nav>
   </aside>
 </template>
@@ -756,4 +760,6 @@ const iconFor = (m: any): string => ICONS[iconKey(m) as keyof typeof ICONS] ?? I
     transform: translateX(0);
   }
 }
+.help-link { margin-top: 12px; opacity: .85; }
+.help-link .menu-icon { font-weight: 700; }
 </style>

@@ -34,6 +34,34 @@
             </div>
           </div>
 
+          <!-- Verify connection -->
+          <div class="card" v-if="credentials.serviceAccountEmail">
+            <h3>Verify connection</h3>
+            <p class="hint">
+              Checks that Google accepts the key and that the service account is an <strong>Owner</strong> of each Search Console property
+              (the Indexing API refuses anything less).
+            </p>
+            <div class="verify-email">
+              <code>{{ credentials.serviceAccountEmail }}</code>
+              <button type="button" class="btn ghost small" @click="copyServiceAccountEmail">Copy email</button>
+            </div>
+            <div class="actions">
+              <button class="btn primary" @click="verifyConnection" :disabled="verifying">
+                {{ verifying ? 'Checking…' : 'Verify now' }}
+              </button>
+            </div>
+            <div v-if="verifyResult" class="verify-result" :class="verifyResult.connected && verifyResult.properties.some(p => p.isOwner) ? 'is-ok' : 'is-warn'">
+              <p class="verify-result__message">{{ verifyResult.message }}</p>
+              <ul v-if="verifyResult.properties.length" class="verify-result__list">
+                <li v-for="p in verifyResult.properties" :key="p.siteUrl" :class="{ 'is-owner': p.isOwner }">
+                  <span class="verify-result__mark" aria-hidden="true">{{ p.isOwner ? '✓' : '!' }}</span>
+                  <span class="verify-result__site">{{ p.siteUrl }}</span>
+                  <span class="verify-result__perm">{{ p.permissionLevel }}</span>
+                  <span v-if="!p.isOwner" class="verify-result__hint">{{ p.hint }}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
           <!-- Upload JSON -->
           <div class="card">
             <h3>Upload Service Account Key</h3>
@@ -88,7 +116,7 @@
 
             <div class="form-group">
               <label>Private Key</label>
-              <textarea rows="6" v-model="credentials.privateKey"></textarea>
+              <textarea rows="6" v-model="credentials.privateKey" placeholder="Stored securely and never shown. Leave empty to keep the existing private key."></textarea>
             </div>
 
             <button class="btn primary full" @click="updateCredentials" :disabled="loading">
@@ -180,6 +208,33 @@ const fetchCredentials = async () => {
     }
   } finally {
     loading.value = false
+  }
+}
+
+type VerifyProperty = { siteUrl: string; permissionLevel: string; isOwner: boolean; canSubmit: boolean; hint: string }
+type VerifyResult = { connected: boolean; clientEmail: string | null; properties: VerifyProperty[]; message: string }
+const verifying = ref(false)
+const verifyResult = ref<VerifyResult | null>(null)
+
+const verifyConnection = async () => {
+  verifying.value = true
+  try {
+    const res = await api.post('/google-config/verify')
+    verifyResult.value = res.data?.data ?? null
+    if (verifyResult.value?.connected) await googleConfigStore.check()
+  } catch (err: any) {
+    toast.error(err?.response?.data?.error?.description || 'Verification failed')
+  } finally {
+    verifying.value = false
+  }
+}
+
+const copyServiceAccountEmail = async () => {
+  try {
+    await navigator.clipboard.writeText(credentials.serviceAccountEmail)
+    toast.success('Service account email copied')
+  } catch {
+    toast.info(credentials.serviceAccountEmail)
   }
 }
 
@@ -524,4 +579,17 @@ input:focus, textarea:focus { outline: none; border-color: var(--color-accent); 
   .setup-guide__hint { display: none; }
   .setup-guide__body { padding: var(--space-4); }
 }
+.verify-email { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 6px 0 10px; }
+.verify-email code { font-size: 12px; background: #f1f5f9; padding: 4px 8px; border-radius: 6px; word-break: break-all; }
+.btn.small { padding: 6px 10px; font-size: 12px; }
+.verify-result { margin-top: 12px; border-radius: 8px; padding: 10px 12px; font-size: 13px; }
+.verify-result.is-ok { background: #f0fdf4; border: 1px solid #bbf7d0; }
+.verify-result.is-warn { background: #fffbeb; border: 1px solid #fde68a; }
+.verify-result__message { margin: 0 0 8px; font-weight: 600; }
+.verify-result__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.verify-result__list li { display: grid; grid-template-columns: 18px 1fr auto; gap: 8px; align-items: baseline; }
+.verify-result__hint { grid-column: 2 / -1; color: #92400e; font-size: 12px; }
+.verify-result__mark { font-weight: 700; color: #b45309; }
+.is-owner .verify-result__mark { color: #16a34a; }
+.verify-result__perm { font-size: 12px; color: #64748b; }
 </style>

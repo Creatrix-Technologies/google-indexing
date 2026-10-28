@@ -87,7 +87,13 @@
         </Transition>
       </div>
     </div>
-  </div>
+  
+    <p class="guide-note">
+      <strong>What the Indexing API can do.</strong> Google officially supports the Indexing API for pages with
+      JobPosting or BroadcastEvent structured data. For other pages a submission is a strong hint that often speeds
+      up crawling, but Google decides what it indexes; the dashboard shows what Google actually reports.
+    </p>
+</div>
 </template>
 
 <script setup lang="ts">
@@ -409,4 +415,5 @@ const toggleStep = (n: number) => {
   }
   .og-step__toggle-right { padding-top: 0; }
 }
+.guide-note { margin: 14px 0 0; padding: 10px 12px; border-left: 3px solid #f59e0b; background: #fffbeb; font-size: 13px; color: #78350f; border-radius: 6px; }
 </style>

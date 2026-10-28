@@ -29,7 +29,7 @@
             <span class="user-name">{{ authStore.userName }}</span>
             <span class="user-email">{{ authStore.userEmail }}</span>
           </div>
-          <span class="account-status" :class="accountStatusClass">
+          <span class="account-status" :class="accountStatusClass" :title="accountStatusTitle">
             <span class="status-dot" aria-hidden="true"></span>
             {{ accountStatusLabel }}
           </span>
@@ -66,8 +66,8 @@
       <span class="gnb-dot" aria-hidden="true"></span>
       <p class="gnb-text">
         <template v-if="googleConfigStore.hasCredentials">
-          Your API key is saved, but Search Console returned no sites —
-          add the service account email in Search Console → Users and permissions (Full access).
+          Your service account key is saved, but Search Console returned no properties —
+          add the service account email in Search Console → Settings → Users and permissions as an <strong>Owner</strong> (the Indexing API requires Owner, not Full access).
         </template>
         <template v-else>
           Google Search Console is not connected —
@@ -93,6 +93,7 @@
 </template>
 
 <script setup lang="ts">
+import { useEntitlementsStore } from '../Shared/entitlements'
 import { computed, onMounted, ref } from 'vue'
 
 const props = defineProps<{
@@ -127,17 +128,22 @@ const handleLogout = () => {
   logout()
 }
 
+// A paying customer is "Subscribed" even if trial allowance remains; trial only when no active plan.
+const entitlements = useEntitlementsStore()
+
 const accountStatusLabel = computed(() => {
-  if (userLimitStore.isChecking || subscriptionStore.isChecking) return 'Checking'
-  if (userLimitStore.hasLimit) return 'Trial'
-  return subscriptionStore.isValid ? 'Subscribed' : 'Expired'
+  if (entitlements.isChecking && !entitlements.loaded) return 'Checking'
+  return entitlements.statusLabel
 })
 
 const accountStatusClass = computed(() => {
-  if (userLimitStore.isChecking || subscriptionStore.isChecking) return 'is-checking'
-  if (userLimitStore.hasLimit) return 'is-trial'
-  return subscriptionStore.isValid ? 'is-active' : 'is-expired'
+  if (entitlements.isChecking && !entitlements.loaded) return 'is-checking'
+  if (entitlements.data.hasActiveSubscription) return 'is-active'
+  if (entitlements.data.trialActive) return 'is-trial'
+  return 'is-expired'
 })
+
+const accountStatusTitle = computed(() => entitlements.usageSummary || entitlements.blockingReason)
 
 </script>
 

@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import api from '../api'
 
 const EMPTY_SITES_MSG =
-  'No Search Console properties were returned. Add your service account email as a user in Search Console (Settings → Users and permissions, Full access), then use Sync sites on Site management.'
+  'No Search Console properties were returned. Add your service account email in Search Console (Settings → Users and permissions) as an Owner — the Indexing API requires Owner, not Full access — then use Sync sites on Sites.'
 
 /** Axios body for `/site/google-sites`: Result<List<string>> (camelCase JSON). Legacy raw string[] tolerated. */
 function parseGoogleSitesResponse(

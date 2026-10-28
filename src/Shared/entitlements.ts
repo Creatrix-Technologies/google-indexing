@@ -1,65 +1,96 @@
 import { defineStore } from 'pinia'
 import api from '../api'
 
-function subscriptionExpired(state: {
-  subscriptionActive: boolean
-  trialAvailable: boolean
-  expiresAt: string | null
-}) {
-  if (state.subscriptionActive || state.trialAvailable) return false
-  if (!state.expiresAt) return false
-  const t = Date.parse(state.expiresAt)
-  if (Number.isNaN(t)) return false
-  return t < Date.now()
+/** Mirror of GET /manage-users/entitlement (the one source of truth for what the user may do). */
+export interface EntitlementData {
+  isTrial: boolean
+  trialActive: boolean
+  trialEndsAt: string | null
+  trialUrlsUsed: number
+  trialUrlLimit: number
+  trialUrlsLeft: number
+  hasActiveSubscription: boolean
+  subscriptionStatus: string | null
+  planName: string | null
+  subscriptionEndsAt: string | null
+  cancelAt: string | null
+  maxSites: number | null
+  maxUrlsPerDay: number | null
+  maxUrlsPerMonth: number | null
+  sitesUsed: number
+  urlsSubmittedThisMonth: number
+  urlsLeftThisMonth: number | null
+  canSubmit: boolean
+  canAddSite: boolean
 }
+
+const EMPTY: EntitlementData = {
+  isTrial: false, trialActive: false, trialEndsAt: null, trialUrlsUsed: 0, trialUrlLimit: 100, trialUrlsLeft: 0,
+  hasActiveSubscription: false, subscriptionStatus: null, planName: null, subscriptionEndsAt: null, cancelAt: null,
+  maxSites: null, maxUrlsPerDay: null, maxUrlsPerMonth: null, sitesUsed: 0, urlsSubmittedThisMonth: 0, urlsLeftThisMonth: null,
+  canSubmit: false, canAddSite: false,
+}
+
+const STALE_MS = 30_000
 
 export const useEntitlementsStore = defineStore('entitlements', {
   state: () => ({
-    subscriptionActive: false,
-    trialAvailable: false,
-    expiresAt: null as string | null,
-    isChecking: false
+    data: { ...EMPTY } as EntitlementData,
+    loaded: false,
+    loadedAt: 0,
+    isChecking: false,
   }),
 
   getters: {
-    canUsePaidFeatures: (state) => state.subscriptionActive || state.trialAvailable,
-    statusLabel: (state) => {
-      if (state.subscriptionActive) return 'Subscribed'
-      if (state.trialAvailable) return 'Trial'
-      return 'Subscription required'
+    // Legacy field names kept for existing call sites.
+    subscriptionActive: (s) => s.data.hasActiveSubscription,
+    trialAvailable: (s) => s.data.trialActive,
+    expiresAt: (s) => s.data.subscriptionEndsAt,
+    canUsePaidFeatures: (s) => s.data.canSubmit,
+    statusLabel: (s) => {
+      if (s.data.hasActiveSubscription) return s.data.cancelAt ? 'Ends soon' : 'Subscribed'
+      if (s.data.trialActive) return 'Trial'
+      if (s.data.isTrial) return 'Trial ended'
+      return s.data.subscriptionStatus ? 'Expired' : 'No plan'
     },
-    blockingReason: (state) => {
-      if (state.subscriptionActive || state.trialAvailable) return ''
-      if (subscriptionExpired(state)) {
-        return 'Your subscription has expired. Renew your plan to continue crawling, scheduling, and indexing.'
+    /** Short usage line for the header/billing page, e.g. "Trial: 97 URLs left · 12 days". */
+    usageSummary: (s) => {
+      const d = s.data
+      if (d.hasActiveSubscription) {
+        const month = d.urlsLeftThisMonth != null ? `${d.urlsLeftThisMonth} of ${d.maxUrlsPerMonth} URLs left this month` : 'unlimited URLs'
+        const sites = d.maxSites != null ? ` · ${d.sitesUsed}/${d.maxSites} sites` : ''
+        return `${d.planName ?? 'Plan'}: ${month}${sites}`
       }
-      return 'An active subscription or remaining trial quota (100 free indexing requests) is required for crawling, schedules, and the indexing queue. Upgrade or complete signup if you have not started a trial.'
-    }
+      if (d.trialActive) {
+        const days = d.trialEndsAt ? Math.max(0, Math.ceil((Date.parse(d.trialEndsAt) - Date.now()) / 86_400_000)) : null
+        return `Trial: ${d.trialUrlsLeft} of ${d.trialUrlLimit} URLs left${days != null ? ` · ${days} day${days === 1 ? '' : 's'}` : ''}`
+      }
+      return ''
+    },
+    blockingReason: (s) => {
+      const d = s.data
+      if (d.canSubmit) return ''
+      if (d.isTrial && !d.trialActive && d.trialUrlsLeft <= 0) return `Your free trial allowance of ${d.trialUrlLimit} URLs is used up. Choose a plan to keep submitting URLs.`
+      if (d.isTrial && !d.trialActive) return 'Your free trial has ended. Choose a plan to keep submitting URLs.'
+      if (d.subscriptionStatus) return 'Your subscription has ended. Choose a plan to continue crawling, scheduling and submitting URLs.'
+      return 'A plan or an active trial is needed to submit URLs to Google.'
+    },
   },
 
   actions: {
-    async refresh() {
+    async refresh(force = false) {
+      if (!force && this.loaded && Date.now() - this.loadedAt < STALE_MS) return
       this.isChecking = true
       try {
-        const [subscriptionRes, limitRes] = await Promise.allSettled([
-          api.get('/payments/check-subscription-status'),
-          api.get('/manage-users/has-limit')
-        ])
-
-        if (subscriptionRes.status === 'fulfilled') {
-          const data = subscriptionRes.value.data?.data
-          this.subscriptionActive = data?.isValid === true
-          this.expiresAt = data?.expiresAt || null
-        } else {
-          this.subscriptionActive = false
-          this.expiresAt = null
-        }
-
-        this.trialAvailable =
-          limitRes.status === 'fulfilled' && limitRes.value.data?.data === true
+        const res = await api.get('/manage-users/entitlement')
+        this.data = { ...EMPTY, ...(res.data?.data ?? {}) }
+        this.loaded = true
+        this.loadedAt = Date.now()
+      } catch {
+        this.data = { ...EMPTY }
       } finally {
         this.isChecking = false
       }
-    }
-  }
+    },
+  },
 })

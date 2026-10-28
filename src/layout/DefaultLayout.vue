@@ -24,7 +24,6 @@
         <router-view />
       </div>
     </div>
-    <FrontendAssistant />
   </div>
 </template>
 
@@ -33,7 +32,6 @@ import { getCurrentInstance, ref, onMounted, onUnmounted } from "vue";
 import HighchartsVue from "highcharts-vue";
 import Sidebar from "../components/Sidebar.vue";
 import Header from "../components/Header.vue";
-import FrontendAssistant from "../components/FrontendAssistant.vue";
 
 /** Sync registration: top-level await in setup makes this layout async and breaks router-view without Suspense. */
 const inst = getCurrentInstance();

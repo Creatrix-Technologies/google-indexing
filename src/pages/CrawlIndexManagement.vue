@@ -466,11 +466,11 @@ const handleAuthError = (err: any) => {
 
   if (status === 401) {
     toast.error('Session expired. Please login again.')
-    router.push({ name: 'Login' })
+    router.push('/login')
     return
   }
 
-  if (status === 400) {
+  if (status && status >= 400 && status < 500) {
     const message =
       data?.error?.description ||
       data?.message ||
@@ -555,6 +555,8 @@ const listenToCrawlProgress = (siteId: number) => {
 
   const source = new EventSource(
     `${import.meta.env.VITE_API_BASE_URL}/crawl/listen/${siteId}`
+  ,
+    { withCredentials: true }
   )
   eventSources.set(siteId, source)
 
