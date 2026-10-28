@@ -104,6 +104,7 @@ const routes = [
 
   { path: "/google-callback", component: () => import('./pages/GoogleCallback.vue'), meta: { robots: 'noindex,nofollow' } },
   { path: "/unauthorized", component: () => import('./pages/Unauthorized.vue'), meta: { public: true, robots: 'noindex,nofollow' } },
+  { path: "/unsubscribe", component: () => import('./pages/Unsubscribe.vue'), meta: { public: true, robots: 'noindex,nofollow' } },
 
   {
     path: "/confirm-email",

@@ -140,6 +140,7 @@ const accountStatusClass = computed(() => {
   if (entitlements.isChecking && !entitlements.loaded) return 'is-checking'
   if (entitlements.data.hasActiveSubscription) return 'is-active'
   if (entitlements.data.trialActive) return 'is-trial'
+  if (entitlements.data.isFree && entitlements.data.freeUrlsLeft > 0) return 'is-trial'
   return 'is-expired'
 })
 

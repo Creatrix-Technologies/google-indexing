@@ -294,6 +294,7 @@
 </template>
 
 <script setup lang="ts">
+import { showUpgradePrompt } from '../Shared/upgradePrompt'
 import { ref, computed, onMounted } from 'vue'
 import api from '../api'
 import { useToast } from 'vue-toastification'
@@ -313,7 +314,7 @@ const paidActionTitle = computed(() => entitlementsStore.canUsePaidFeatures ? ''
 const ensurePaidAccess = async () => {
   await entitlementsStore.refresh()
   if (entitlementsStore.canUsePaidFeatures) return true
-  await Swal.fire('Subscription required', entitlementsStore.blockingReason, 'warning')
+  await showUpgradePrompt(entitlementsStore.blockingReason)
   return false
 }
 

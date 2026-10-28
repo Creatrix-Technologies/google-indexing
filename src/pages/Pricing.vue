@@ -10,7 +10,7 @@
         <section class="pricing-hero">
           <h1>Simple, transparent <span class="accent">pricing</span></h1>
           <p class="pricing-subtext">
-            Choose the plan that fits your indexing needs. Works with <strong>any website</strong> — WordPress, Shopify, nopCommerce, Next.js, corporate sites, or fully custom-built. All plans use Google's official Indexing API.
+            Start free, upgrade when you need more. Works with <strong>any website</strong>: WordPress, Shopify, nopCommerce, Next.js, corporate sites, or fully custom-built.
           </p>
         </section>
 
@@ -19,7 +19,9 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           </span>
           <span>
-            Google's Indexing API allows <strong>200 requests/day per Google Cloud project (i.e. per service account/API key)</strong> — this is a hard Google-enforced limit, not ours. All paid plans give you the full quota.
+            Google's Indexing API allows <strong>200 submissions a day per Google Cloud project</strong> (your own service account). That limit is Google's, not ours, and every paid plan can use all of it.
+            Google officially supports the API for job-posting and livestream pages; for other pages a submission asks Google to crawl sooner but cannot guarantee indexing.
+            That's why every plan shows you, URL by URL, what Google actually indexed.
           </span>
         </div>
 
@@ -30,19 +32,19 @@
           >
             <div class="card-glow"></div>
             <div class="pricing-card-header">
-              <h3>Trial</h3>
+              <h3>Free</h3>
               <div class="price">
-                <span class="amount">Free</span>
+                <span class="amount">$0</span>
               </div>
-              <p class="price-note">One-time trial</p>
+              <p class="price-note">Free forever, no card needed</p>
             </div>
             <ul class="pricing-features">
-              <li>100 indexing requests</li>
-              <li>1 site</li>
-              <li>Web dashboard</li>
-              <li>No API access</li>
+              <li>{{ FREE_PLAN.trialDays }}-day trial with {{ FREE_PLAN.trialUrls }} URL submissions</li>
+              <li>Then {{ FREE_PLAN.monthlyUrls }} URL submissions every month</li>
+              <li>{{ FREE_PLAN.sites }} website</li>
+              <li>Site crawl, index status and "why isn't this indexed?" explanations</li>
             </ul>
-            <router-link to="/login?plan=trial" class="pricing-cta pricing-cta-outline">Start trial</router-link>
+            <router-link to="/signup?plan=trial" class="pricing-cta pricing-cta-outline">Start free</router-link>
           </article>
 
           <article
@@ -68,6 +70,9 @@
                 </template>
               </div>
             </div>
+            <ul v-if="!isTrialPlan(plan)" class="pricing-features">
+              <li v-for="line in planLimitLines(plan)" :key="line">{{ line }}</li>
+            </ul>
             <div
               v-if="plan.description"
               class="pricing-card__desc"
@@ -165,20 +170,11 @@ import MarketingSiteFooter from '../components/MarketingSiteFooter.vue'
 import MarketingHeader from '../components/marketing/MarketingHeader.vue'
 import { refreshApi } from '../api'
 import type { PublicPlan } from '../Shared/publicPlans'
-import { fetchPublicSubscriptionPlans, isTrialPlan } from '../Shared/publicPlans'
+import { FREE_PLAN, fetchPublicSubscriptionPlans, isTrialPlan, planLimitLines, planSlug } from '../Shared/publicPlans'
 
 const showScrollTop = ref(false)
 const plans = ref<PublicPlan[]>([])
 const plansError = ref('')
-
-type PlanSlugKey = 'trial' | 'solo' | 'pro' | 'team'
-
-const planSlugAliases: Record<PlanSlugKey, string[]> = {
-  trial: ['trial', 'free'],
-  solo: ['solo', 'basic'],
-  pro: ['pro', 'professional'],
-  team: ['team', 'enterprise', 'business'],
-}
 
 const displayPlans = computed(() =>
   [...plans.value].sort((a, b) => {
@@ -214,20 +210,12 @@ const formatPeriod = (duration?: string) => {
   return ''
 }
 
-const resolvePlanSlug = (name: string) => {
-  const lower = name.toLowerCase()
-  for (const [slug, aliases] of Object.entries(planSlugAliases)) {
-    if (aliases.some((alias) => lower.includes(alias))) return slug
-  }
-  return lower.trim().replace(/\s+/g, '-')
-}
-
 const planCtaPath = (plan: PublicPlan) => {
-  const slug = resolvePlanSlug(plan.name)
-  return isTrialPlan(plan) ? `/login?plan=${slug}` : `/signup?plan=${slug}`
+  const slug = planSlug(plan.name)
+  return `/signup?plan=${slug}`
 }
 
-const planCtaLabel = (plan: PublicPlan) => (isTrialPlan(plan) ? 'Start trial' : `Get ${plan.name}`)
+const planCtaLabel = (plan: PublicPlan) => (isTrialPlan(plan) ? 'Start free' : `Get ${plan.name}`)
 
 const planCtaClass = (plan: PublicPlan) => {
   if (isTrialPlan(plan)) return 'pricing-cta-outline'
