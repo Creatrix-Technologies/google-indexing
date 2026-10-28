@@ -40,7 +40,7 @@
               <p class="pricing-teaser fade-in-motion delay-3">
                 <router-link to="/pricing">Pricing</router-link>
                 —
-                free trial with 100 requests;
+                free plan: a 14-day trial with 100 URL submissions, then 50 a month;
                 <template v-if="paidFromMonthly != null">
                   paid from ${{ formatPublicPlanAmount(paidFromMonthly) }}/mo.
                 </template>
@@ -86,7 +86,7 @@
                 </svg>
               </div>
               <h3>Automatic<br>Indexing</h3>
-              <p>Publish a page and our system instantly notifies Google. No manual sitemap submissions ever again.</p>
+              <p>Scheduled crawls find new and changed pages and submit them through Google's Indexing API for you. No manual pinging.</p>
             </div>
             <div class="glass-card main-card reveal-hidden">
               <div class="card-glow"></div>
@@ -135,12 +135,12 @@
                 <span class="metric-label">Standard Method</span>
               </div>
               <div class="metric">
-                <span class="metric-number">87%</span>
-                <span class="metric-label">Success Rate</span>
+                <span class="metric-number">200/day</span>
+                <span class="metric-label">Submissions per Google project</span>
               </div>
               <div class="metric">
-                <span class="metric-number">3–5×</span>
-                <span class="metric-label">Faster on Average</span>
+                <span class="metric-number">Every URL</span>
+                <span class="metric-label">Index status checked with Google</span>
               </div>
             </div>
           </div>
@@ -158,7 +158,7 @@
             <div class="process-step">
               <div class="step-num">01</div>
               <h4>Connect your site</h4>
-              <p>Sign in with Google and link your Search Console. Takes under 2 minutes.</p>
+              <p>Create a Google service account and add it as an Owner in Search Console. Our step-by-step guide takes about 10 minutes.</p>
             </div>
             <div class="process-arrow">
               <svg viewBox="0 0 50 20"><path d="M0 10 L45 10 M35 5 L45 10 L35 15" fill="none" stroke="currentColor"/></svg>

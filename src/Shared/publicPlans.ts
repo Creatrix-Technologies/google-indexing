@@ -7,6 +7,45 @@ export interface PublicPlan {
   amount: number
   currency: string
   duration: string
+  /** Enforced limits from the plan settings; null means no cap. */
+  maxSites?: number | null
+  maxUrlsPerDay?: number | null
+  maxUrlsPerMonth?: number | null
+}
+
+/** Google's Indexing API default quota per Google Cloud project; no plan can submit more than this per project. */
+export const GOOGLE_DAILY_QUOTA = 200
+
+/** Free tier, mirrored from the API (EntitlementService / FreePlan:MonthlyUrls). */
+export const FREE_PLAN = { trialDays: 14, trialUrls: 100, monthlyUrls: 50, sites: 1 } as const
+
+const slugAliases: Record<string, string[]> = {
+  trial: ['trial', 'free'],
+  solo: ['solo', 'basic'],
+  pro: ['pro', 'professional'],
+  team: ['team', 'enterprise', 'business'],
+}
+
+/** URL slug for a plan name (used in ?plan= links). */
+export function planSlug(name: string): string {
+  const lower = name.toLowerCase()
+  for (const [slug, aliases] of Object.entries(slugAliases)) {
+    if (aliases.some((alias) => lower.includes(alias))) return slug
+  }
+  return lower.trim().replace(/\s+/g, '-')
+}
+
+/** Feature lines generated from what the plan actually enforces, so copy cannot drift from the limits. */
+export function planLimitLines(plan: PublicPlan): string[] {
+  const n = (v: number) => v.toLocaleString('en-US')
+  const perDay = Math.min(plan.maxUrlsPerDay ?? GOOGLE_DAILY_QUOTA, GOOGLE_DAILY_QUOTA)
+  const lines = [
+    plan.maxSites == null ? 'Unlimited websites' : `${n(plan.maxSites)} website${plan.maxSites === 1 ? '' : 's'}`,
+    `Up to ${n(perDay)} URL submissions a day`,
+  ]
+  if (plan.maxUrlsPerMonth != null) lines.push(`${n(plan.maxUrlsPerMonth)} submissions a month`)
+  lines.push('Scheduled crawls and automatic submission', 'Index status verified with Google URL Inspection')
+  return lines
 }
 
 const trialNameAliases = ['trial', 'free'] as const

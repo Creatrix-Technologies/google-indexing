@@ -17,28 +17,20 @@
             <div class="plan-badge">You're getting</div>
             <h1 class="plan-name">{{ selectedPlanName }}</h1>
             <p class="plan-desc">{{ selectedPlanDesc }}</p>
-            <div class="plan-features" v-if="selectedPlan === 'solo'">
-              <div class="feature"><span class="check">✓</span> 6,000 indexings/month</div>
-              <div class="feature"><span class="check">✓</span> 3 sites</div>
-              <div class="feature"><span class="check">✓</span> API access</div>
-            </div>
-            <div class="plan-features" v-else-if="selectedPlan === 'pro'">
-              <div class="feature"><span class="check">✓</span> 6,000 indexings/month</div>
-              <div class="feature"><span class="check">✓</span> 10 sites</div>
-              <div class="feature"><span class="check">✓</span> Priority support</div>
-              <div class="feature"><span class="check">✓</span> Email alerts</div>
-            </div>
-            <div class="plan-features" v-else-if="selectedPlan === 'team'">
-              <div class="feature"><span class="check">✓</span> 6,000 indexings/month</div>
-              <div class="feature"><span class="check">✓</span> 30 sites</div>
-              <div class="feature"><span class="check">✓</span> 8 team seats</div>
-              <div class="feature"><span class="check">✓</span> Custom onboarding</div>
+            <div class="plan-features" v-if="matchedPlan">
+              <div class="feature" v-for="line in planLimitLines(matchedPlan)" :key="line"><span class="check">✓</span> {{ line }}</div>
             </div>
           </div>
 
           <div v-else class="selected-plan-card">
-            <h1 class="plan-name">Create Account</h1>
-            <p class="plan-desc">Get started with GoogleIndexing and accelerate your SEO.</p>
+            <div class="plan-badge">Free plan</div>
+            <h1 class="plan-name">Create your free account</h1>
+            <p class="plan-desc">No card needed. Upgrade only when you need more.</p>
+            <div class="plan-features">
+              <div class="feature"><span class="check">✓</span> {{ FREE_PLAN.trialDays }}-day trial with {{ FREE_PLAN.trialUrls }} URL submissions</div>
+              <div class="feature"><span class="check">✓</span> Then {{ FREE_PLAN.monthlyUrls }} URL submissions every month, free</div>
+              <div class="feature"><span class="check">✓</span> Index status for every page, checked with Google</div>
+            </div>
           </div>
         </div>
 
@@ -186,6 +178,8 @@ import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { register as apiRegister, redirectToGoogleLogin } from "../Store/auth";
 import { trackGoogleAdsSignupConversion } from "../utils/googleAdsConversion";
+import { refreshApi } from "../api";
+import { FREE_PLAN, fetchPublicSubscriptionPlans, planLimitLines, planSlug, type PublicPlan } from "../Shared/publicPlans";
 
 const router = useRouter();
 const route = useRoute();
@@ -194,8 +188,12 @@ const route = useRoute();
 const planConfig: Record<string, { name: string; desc: string }> = {
   solo: { name: 'Solo Plan', desc: 'Perfect for individual sites and small projects.' },
   pro: { name: 'Pro Plan', desc: 'Most popular choice for growing businesses.' },
-  team: { name: 'Team Plan', desc: 'Collaborate with your entire team.' }
+  team: { name: 'Team Plan', desc: 'For agencies and teams managing many sites.' }
 };
+
+// Live plan (name + enforced limits) for the selected ?plan=, so the card matches the pricing page.
+const publicPlans = ref<PublicPlan[]>([]);
+const matchedPlan = computed(() => publicPlans.value.find((p) => planSlug(p.name) === selectedPlan.value) ?? null);
 
 // State
 const loading = ref(false);
@@ -217,6 +215,7 @@ const selectedPlan = computed(() => route.query.plan as string | undefined);
 const hasSelectedPlan = computed(() => !!selectedPlan.value && planConfig[selectedPlan.value]);
 const selectedPlanName = computed(() => {
   const plan = selectedPlan.value;
+  if (matchedPlan.value) return `${matchedPlan.value.name} plan`;
   return plan && planConfig[plan] ? planConfig[plan].name : '';
 });
 const selectedPlanDesc = computed(() => {
@@ -226,6 +225,7 @@ const selectedPlanDesc = computed(() => {
 
 // Store plan in localStorage
 onMounted(() => {
+  fetchPublicSubscriptionPlans(refreshApi).then((p) => { publicPlans.value = p; }).catch(() => {});
   if (selectedPlan.value) {
     localStorage.setItem('selectedPlan', selectedPlan.value);
   }

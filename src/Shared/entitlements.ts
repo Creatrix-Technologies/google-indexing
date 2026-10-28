@@ -22,6 +22,11 @@ export interface EntitlementData {
   urlsLeftThisMonth: number | null
   canSubmit: boolean
   canAddSite: boolean
+  isFree: boolean
+  freeUrlLimit: number
+  freeUrlsUsedThisMonth: number
+  freeUrlsLeft: number
+  freeStartsAt: string | null
 }
 
 const EMPTY: EntitlementData = {
@@ -29,6 +34,7 @@ const EMPTY: EntitlementData = {
   hasActiveSubscription: false, subscriptionStatus: null, planName: null, subscriptionEndsAt: null, cancelAt: null,
   maxSites: null, maxUrlsPerDay: null, maxUrlsPerMonth: null, sitesUsed: 0, urlsSubmittedThisMonth: 0, urlsLeftThisMonth: null,
   canSubmit: false, canAddSite: false,
+  isFree: false, freeUrlLimit: 50, freeUrlsUsedThisMonth: 0, freeUrlsLeft: 0, freeStartsAt: null,
 }
 
 const STALE_MS = 30_000
@@ -50,7 +56,8 @@ export const useEntitlementsStore = defineStore('entitlements', {
     statusLabel: (s) => {
       if (s.data.hasActiveSubscription) return s.data.cancelAt ? 'Ends soon' : 'Subscribed'
       if (s.data.trialActive) return 'Trial'
-      if (s.data.isTrial) return 'Trial ended'
+      if (s.data.isFree) return 'Free'
+      if (s.data.isTrial) return 'Trial used'
       return s.data.subscriptionStatus ? 'Expired' : 'No plan'
     },
     /** Short usage line for the header/billing page, e.g. "Trial: 97 URLs left · 12 days". */
@@ -65,12 +72,14 @@ export const useEntitlementsStore = defineStore('entitlements', {
         const days = d.trialEndsAt ? Math.max(0, Math.ceil((Date.parse(d.trialEndsAt) - Date.now()) / 86_400_000)) : null
         return `Trial: ${d.trialUrlsLeft} of ${d.trialUrlLimit} URLs left${days != null ? ` · ${days} day${days === 1 ? '' : 's'}` : ''}`
       }
+      if (d.isFree) return `Free plan: ${d.freeUrlsLeft} of ${d.freeUrlLimit} URLs left this month · 1 site`
       return ''
     },
     blockingReason: (s) => {
       const d = s.data
       if (d.canSubmit) return ''
-      if (d.isTrial && !d.trialActive && d.trialUrlsLeft <= 0) return `Your free trial allowance of ${d.trialUrlLimit} URLs is used up. Choose a plan to keep submitting URLs.`
+      if (d.isFree) return `You've used this month's ${d.freeUrlLimit} free URL submissions. They reset on the 1st, or upgrade to submit up to 200 URLs a day.`
+      if (d.isTrial && d.freeStartsAt) return `Your free trial allowance of ${d.trialUrlLimit} URLs is used up. Your Free plan (${d.freeUrlLimit} URLs a month) starts on ${new Date(d.freeStartsAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long' })}, or upgrade to keep going now.`
       if (d.isTrial && !d.trialActive) return 'Your free trial has ended. Choose a plan to keep submitting URLs.'
       if (d.subscriptionStatus) return 'Your subscription has ended. Choose a plan to continue crawling, scheduling and submitting URLs.'
       return 'A plan or an active trial is needed to submit URLs to Google.'

@@ -433,6 +433,7 @@
 </template>
 
 <script setup lang="ts">
+import { showUpgradePrompt } from '../Shared/upgradePrompt'
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from "vue"
 import { useRoute } from "vue-router"
 import api from "../api"
@@ -457,7 +458,7 @@ const paidActionTitle = computed(() => entitlementsStore.canUsePaidFeatures ? ''
 const ensurePaidAccess = async () => {
   await entitlementsStore.refresh()
   if (entitlementsStore.canUsePaidFeatures) return true
-  await Swal.fire('Subscription required', entitlementsStore.blockingReason, 'warning')
+  await showUpgradePrompt(entitlementsStore.blockingReason)
   return false
 }
 

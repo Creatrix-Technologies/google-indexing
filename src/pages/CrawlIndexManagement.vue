@@ -323,6 +323,7 @@
 </template>
 
 <script setup lang="ts">
+import { showUpgradePrompt } from '../Shared/upgradePrompt'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../api'
@@ -347,7 +348,7 @@ const isCrawlBlocked = computed(
 const ensurePaidAccess = async () => {
   await entitlementsStore.refresh()
   if (entitlementsStore.canUsePaidFeatures) return true
-  await Swal.fire('Subscription required', entitlementsStore.blockingReason, 'warning')
+  await showUpgradePrompt(entitlementsStore.blockingReason)
   return false
 }
 
