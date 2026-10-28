@@ -63,10 +63,12 @@
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="12" height="12">
               <circle cx="7" cy="7" r="6"/><polyline points="7 4 7 7 9.5 9"/>
             </svg>
-            About 5 minutes to complete
+            About 15 minutes: part of it happens in Google Cloud and Search Console
           </p>
         </div>
       </div>
+
+      <SetupChecklist />
 
       <!-- Setup guide steps -->
       <div class="og-guide">
@@ -84,6 +86,7 @@
 
     <!-- ============ NORMAL DASHBOARD (connected) ============ -->
     <template v-else>
+      <SetupChecklist v-if="!setupComplete" />
       <!-- STAT CARDS -->
       <div class="stats-grid" v-if="cards.length">
         <StatCard
@@ -91,7 +94,7 @@
           :key="card.title"
           :label="card.title"
           :value="formatValue(card.value)"
-          meta=""
+          :meta="card.hint || ''"
           :iconType="cardIconFor(card.title)"
           :iconBg="getCardColor(card.title)"
         />
@@ -114,7 +117,7 @@
       <div class="chart-card" v-if="charts.length">
         <div class="card-header">
           <div class="card-header__title">
-            <h3>Index summary</h3>
+            <h3>Submissions to Google</h3>
             <p class="card-subtitle">
               <span>Last 12 months</span>
               <span v-if="rangeLabel" class="card-subtitle__sep">·</span>
@@ -125,12 +128,12 @@
           <div class="series-summary">
             <div class="series-chip series-chip--index">
               <span class="series-chip__dot"></span>
-              <span class="series-chip__label">Indexed</span>
+              <span class="series-chip__label">Submitted</span>
               <span class="series-chip__value">{{ formatValue(seriesTotals.index) }}</span>
             </div>
             <div class="series-chip series-chip--deindex">
               <span class="series-chip__dot"></span>
-              <span class="series-chip__label">DeIndexed</span>
+              <span class="series-chip__label">Removals</span>
               <span class="series-chip__value">{{ formatValue(seriesTotals.deIndex) }}</span>
             </div>
             <div class="series-chip series-chip--failed">
@@ -162,6 +165,8 @@
 </template>
 
 <script setup lang="ts">
+import SetupChecklist from '../components/SetupChecklist.vue'
+import { useEntitlementsStore as useEntitlementsForSetup } from '../Shared/entitlements'
 import { ref, onMounted, computed } from "vue"
 import api from "../api"
 import StatCard from "../components/StatCard.vue"
@@ -196,6 +201,7 @@ const todayLabel = computed(() =>
    Types
 ======================= */
 interface DashboardCard {
+  hint?: string
   title: string
   value: number
   order: number
@@ -309,8 +315,8 @@ const buildChart = () => {
       }
     },
     series: [
-      { name: "Indexed",   data: success,  color: "#4f46e5" },
-      { name: "DeIndexed", data: deIndex,  color: "#10b981" },
+      { name: "Submitted", data: success,  color: "#4f46e5" },
+      { name: "Removals",  data: deIndex,  color: "#10b981" },
       { name: "Failed",    data: failed,   color: "#ef4444" }
     ]
   }
@@ -369,6 +375,10 @@ onMounted(() => {
   useSubscriptionStore().checkSubscription()
   fetchDashboard()
 })
+
+const entitlementsForSetup = useEntitlementsForSetup()
+// Hide the checklist once a URL has been submitted (the last step).
+const setupComplete = computed(() => entitlementsForSetup.data.urlsSubmittedThisMonth > 0 || entitlementsForSetup.data.trialUrlsUsed > 0)
 </script>
 
 <style scoped>

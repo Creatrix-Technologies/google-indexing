@@ -17,12 +17,12 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 
 // Stores
 import { useAuthStore } from './Store/auth';
+import { useEntitlementsStore } from './Shared/entitlements'
 import { useMenuStore } from './Store/menu';
 
 // Dynamic routes
 import { buildRoutes } from './Router/dynamicRoutes';
 
-import { useUserLimitStore } from './Shared/userLimit'
 import { enhanceSalesMailtoLinks } from './utils/enhanceSalesMailto'
 /* ---------------- ROUTES ---------------- */
 
@@ -103,6 +103,7 @@ const routes = [
   },
 
   { path: "/google-callback", component: () => import('./pages/GoogleCallback.vue'), meta: { robots: 'noindex,nofollow' } },
+  { path: "/unauthorized", component: () => import('./pages/Unauthorized.vue'), meta: { public: true, robots: 'noindex,nofollow' } },
 
   {
     path: "/confirm-email",
@@ -147,7 +148,7 @@ const router = createRouter({
 
 
 const PUBLIC_PATHS = [
-  "/",
+  "/unauthorized", "/",
   "/pricing",
   "/terms",
   "/privacy",
@@ -211,16 +212,14 @@ router.beforeEach(async (to, _, next) => {
     return next();
   }
 
-  const store = useUserLimitStore()
-  
-  await store.checkLimit()
-  
-    try {
-      await api.get('/auth-check');
-      return next();
-    } catch {
-      return next({ path: "/login", query: { redirect: to.fullPath } });
-    }
+  try {
+    await api.get('/auth-check');
+  } catch {
+    return next({ path: "/login", query: { redirect: to.fullPath } });
+  }
+  // Entitlements are cached for 30s inside the store; this no longer costs a request per navigation.
+  void useEntitlementsStore().refresh();
+  return next();
 });
 
 /* ---------------- APP INIT ---------------- */
@@ -260,7 +259,8 @@ async function reconcileAuthSession() {
     authStore.clearUser();
     menuStore.clearMenus();
     if (!PUBLIC_PATHS.includes(window.location.pathname)) {
-      router.push('/login');
+      // Keep the deep link so the user lands where they were going after signing in.
+      router.push({ path: '/login', query: { redirect: window.location.pathname + window.location.search } });
     }
   }
 }

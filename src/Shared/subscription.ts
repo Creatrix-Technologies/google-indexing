@@ -1,40 +1,25 @@
 import { defineStore } from 'pinia'
-import api from '../api'
 import { useUserLimitStore } from '../Shared/userLimit'
 import { useEntitlementsStore } from '../Shared/entitlements'
 
-
+/** Thin wrapper kept for existing call sites; the entitlement store is the source of truth. */
 export const useSubscriptionStore = defineStore('subscription', {
   state: () => ({
     isValid: false,
     isChecking: false,
-    expiresAt: null as string | null // store expiration date as string
+    expiresAt: null as string | null,
   }),
 
   actions: {
-    async checkSubscription() {
+    async checkSubscription(force = true) {
+      this.isChecking = true
       try {
-        this.isChecking = true
-
-        const res = await api.get('/payments/check-subscription-status')
-
-        // Assuming API returns { data: { isValid: boolean, expiresAt: string } }
-        const data = res.data.data
-
-        this.isValid = data?.isValid === true
-        this.expiresAt = data?.expiresAt || null
-
-          const store = useUserLimitStore()
-          
-          await store.checkLimit()
-          const entitlementsStore = useEntitlementsStore()
-          entitlementsStore.subscriptionActive = this.isValid
-          entitlementsStore.expiresAt = this.expiresAt
-          entitlementsStore.trialAvailable = store.hasLimit
-
-      } catch (err) {
-        this.isValid = false
-        this.expiresAt = null
+        const entitlements = useEntitlementsStore()
+        await entitlements.refresh(force)
+        this.isValid = entitlements.data.hasActiveSubscription
+        this.expiresAt = entitlements.data.subscriptionEndsAt
+        const limit = useUserLimitStore()
+        limit.hasLimit = entitlements.data.trialActive
       } finally {
         this.isChecking = false
       }

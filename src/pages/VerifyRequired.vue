@@ -150,7 +150,7 @@ onMounted(() => {
 
 const checkVerificationStatus = async () => {
   try {
-    const response = await api.get('/auth/check-verification', {
+    const response = await api.get('/register/verification-status', {
       params: { email: email.value }
     });
     if (response.data?.isVerified) {
@@ -166,7 +166,7 @@ const checkVerification = async () => {
   errorMessage.value = '';
 
   try {
-    const response = await api.get('/auth/check-verification', {
+    const response = await api.get('/register/verification-status', {
       params: { email: email.value }
     });
 
@@ -199,8 +199,8 @@ const checkVerification = async () => {
 
 const resendEmail = async () => {
   try {
-    await api.post('/auth/resend-verification', { email: email.value });
-    toast.success('Verification email resent! Check your inbox.');
+    await api.post('/register/resend-confirmation', { email: email.value });
+    toast.success('Confirmation email sent again. Check your inbox and spam folder.');
     startResendTimer();
   } catch (err: any) {
     toast.error(err?.response?.data?.message || 'Failed to resend email. Please try again.');

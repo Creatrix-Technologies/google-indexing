@@ -32,13 +32,13 @@
           </header>
 
           <div class="form-group">
-            <label for="login-username">Username</label>
+            <label for="login-username">Username or email</label>
             <input
               id="login-username"
               v-model="username"
               type="text"
               :disabled="loading"
-              placeholder="Enter username"
+              placeholder="Enter your username or email"
               autocomplete="username"
             />
           </div>
@@ -127,6 +127,12 @@
             </svg>
             <span>{{ errorMessage }}</span>
           </p>
+
+          <p v-if="errorMessage.startsWith('Please confirm')" class="resend-hint">
+
+            <router-link :to="{ path: '/verify-required', query: { email: unconfirmedEmail } }">Send me a new confirmation e-mail</router-link>
+
+          </p>
         </div>
       </div>
     </div>
@@ -187,6 +193,8 @@ onMounted(() => {
   }
 });
 
+const unconfirmedEmail = ref('');
+
 const handleLogin = async () => {
   if (loading.value) return;
 
@@ -220,22 +228,28 @@ const handleLogin = async () => {
 
       // Redirect based on plan type
       const pendingPlan = localStorage.getItem('selectedPlan');
+      const redirect = typeof route.query.redirect === 'string' && route.query.redirect.startsWith('/') ? route.query.redirect : '';
       if (pendingPlan) {
         localStorage.removeItem('selectedPlan');
         // Paid plans go to subscription for payment, trial goes to dashboard
         if (pendingPlan === 'trial') {
-          router.push('/dashboard');
+          router.push(redirect || '/dashboard');
         } else {
           router.push(`/subscriptions?plan=${pendingPlan}`);
         }
       } else {
-        router.push('/dashboard');
+        router.push(redirect || '/dashboard');
       }
     } else {
       errorMessage.value = "Login failed. Please check your credentials.";
     }
-  } catch (err) {
-    errorMessage.value = "Something went wrong.";
+  } catch (err: any) {
+    const code = err?.response?.data?.error?.code;
+    const description = err?.response?.data?.error?.description;
+    if (code === 'EmailNotConfirmed') {
+      unconfirmedEmail.value = username.value.includes('@') ? username.value : '';
+    }
+    errorMessage.value = description || "Something went wrong.";
   } finally {
     loading.value = false;
   }
@@ -708,4 +722,6 @@ const handleGoogleLogin = () => {
   margin: 0;
   line-height: 1.4;
 }
+.resend-hint { margin: 6px 0 0; font-size: 13px; }
+.resend-hint a { color: #2563eb; font-weight: 600; }
 </style>

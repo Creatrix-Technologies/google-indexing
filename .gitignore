@@ -30,3 +30,7 @@ dist-ssr
 .cce/
 # Claude Code local settings written by cce init
 .claude/settings.local.json
+
+# Playwright output
+test-results/
+playwright-report/

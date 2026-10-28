@@ -1,8 +1,7 @@
 import { defineStore } from 'pinia'
-
-import api from '../api'
 import { useEntitlementsStore } from '../Shared/entitlements'
 
+/** Thin wrapper kept for existing call sites; the entitlement store is the source of truth. */
 export const useUserLimitStore = defineStore('userLimit', {
   state: () => ({
     hasLimit: false,
@@ -10,15 +9,12 @@ export const useUserLimitStore = defineStore('userLimit', {
   }),
 
   actions: {
-    async checkLimit() {
+    async checkLimit(force = false) {
       this.isChecking = true
       try {
-        const res = await api.get('/manage-users/has-limit')
-        this.hasLimit = res.data?.data === true
-        useEntitlementsStore().trialAvailable = this.hasLimit
-      } catch (err) {
-        this.hasLimit = false
-        useEntitlementsStore().trialAvailable = false
+        const entitlements = useEntitlementsStore()
+        await entitlements.refresh(force)
+        this.hasLimit = entitlements.data.trialActive
       } finally {
         this.isChecking = false
       }

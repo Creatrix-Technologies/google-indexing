@@ -195,10 +195,7 @@
               <input type="checkbox" :checked="isAllChecked" @change="toggleSelectAll" />
             </th>
             <th>URL</th>
-            <th title="Google Search URL Inspection: indexing state (can lag after a notify).">Indexing State</th>
-            <th title="Google Search URL Inspection: coverage / discovery.">Coverage State</th>
-            <th title="Google Search URL Inspection.">Robots Txt State</th>
-            <th title="Google Search URL Inspection.">Page Fetch State</th>
+            <th title="What Google's URL Inspection reports for this page, in plain language. Hover for the cause and the fix.">Google status</th>
             <th title="Status of the indexing job in this app (e.g. Job done = pipeline finished; not the same as ranking).">Queue Status</th>
             <th title="Priority of the last queue request.">Priority</th>
             <th title="Indexing API outcome (notify accepted vs failed).">API Result</th>
@@ -226,19 +223,12 @@
               <a :href="item.url" target="_blank" :title="item.url">{{ item.url }}</a>
             </td>
 
-            <td
-              class="inspection-cell"
-              :title="inspectionTooltip(item.indexingState)"
-            >
-  <span
-    class="indexing-chip indexing-chip--compact"
-    :class="getIndexingStateClass(item.indexingState)"
-  ><span class="indexing-chip__text">{{ formatGoogleInspectionLabel(item.indexingState) }}</span>
-  </span>
-</td>
-            <td class="inspection-cell" :title="inspectionTooltip(item.coverageState)">{{ formatGoogleInspectionLabel(item.coverageState) }}</td>
-            <td class="inspection-cell" :title="inspectionTooltip(item.robotsTxtState)">{{ formatGoogleInspectionLabel(item.robotsTxtState) }}</td>
-            <td class="inspection-cell" :title="inspectionTooltip(item.pageFetchSpecified)">{{ formatGoogleInspectionLabel(item.pageFetchSpecified) }}</td>
+            <td class="inspection-cell google-status-cell" :title="(item.explanationCause || '') + (item.explanationFix ? ' Fix: ' + item.explanationFix : '')">
+              <span class="indexing-chip indexing-chip--compact" :class="item.isIndexed ? 'indexing-chip--allowed' : getIndexingStateClass(item.indexingState)">
+                <span class="indexing-chip__text">{{ item.isIndexed ? '✓ Indexed' : (item.explanationState || formatGoogleInspectionLabel(item.coverageState)) }}</span>
+              </span>
+              <span v-if="item.firstIndexedAt" class="google-status-since">since {{ formatDateTime(item.firstIndexedAt) }}</span>
+            </td>
             <td>{{ formatStateLabel(item.indexedStatus) }}</td>
             <td>{{ formatStateLabel(item.priority) }}</td>
             <td class="api-result-cell">
@@ -336,8 +326,8 @@
           <div class="modal-box modal-box--xl" role="dialog" aria-modal="true">
             <header class="modal-header">
               <div>
-                <h3 class="modal-title">Queue logs</h3>
-                <p class="modal-subtitle">Indexing attempts recorded for this URL.</p>
+                <h3 class="modal-title">URL history</h3>
+                <p class="modal-subtitle">What happened to this URL: crawl, submissions and what Google reported.</p>
               </div>
               <button type="button" class="modal-close" aria-label="Close" @click="showLogsModal = false">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -348,6 +338,21 @@
             </header>
 
             <div class="modal-body modal-body--flush">
+              <div v-if="timeline" class="timeline-box">
+                <p class="timeline-box__state" :class="timeline.isIndexed ? 'is-ok' : 'is-warn'">
+                  {{ timeline.explanation.state }}
+                  <span v-if="timeline.daysToIndex != null" class="timeline-box__meta">· indexed {{ timeline.daysToIndex }} day(s) after submission</span>
+                </p>
+                <p class="timeline-box__cause">{{ timeline.explanation.cause }}</p>
+                <p v-if="!timeline.isIndexed" class="timeline-box__fix"><strong>What to do:</strong> {{ timeline.explanation.fix }}</p>
+                <ol class="timeline-list">
+                  <li v-for="(e, i) in timeline.events" :key="i" :class="'timeline-' + e.kind">
+                    <span class="timeline-at">{{ formatDateTime(e.at) }}</span>
+                    <span class="timeline-title">{{ e.title }}</span>
+                    <span v-if="e.detail" class="timeline-detail">{{ e.detail }}</span>
+                  </li>
+                </ol>
+              </div>
               <table v-if="logs.length > 0" class="logs-table">
                 <thead>
                   <tr>
@@ -364,7 +369,7 @@
                       {{ log.status }}
                     </td>
                     <td>{{ log.message }}</td>
-                    <td>{{ new Date(log.date).toLocaleDateString() }}</td>
+                    <td>{{ new Date(log.date).toLocaleString() }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -545,6 +550,8 @@ const connectSSE = () => {
 
   eventSource = new EventSource(
     `${import.meta.env.VITE_API_BASE_URL}/crawl/get-sync-url-to-google/${siteId}`
+  ,
+    { withCredentials: true }
   )
 
   eventSource.onmessage = (event) => {
@@ -600,6 +607,7 @@ const fetchIndexLimit = async () => {
 
 const showLogsModal = ref(false); // controls modal visibility
 const logs = ref<any[]>([]); // store logs
+const timeline = ref<UrlTimeline | null>(null)
 const logsLoading = ref(false);
 
 /** Row + chip styling from Indexing API outcome (indexedResult). */
@@ -645,10 +653,6 @@ const formatIndexedResult = (value?: string | null) => {
 }
 
 /** Full Inspection text for tooltips (underscores → spaces). */
-const inspectionTooltip = (value?: string | null) => {
-  if (value == null || value === "") return ""
-  return value.replace(/_/g, " ").trim()
-}
 
 /** Short single-line labels for URL Inspection-derived cells (full detail in tooltip). */
 const formatGoogleInspectionLabel = (value?: string | null) => {
@@ -685,7 +689,11 @@ const formatDateTime = (value?: string | null) => {
 const viewLogs = async (urlId: number) => {
   showLogsModal.value = true; // first show modal
   logsLoading.value = true;
-  console.log("Fetching logs for URL ID:", urlId);
+  timeline.value = null;
+  // The timeline (crawl → submissions → Google inspections) is independent of the queue logs.
+  api.get(`/crawl/url/${urlId}/timeline`)
+    .then(res => { timeline.value = res?.data?.data ?? null })
+    .catch(() => { timeline.value = null })
 
   try {
     const res = await api.get(`/crawl/queue-logs`, {
@@ -725,7 +733,24 @@ interface CrawledUrl {
   priority:string,
   verdit:string,
   pageFetchSpecified:string,
-  robotsTxtState:string
+  robotsTxtState:string,
+  firstIndexedAt?: string | null,
+  lastInspectedAt?: string | null,
+  isIndexed?: boolean,
+  explanationState?: string | null,
+  explanationCause?: string | null,
+  explanationFix?: string | null
+}
+
+interface UrlTimeline {
+  url: string
+  isIndexed: boolean
+  explanation: { state: string; cause: string; fix: string }
+  firstIndexedAt: string | null
+  lastInspectedAt: string | null
+  lastSubmittedAt: string | null
+  daysToIndex: number | null
+  events: Array<{ at: string; kind: string; title: string; detail?: string }>
 }
 
 interface PageInfo {
@@ -1079,6 +1104,17 @@ const indexSingleUrl = async (id: number, mode: "direct" | "queue") => {
 
 
 const removeIndexSingleUrl = async (id: number, mode: "direct" | "queue") => {
+  if (mode === 'direct') {
+    const ok = await Swal.fire({
+      title: 'Ask Google to remove this URL?',
+      text: 'Google will be told the page is gone (URL_DELETED). Only do this for pages that no longer exist. Re-indexing later takes time.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, request removal',
+      cancelButtonText: 'Keep it indexed',
+    })
+    if (!ok.isConfirmed) return
+  }
   try {
     if (!(await ensurePaidAccess())) return
     closeRowDropdown()
@@ -2281,5 +2317,21 @@ onBeforeUnmount(() => {
   background: var(--color-card-bg);
 }
 
- </style>
+ .google-status-cell { white-space: nowrap; }
+.google-status-since { display: block; font-size: 11px; color: #64748b; margin-top: 2px; }
+.timeline-box { padding: 14px 18px; border-bottom: 1px solid #e2e8f0; }
+.timeline-box__state { margin: 0 0 4px; font-weight: 700; }
+.timeline-box__state.is-ok { color: #15803d; }
+.timeline-box__state.is-warn { color: #b45309; }
+.timeline-box__meta { font-weight: 400; color: #64748b; font-size: 12px; }
+.timeline-box__cause, .timeline-box__fix { margin: 0 0 6px; font-size: 13px; color: #334155; }
+.timeline-list { list-style: none; margin: 10px 0 0; padding: 0 0 0 14px; border-left: 2px solid #e2e8f0; display: grid; gap: 8px; }
+.timeline-list li { display: grid; grid-template-columns: 150px 1fr; gap: 4px 12px; font-size: 13px; position: relative; }
+.timeline-list li::before { content: ''; position: absolute; left: -19px; top: 5px; width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; }
+.timeline-indexed::before { background: #16a34a !important; }
+.timeline-failed::before { background: #dc2626 !important; }
+.timeline-submitted::before { background: #2563eb !important; }
+.timeline-at { color: #64748b; font-variant-numeric: tabular-nums; }
+.timeline-detail { grid-column: 2; color: #64748b; font-size: 12px; }
+</style>
   

@@ -333,6 +333,8 @@ const listenToProgress = (websiteId: number) => {
 
   const source = new EventSource(
     `${import.meta.env.VITE_API_BASE_URL}/crawl/bulk-run/${websiteId}`
+  ,
+    { withCredentials: true }
   )
 
   eventSources.set(websiteId, source)
