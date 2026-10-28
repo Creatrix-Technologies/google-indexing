@@ -29,21 +29,26 @@
       "text": [
         "Paste any page address to see whether Google can index it. The checker tests the HTTP status and redirects, robots.txt rules for Googlebot, the X-Robots-Tag header, meta robots noindex, the canonical tag and how much content is in the HTML.",
         "Each problem comes with a plain-English fix. No sign-up needed."
-      ]
+      ],
+      "ogImage": "/og/indexability-checker.png"
     },
     "/terms": {
       "title": "Terms of Service | GoogleIndexing.com",
       "description": "Terms of Service for GoogleIndexing.com indexing automation and subscription.",
       "robots": "index,follow,max-snippet:-1",
       "h1": "Terms of Service",
-      "text": ["The terms that apply to using GoogleIndexing.com."]
+      "text": [
+        "The terms that apply to using GoogleIndexing.com."
+      ]
     },
     "/privacy": {
       "title": "Privacy Policy | GoogleIndexing.com",
       "description": "Privacy Policy describing how GoogleIndexing.com collects and uses personal data.",
       "robots": "index,follow,max-snippet:-1",
       "h1": "Privacy Policy",
-      "text": ["How GoogleIndexing.com collects and uses personal data."]
+      "text": [
+        "How GoogleIndexing.com collects and uses personal data."
+      ]
     }
   }
 }

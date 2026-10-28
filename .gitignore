@@ -34,3 +34,4 @@ dist-ssr
 # Playwright output
 test-results/
 playwright-report/
+docs/launch/assets/ph-*.png
