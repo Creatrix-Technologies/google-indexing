@@ -41,7 +41,7 @@ test.describe('tenant app smoke', () => {
 
   test('sites, crawl and billing pages render', async ({ page }) => {
     await login(page)
-    await page.goto('/site-management')
+    await page.goto('/sites')
     await expect(page.getByText('http://localhost:5999/').first()).toBeVisible({ timeout: 20_000 })
     await page.goto('/crawl-index-management')
     await expect(page.locator('table, .table, [role=table]').first()).toBeVisible({ timeout: 20_000 })

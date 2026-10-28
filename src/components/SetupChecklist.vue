@@ -55,7 +55,7 @@ const steps = computed(() => [
   { key: 'owner', label: 'Make the service account an Owner in Search Console', done: ownerVerified.value === true,
     hint: 'Settings → Users and permissions → add the service account email as Owner (Full access is not enough).', to: '/settings/google-configuration', cta: 'Verify' },
   { key: 'site', label: 'Sync or add a site', done: entitlements.data.sitesUsed > 0,
-    hint: 'Your Search Console properties appear automatically once the key is verified.', to: '/site-management', cta: 'Open sites' },
+    hint: 'Your Search Console properties appear automatically once the key is verified.', to: '/sites', cta: 'Open sites' },
   { key: 'submit', label: 'Submit your first URL to Google', done: publishUsed.value > 0 || entitlements.data.urlsSubmittedThisMonth > 0 || entitlements.data.trialUrlsUsed > 0,
     hint: 'Crawl a site, pick URLs and click Index now, or let the daily schedule send them.', to: '/crawl-index-management', cta: 'Crawl & index' },
 ])
