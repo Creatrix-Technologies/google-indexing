@@ -14,13 +14,13 @@
           <div class="hero-grid">
             <div class="hero-copy">
               <div class="badge">INDEXING API AUTOMATION</div>
-              <h1>Google <span class="accent">SEO Indexing</span><br>you can watch succeed</h1>
+              <h1>Get your pages into Google,<br><span class="accent">and see which ones made it</span></h1>
               <p class="hero-subtext fade-in-motion delay-1">
-                Crawl your URLs, submit them through Google's official Indexing API, and follow every
-                page from queued to indexed — live, with Google's own status to confirm it.
+                Crawl your site, submit new and changed pages through Google's official Indexing API on a
+                schedule, and follow every page from queued to indexed, with Google's own status to confirm it.
               </p>
               <div class="hero-actions fade-in-motion delay-2">
-                <router-link to="/login" class="btn-hero-primary">Get Started Free</router-link>
+                <router-link to="/signup?plan=trial" class="btn-hero-primary">Start free</router-link>
                 <a href="#how-it-works" class="btn-hero-secondary">See how it works</a>
               </div>
               <ul class="hero-proof fade-in-motion delay-3" aria-label="Highlights">
@@ -65,9 +65,10 @@
           <p>Works with any platform</p>
           <div class="trust-logos">
             <span>WordPress</span>
-            <span>Shopify</span>
-            <span>Next.js</span>
             <span>WooCommerce</span>
+            <span>Shopify</span>
+            <span>nopCommerce</span>
+            <span>Next.js</span>
             <span>Custom Sites</span>
           </div>
         </div>
@@ -77,8 +78,8 @@
         <!-- Features -->
         <section id="features" class="features-section fade-in-motion delay-4">
           <div class="section-header">
-            <h2>Everything you need to rank faster</h2>
-            <p>A complete toolset built on Google's official Indexing API.</p>
+            <h2>From crawl to confirmed index</h2>
+            <p>Crawl, submit through Google's official Indexing API, and verify with Google's URL Inspection.</p>
           </div>
           <div class="features-grid">
             <div class="glass-card reveal-hidden">
@@ -120,22 +121,20 @@
         <section id="results" class="impact-section reveal-hidden">
           <div class="impact-header">
             <span class="section-eyebrow">Progress you can measure</span>
-            <h2>From published to indexed, faster</h2>
+            <h2>Submitted, then verified</h2>
             <p>
-              Indexing API submissions are usually picked up by Google within 1–3 days.
-              Sitemap-only discovery typically takes 3–14. Hover the chart to compare any day.
+              The chart is an illustration: pages Google is told about tend to be picked up sooner than pages it
+              has to discover from a sitemap, but timing depends on your site and on Google. What we show in your
+              dashboard is not an estimate: it is Google's own URL Inspection status for every URL, re-checked
+              1, 3 and 7 days after submission.
             </p>
           </div>
           <div class="chart-container glass-card">
             <CoverageChart />
             <div class="impact-metrics">
               <div class="metric">
-                <span class="metric-number">1–3 days</span>
-                <span class="metric-label">API Indexing Time</span>
-              </div>
-              <div class="metric">
-                <span class="metric-number">3–14 days</span>
-                <span class="metric-label">Standard Method</span>
+                <span class="metric-number">Days 1, 3, 7</span>
+                <span class="metric-label">Automatic re-checks per URL</span>
               </div>
               <div class="metric">
                 <span class="metric-number">200/day</span>
@@ -198,11 +197,15 @@
           <div class="faq-grid">
             <div class="faq-item glass-card">
               <h3>How does this work?</h3>
-              <p>We use Google's official Indexing API to notify Google when pages are created or updated. This triggers a Googlebot visit much faster than standard sitemap discovery.</p>
+              <p>We crawl your site, send new and changed pages to Google through its official Indexing API, and then check each URL with Google's URL Inspection so you can see what was actually indexed and, if not, why.</p>
             </div>
             <div class="faq-item glass-card">
               <h3>Is this affiliated with Google?</h3>
-              <p>No. GoogleIndexing.com is an independent service that automates Google's publicly documented Indexing API. We are not affiliated with or endorsed by Google Inc.</p>
+              <p>No. GoogleIndexing.com is an independent service that automates Google's publicly documented Indexing API. We are not affiliated with or endorsed by Google LLC. Google is a trademark of Google LLC.</p>
+            </div>
+            <div class="faq-item glass-card">
+              <h3>Is this allowed for my pages?</h3>
+              <p>Google officially supports the Indexing API for pages with JobPosting or BroadcastEvent structured data. For other pages a submission asks Google to crawl sooner but cannot guarantee indexing, and Google screens all submissions for spam. You use your own Google project, so its 200 submissions a day are yours, and we never work around that quota. The crawl, the URL Inspection status and the "why isn't this indexed?" explanations work for every page regardless.</p>
             </div>
             <div class="faq-item glass-card">
               <h3>Does it work for existing pages?</h3>
@@ -219,9 +222,9 @@
         <section class="cta-section reveal-hidden">
           <div class="cta-card glass-card">
             <div class="card-glow"></div>
-            <h2>Ready to get indexed faster?</h2>
-            <p>Start with 100 free indexing requests and watch your first URLs move from queued to indexed.</p>
-            <router-link to="/login" class="btn-hero-primary">Start for Free</router-link>
+            <h2>Ready to see what Google indexed?</h2>
+            <p>Start free: a 14-day trial with 100 URL submissions, then 50 a month. No card needed.</p>
+            <router-link to="/signup?plan=trial" class="btn-hero-primary">Start free</router-link>
           </div>
         </section>
 
@@ -918,7 +921,7 @@ main {
 
 .impact-metrics {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
   margin-top: 2.5rem;
   padding-top: 2.5rem;

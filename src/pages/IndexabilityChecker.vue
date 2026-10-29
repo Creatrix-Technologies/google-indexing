@@ -103,6 +103,7 @@ import { useRoute, useRouter } from 'vue-router'
 import MarketingHeader from '../components/marketing/MarketingHeader.vue'
 import MarketingSiteFooter from '../components/MarketingSiteFooter.vue'
 import { refreshApi } from '../api'
+import seo from '../seo/publicPages.json'
 
 type Status = 'pass' | 'info' | 'warn' | 'fail'
 interface CheckItem { key: string; label: string; status: number | string; detail: string; fix?: string | null }
@@ -172,24 +173,7 @@ const tests = [
   { title: 'HTTPS', text: 'Google prefers the HTTPS version of a page; plain HTTP pages are flagged.' },
 ]
 
-const faq = [
-  {
-    q: "The checker says Google can index my page. Why isn't it in Google?",
-    a: "Being indexable means nothing stops Google; it doesn't mean Google chose to index it. Search Console reports such pages as 'Discovered, currently not indexed' or 'Crawled, currently not indexed'. Usually the fix is more unique content, internal links to the page, and asking Google to crawl it, which GoogleIndexing.com does for you through the Indexing API.",
-  },
-  {
-    q: 'Does this tell me whether my page is in Google right now?',
-    a: "No. Only Search Console knows for sure; a site: search is often wrong. Connect your site to GoogleIndexing.com (free plan available) and every URL is checked with Google's URL Inspection, including the date Google last crawled it.",
-  },
-  {
-    q: 'Does the checker run JavaScript?',
-    a: "No. It reads the HTML your server sends, which is what Google sees first. Google renders JavaScript later, so a noindex or canonical added by JavaScript is not detected here, and content that only appears after rendering is flagged.",
-  },
-  {
-    q: 'Is it free?',
-    a: 'Yes, with no sign-up. There is a limit of 20 checks per 10 minutes per visitor to keep it fast for everyone.',
-  },
-]
+const faq = seo.pages['/tools/indexability-checker'].faq
 </script>
 
 <style scoped>

@@ -23,7 +23,8 @@ const slugAliases: Record<string, string[]> = {
   trial: ['trial', 'free'],
   solo: ['solo', 'basic'],
   pro: ['pro', 'professional'],
-  team: ['team', 'enterprise', 'business'],
+  team: ['team', 'business'],
+  enterprise: ['enterprise', 'agency'],
 }
 
 /** URL slug for a plan name (used in ?plan= links). */

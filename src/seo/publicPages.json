@@ -7,8 +7,52 @@
       "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1",
       "h1": "Get your pages into Google, and see which ones made it",
       "text": [
-        "GoogleIndexing.com crawls your site, submits new and changed pages through Google's official Indexing API on a schedule, and checks every URL with Google's URL Inspection so you know what is actually indexed.",
-        "Start free: a 14-day trial with 100 URL submissions, then 50 a month. Works with WordPress, Shopify, nopCommerce, Next.js and custom sites."
+        "GoogleIndexing.com crawls your site, submits new and changed pages through Google's official Indexing API on a schedule, and follows every page from queued to indexed, with Google's own URL Inspection status to confirm it.",
+        "Start free: a 14-day trial with 100 URL submissions, then 50 a month. No card needed. Works with WordPress, WooCommerce, Shopify, nopCommerce, Next.js and custom sites."
+      ],
+      "sections": [
+        {
+          "h2": "From crawl to confirmed index",
+          "text": [
+            "Automatic indexing: scheduled crawls find new and changed pages and submit them through Google's Indexing API for you.",
+            "Real-time monitoring: track indexing status, crawl health and coverage across all your URLs from one dashboard.",
+            "Scheduled recrawls: updated content is re-submitted so Google sees your latest version."
+          ]
+        },
+        {
+          "h2": "Submitted, then verified",
+          "text": [
+            "Every submitted URL is re-checked with Google's URL Inspection 1, 3 and 7 days later, so the dashboard shows what Google actually indexed, not just what was sent. Google allows 200 submissions a day per Google Cloud project; you use your own project, so that quota is yours."
+          ]
+        },
+        {
+          "h2": "How it works",
+          "text": [
+            "1. Create a Google service account and add it as an Owner in Search Console; our guide takes about 10 minutes. 2. Crawl your site, import a sitemap, or paste URLs. 3. Watch each URL move from queued to submitted to indexed."
+          ]
+        }
+      ],
+      "faq": [
+        {
+          "q": "How does this work?",
+          "a": "We crawl your site, send new and changed pages to Google through its official Indexing API, and then check each URL with Google's URL Inspection so you can see what was actually indexed and, if not, why."
+        },
+        {
+          "q": "Is this affiliated with Google?",
+          "a": "No. GoogleIndexing.com is an independent service that automates Google's publicly documented Indexing API. We are not affiliated with or endorsed by Google LLC. Google is a trademark of Google LLC."
+        },
+        {
+          "q": "Is this allowed for my pages?",
+          "a": "Google officially supports the Indexing API for pages with JobPosting or BroadcastEvent structured data. For other pages a submission asks Google to crawl sooner but cannot guarantee indexing, and Google screens all submissions for spam. You use your own Google project, so its 200 submissions a day are yours, and we never work around that quota. The crawl, the URL Inspection status and the explanations of why a page is not indexed work for every page regardless."
+        },
+        {
+          "q": "Does it work for existing pages?",
+          "a": "Yes. You can submit both new pages and updated existing pages, so Google sees your latest content."
+        },
+        {
+          "q": "What platforms are supported?",
+          "a": "Any website with publicly accessible URLs: WordPress, WooCommerce, Shopify, nopCommerce, Next.js, or fully custom-built sites."
+        }
       ]
     },
     "/pricing": {
@@ -30,7 +74,38 @@
         "Paste any page address to see whether Google can index it. The checker tests the HTTP status and redirects, robots.txt rules for Googlebot, the X-Robots-Tag header, meta robots noindex, the canonical tag and how much content is in the HTML.",
         "Each problem comes with a plain-English fix. No sign-up needed."
       ],
-      "ogImage": "/og/indexability-checker.png"
+      "ogImage": "/og/indexability-checker.png",
+      "sections": [
+        {
+          "h2": "What the checker tests",
+          "text": [
+            "Status and redirects: does the page answer 200 OK? Redirect chains, temporary redirects, 404s, 403s and server errors all stop or delay indexing.",
+            "robots.txt: evaluated the way Googlebot does it, the Googlebot group first, Allow and Disallow with wildcards, the longest rule wins. We show the exact line that blocks the page.",
+            "Noindex: both places Google reads it, the meta robots or googlebot tag in the HTML and the X-Robots-Tag HTTP header.",
+            "Canonical: if the canonical tag points somewhere else, Google usually indexes that URL instead of this one.",
+            "Content: pages with very little text, or whose text only appears after JavaScript runs, are often left out of the index.",
+            "HTTPS: Google prefers the HTTPS version of a page; plain HTTP pages are flagged."
+          ]
+        }
+      ],
+      "faq": [
+        {
+          "q": "The checker says Google can index my page. Why isn't it in Google?",
+          "a": "Being indexable means nothing stops Google; it doesn't mean Google chose to index it. Search Console reports such pages as 'Discovered, currently not indexed' or 'Crawled, currently not indexed'. Usually the fix is more unique content, internal links to the page, and asking Google to crawl it, which GoogleIndexing.com does for you through the Indexing API."
+        },
+        {
+          "q": "Does this tell me whether my page is in Google right now?",
+          "a": "No. Only Search Console knows for sure; a site: search is often wrong. Connect your site to GoogleIndexing.com (free plan available) and every URL is checked with Google's URL Inspection, including the date Google last crawled it."
+        },
+        {
+          "q": "Does the checker run JavaScript?",
+          "a": "No. It reads the HTML your server sends, which is what Google sees first. Google renders JavaScript later, so a noindex or canonical added by JavaScript is not detected here, and content that only appears after rendering is flagged."
+        },
+        {
+          "q": "Is it free?",
+          "a": "Yes, with no sign-up. There is a limit of 20 checks per 10 minutes per visitor to keep it fast for everyone."
+        }
+      ]
     },
     "/terms": {
       "title": "Terms of Service | GoogleIndexing.com",

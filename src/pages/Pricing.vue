@@ -21,6 +21,7 @@
           <span>
             Google's Indexing API allows <strong>200 submissions a day per Google Cloud project</strong> (your own service account). That limit is Google's, not ours, and every paid plan can use all of it.
             Google officially supports the API for job-posting and livestream pages; for other pages a submission asks Google to crawl sooner but cannot guarantee indexing.
+            All the sites in one account share that quota, because they use one Google project.
             That's why every plan shows you, URL by URL, what Google actually indexed.
           </span>
         </div>
@@ -107,8 +108,8 @@
         </div>
 
         <p class="pricing-annual fade-in-motion delay-2">
-          Save 2 months with annual billing —
-          <a href="#pricing-contact">contact us</a> for annual plans.
+          Annual billing with two months free is available on request:
+          <a href="#pricing-contact">contact us</a>.
         </p>
 
         <section id="pricing-contact" class="pricing-contact fade-in-motion delay-2">
