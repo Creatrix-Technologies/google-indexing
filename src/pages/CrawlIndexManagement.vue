@@ -62,20 +62,27 @@
           </span>
           <div>
             <h2 class="stat-panel__title">Indexing</h2>
-            <p class="stat-panel__hint">Submissions to Google</p>
+            <p class="stat-panel__hint">Google's verdict and our submissions</p>
           </div>
         </header>
 
-        <div class="stat-panel__body stat-panel__body--4">
-          <div class="stat-cell">
-            <span class="stat-cell__label">Indexed</span>
-            <span class="stat-cell__value">{{ stats.indexedSucceed }}</span>
+        <div class="stat-panel__body stat-panel__body--5">
+          <div class="stat-cell" title="Confirmed by Google's URL Inspection">
+            <span class="stat-cell__label">Indexed in Google</span>
+            <span class="stat-cell__value">{{ stats.indexedInGoogle ?? 0 }}</span>
             <span class="stat-cell__pill stat-cell__pill--success">
               <span class="dot"></span> live
             </span>
           </div>
+          <div class="stat-cell" title="Indexing API accepted our notification">
+            <span class="stat-cell__label">Submitted</span>
+            <span class="stat-cell__value">{{ stats.indexedSucceed }}</span>
+            <span class="stat-cell__pill stat-cell__pill--neutral">
+              <span class="dot"></span> sent
+            </span>
+          </div>
           <div class="stat-cell">
-            <span class="stat-cell__label">DeIndexed</span>
+            <span class="stat-cell__label">Removed</span>
             <span class="stat-cell__value">{{ stats.deIndexedSucceed }}</span>
             <span class="stat-cell__pill stat-cell__pill--neutral">
               <span class="dot"></span> removed
@@ -379,6 +386,7 @@ const stats = ref({
   crawledCount: 0,
   failedCount: 0,
   indexedSucceed: 0,
+  indexedInGoogle: 0,
   deIndexedSucceed: 0,
   indexedFailed: 0,
   indexedQueued: 0
@@ -742,6 +750,9 @@ onMounted(async () => {
 }
 .stat-panel__body--4 {
   grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.stat-panel__body--5 {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
 .stat-cell {
@@ -1267,7 +1278,8 @@ onMounted(async () => {
 /* ============ Responsive ============ */
 @media (max-width: 1080px) {
   .stats-row { grid-template-columns: 1fr; }
-  .stat-panel__body--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stat-panel__body--4,
+  .stat-panel__body--5 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .stat-cell { border-right: none; border-bottom: 1px solid var(--color-divider); }
   .stat-cell:nth-last-child(-n+2) { border-bottom: none; }
 }
@@ -1279,7 +1291,8 @@ onMounted(async () => {
 }
 @media (max-width: 540px) {
   .stat-panel__body,
-  .stat-panel__body--4 { grid-template-columns: 1fr 1fr; }
+  .stat-panel__body--4,
+  .stat-panel__body--5 { grid-template-columns: 1fr 1fr; }
   .stat-cell { border-right: 1px solid var(--color-divider); border-bottom: 1px solid var(--color-divider); }
   .stat-cell:nth-child(2n) { border-right: none; }
   .stat-cell:last-child { border-bottom: none; }
