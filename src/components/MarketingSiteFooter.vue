@@ -16,8 +16,11 @@
         &middot;
         <router-link :to="{ path: '/', hash: '#contact' }">Contact</router-link>
         &middot;
-        Not affiliated with Google Inc. Contact:
         <a href="mailto:sales@nopbooster.com">sales@nopbooster.com</a>
+      </p>
+      <p class="marketing-site-footer__note">
+        GoogleIndexing.com is an independent service and is not affiliated with or endorsed by Google LLC.
+        Google is a trademark of Google LLC.
       </p>
     </div>
     <PaymentTrustBadges variant="footer-bar" />

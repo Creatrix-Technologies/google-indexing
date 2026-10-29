@@ -71,7 +71,7 @@
           v-model.trim="form.subject"
           type="text"
           name="subject"
-          placeholder="Indexing for our 12k product pages"
+          placeholder="Help with 'crawled, currently not indexed' on our blog"
           maxlength="160"
           :disabled="isSubmitting"
           @blur="validateField('subject')"
@@ -88,11 +88,9 @@
             :disabled="isSubmitting"
           >
             <option value="">Not sure yet</option>
-            <option value="trial">Free trial</option>
-            <option value="solo">Solo — $17/mo</option>
-            <option value="pro">Pro — $47/mo</option>
-            <option value="team">Team — $88/mo</option>
-            <option value="custom">Custom / Enterprise</option>
+            <option value="trial">Free plan</option>
+            <option v-for="p in paidPlans" :key="p.id" :value="planSlug(p.name)">{{ p.name }} — {{ currencySymbol(p.currency) }}{{ formatPublicPlanAmount(p.amount) }}/mo</option>
+            <option value="custom">Custom / agency</option>
           </select>
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <polyline points="6 9 12 15 18 9" />
@@ -182,7 +180,13 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
 import { useRoute } from "vue-router";
-import api from "../api";
+import api, { refreshApi } from "../api";
+import { fetchPublicSubscriptionPlans, formatPublicPlanAmount, isTrialPlan, planSlug, type PublicPlan } from "../Shared/publicPlans";
+
+// Plan options come from the live plan list, so the dropdown can never show stale prices.
+const paidPlans = ref<PublicPlan[]>([]);
+fetchPublicSubscriptionPlans(refreshApi).then((p) => { paidPlans.value = p.filter((x) => !isTrialPlan(x)); }).catch(() => {});
+const currencySymbol = (c?: string) => ((c || "USD").toUpperCase() === "USD" ? "$" : `${(c || "").toUpperCase()} `);
 
 interface ContactPayload {
   name: string;

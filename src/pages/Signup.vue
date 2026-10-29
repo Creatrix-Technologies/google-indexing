@@ -188,7 +188,8 @@ const route = useRoute();
 const planConfig: Record<string, { name: string; desc: string }> = {
   solo: { name: 'Solo Plan', desc: 'Perfect for individual sites and small projects.' },
   pro: { name: 'Pro Plan', desc: 'Most popular choice for growing businesses.' },
-  team: { name: 'Team Plan', desc: 'For agencies and teams managing many sites.' }
+  team: { name: 'Team Plan', desc: 'For agencies and teams managing many sites.' },
+  enterprise: { name: 'Enterprise Plan', desc: 'For agencies and teams managing many sites.' }
 };
 
 // Live plan (name + enforced limits) for the selected ?plan=, so the card matches the pricing page.

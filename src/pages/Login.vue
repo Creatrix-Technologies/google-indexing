@@ -151,17 +151,19 @@ import { buildRoutes } from "../Router/dynamicRoutes";
 // Plan display names mapping
 const planNames: Record<string, string> = {
   trial: 'Free plan',
-  solo: 'Solo ($17/mo)',
-  pro: 'Pro ($47/mo)',
-  team: 'Team ($88/mo)'
+  solo: 'Solo plan',
+  pro: 'Pro plan',
+  team: 'Team plan',
+  enterprise: 'Enterprise plan'
 };
 
 // Plan descriptions
 const planDescriptions: Record<string, string> = {
   trial: 'A 14-day trial with 100 URL submissions, then 50 a month, free.',
-  solo: 'Perfect for individual sites with 6,000 indexings/month.',
-  pro: 'Most popular choice with 10 sites and priority support.',
-  team: 'Collaborate with up to 8 team members across 30 sites.'
+  solo: 'For solo creators and small site owners. Sign in to continue to checkout.',
+  pro: 'For freelancers and growing agencies. Sign in to continue to checkout.',
+  team: 'For teams managing many sites. Sign in to continue to checkout.',
+  enterprise: 'For agencies and teams managing many sites. Sign in to continue to checkout.'
 };
 
 const loading = ref(false);

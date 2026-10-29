@@ -42,9 +42,19 @@ for (const [path, page] of Object.entries(seo.pages)) {
   }
 
   // Real text inside #app; Vue replaces it when it mounts.
+  const sections = (page.sections ?? []).map((s) => `<section><h2>${esc(s.h2)}</h2>${s.text.map((t) => `<p>${esc(t)}</p>`).join('')}</section>`).join('')
+  const faq = (page.faq ?? []).length
+    ? `<section><h2>Frequently asked questions</h2>${page.faq.map((f) => `<h3>${esc(f.q)}</h3><p>${esc(f.a)}</p>`).join('')}</section>`
+    : ''
   const body = `<main style="max-width:720px;margin:12vh auto;padding:0 1.5rem;font-family:system-ui,sans-serif;color:#0a0a0c">`
-    + `<h1>${esc(page.h1)}</h1>` + page.text.map((t) => `<p>${esc(t)}</p>`).join('') + `</main>`
+    + `<h1>${esc(page.h1)}</h1>` + page.text.map((t) => `<p>${esc(t)}</p>`).join('') + sections + faq + `</main>`
   html = setTag(html, /<div id="app"><\/div>/, `<div id="app">${body}</div>`, '#app')
+
+  if ((page.faq ?? []).length) {
+    const ld = { '@context': 'https://schema.org', '@type': 'FAQPage',
+      mainEntity: page.faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) }
+    html = html.replace('</head>', `<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, '\\u003c')}</script></head>`)
+  }
 
   const file = path === '/' ? join(dist, 'index.html') : join(dist, `${path.slice(1)}.html`)
   mkdirSync(dirname(file), { recursive: true })
