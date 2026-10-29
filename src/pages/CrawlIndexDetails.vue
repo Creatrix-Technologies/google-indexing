@@ -66,29 +66,41 @@
 
   <div class="summary-item clickable"
        :class="{ active: selectedFilter === 'INDEXED' }"
+       title="Confirmed by Google's URL Inspection (the Google status column)"
        @click="applyFilter('INDEXED')">
-    <span class="label">Indexed</span>
-    <span class="value success">{{ indexed }}</span>
+    <span class="label">Indexed in Google</span>
+    <span class="value success">{{ indexedInGoogle }}</span>
+  </div>
+
+  <div class="summary-item clickable"
+       :class="{ active: selectedFilter === 'SUBMITTED' }"
+       title="Indexing API accepted our notification; not the same as being indexed"
+       @click="applyFilter('SUBMITTED')">
+    <span class="label">Submitted</span>
+    <span class="value">{{ indexed }}</span>
   </div>
 
   <div class="summary-item clickable"
        :class="{ active: selectedFilter === 'DEINDEXED' }"
+       title="Removal notifications Google accepted"
        @click="applyFilter('DEINDEXED')">
-    <span class="label">Deindexed</span>
-    <span class="value success">{{ deIndexed }}</span>
+    <span class="label">Removed</span>
+    <span class="value">{{ deIndexed }}</span>
   </div>
 
   <div class="summary-item clickable"
        :class="{ active: selectedFilter === 'INDEX_FAILED' }"
+       title="Indexing API rejected the notification"
        @click="applyFilter('INDEX_FAILED')">
-    <span class="label">Index Failed</span>
+    <span class="label">Submit failed</span>
     <span class="value failed">{{ indexedFailed }}</span>
   </div>
 
   <div class="summary-item clickable"
        :class="{ active: selectedFilter === 'QUEUED' }"
+       title="Waiting for the next scheduled run"
        @click="applyFilter('QUEUED')">
-    <span class="label">Total Queued</span>
+    <span class="label">Queued</span>
     <span class="value">{{ indexedQueued }}</span>
   </div>
 </div>
@@ -115,9 +127,9 @@
         <span class="results-meta">Showing {{ urls.length }} of {{ pageInfo.totalCount }}</span>
       </div>
       <div class="control-bar-right">
-        <div class="queue-priority-bar" aria-label="Default queue priority">
-          <span class="priority-inline-label">Queue priority</span>
-          <div class="priority-segments" role="radiogroup" aria-label="Queue priority">
+        <div class="queue-priority-bar" aria-label="Priority for new queue items" title="Applies to URLs you add to the queue from now on (Index queue, ReIndex, DeIndex). Higher priority is sent first in each scheduled run.">
+          <span class="priority-inline-label">New queue items</span>
+          <div class="priority-segments" role="radiogroup" aria-label="Priority for new queue items">
             <button
               type="button"
               class="priority-seg"
@@ -230,7 +242,7 @@
               <span v-if="item.firstIndexedAt" class="google-status-since">since {{ formatDateTime(item.firstIndexedAt) }}</span>
             </td>
             <td>{{ formatStateLabel(item.indexedStatus) }}</td>
-            <td>{{ formatStateLabel(item.priority) }}</td>
+            <td :title="item.priority ? 'Queue priority' : 'Not in the queue'">{{ formatStateLabel(item.priority) }}</td>
             <td class="api-result-cell">
               <span
                 class="api-result-chip"
@@ -767,6 +779,7 @@ interface CrawlCount {
   successCount: number
   failedCount: number
   indexedSucceed: number
+  indexedInGoogle: number
   deIndexedSucceed:number
   indexedFailed: number
   indexedQueued: number
@@ -809,6 +822,7 @@ const counts = ref<CrawlCount>({
   successCount: 0,
   failedCount: 0,
   indexedSucceed: 0,
+  indexedInGoogle: 0,
   deIndexedSucceed:0,
   indexedFailed: 0,
   indexedQueued: 0,
@@ -1176,6 +1190,7 @@ const totalUrlCount = computed(() => counts.value.totalCount)
 const successCount = computed(() => counts.value.successCount)
 const failedCount = computed(() => counts.value.failedCount)
 const indexed = computed(() => counts.value.indexedSucceed)
+const indexedInGoogle = computed(() => counts.value.indexedInGoogle ?? 0)
 const indexedFailed = computed(() => counts.value.indexedFailed)
 const indexedQueued = computed(() => counts.value.indexedQueued)
 const deIndexed = computed(() => counts.value.deIndexedSucceed)
@@ -1263,16 +1278,15 @@ onBeforeUnmount(() => {
 
 .summary-card {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 16px;
 }
 
 @media (max-width: 1280px) {
-  /* fallback for smaller screens: scroll horizontally */
+  /* fallback for smaller screens: two rows of four */
   .summary-card {
-    grid-template-columns: repeat(7, minmax(140px, 1fr));
-    overflow-x: auto;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
