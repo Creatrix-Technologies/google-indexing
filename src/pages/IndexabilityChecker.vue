@@ -143,6 +143,11 @@ async function runCheck(fromQuery = false) {
   try {
     const res = await refreshApi.post('/tools/indexability-check', { url: value })
     report.value = res.data?.data ?? null
+    // Google Ads / GA event so campaigns can optimise on tool use (mark it as a secondary conversion in Ads).
+    try {
+      const gtag = (window as Window & { gtag?: (...args: unknown[]) => void }).gtag
+      if (typeof gtag === 'function') gtag('event', 'indexability_check', { verdict: report.value?.verdict ?? 'unknown' })
+    } catch { /* non-fatal */ }
   } catch (e: any) {
     error.value = e?.response?.data?.error?.description || 'The check could not be completed. Please try again.'
   } finally {
