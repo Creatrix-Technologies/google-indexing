@@ -21,6 +21,7 @@
         <li><strong>Billing data:</strong> processed by our payment provider (e.g. Stripe); we typically receive limited billing metadata (customer id, subscription status, receipt references), not full card numbers.</li>
         <li><strong>Site &amp; technical data:</strong> URLs you submit or crawl, crawl/index logs shown in the product, API usage tied to your projects, configuration you save for integrations (including tokens where you choose to store them under our security model).</li>
         <li><strong>Usage &amp; diagnostics:</strong> IP address, device/browser type, timestamps, and error logs needed for security and reliability.</li>
+        <li><strong>Free tools:</strong> when you use the free indexability checker without an account, we store the URL you enter, the result and the time, to run and improve the tool and to understand usage. We do not link these checks to an account, and we do not keep the IP address with them. Do not enter URLs that contain secrets or personal data.</li>
         <li><strong>Contact form:</strong> information you send via our website contact form (name, email, message content).</li>
       </ul>
 
