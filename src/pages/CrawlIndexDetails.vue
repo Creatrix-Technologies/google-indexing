@@ -479,6 +479,7 @@ const selectedFilter = ref<string>("ALL");
   let debounceTimer: any = null
 
   watch(searchQuery, () => {
+  resetSelectionForDatasetChange()
   clearTimeout(debounceTimer)
   debounceTimer = setTimeout(() => {
     if (pageInfo.value.page !== 1) pageInfo.value.page = 1
@@ -502,6 +503,7 @@ const selectedFilter = ref<string>("ALL");
 // }
 
 const applyFilter = (filter: string | null) => {
+  resetSelectionForDatasetChange()
   selectedFilter.value = filter ?? "ALL"
   if (pageInfo.value.page !== 1) pageInfo.value.page = 1
   else void fetchCrawlDetails()
@@ -872,6 +874,7 @@ const fetchCrawlDetails = async () => {
 watch(
   [() => pageInfo.value.page, () => pageInfo.value.pageSize],
   () => {
+    resetSelectionForDatasetChange()
     void fetchCrawlDetails()
   }
 )
@@ -913,6 +916,10 @@ const queuePriorityLabel = computed(() =>
 
 const clearSelection = () => {
   selectedIds.value = new Set()
+}
+
+const resetSelectionForDatasetChange = () => {
+  if (selectedIds.value.size > 0) clearSelection()
 }
 
 type RowMenuKind = "index" | "remove"
