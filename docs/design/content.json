@@ -1,0 +1,286 @@
+{
+  "_meta": {
+    "purpose": "Single source of truth for copy used by all three mockups (A Mission Control, B The Invisible Page, C Try-First Playground). Mockups must use this text verbatim.",
+    "sources": [
+      "src/Shared/publicPlans.ts",
+      "src/seo/publicPages.json",
+      "src/pages/Home.vue",
+      "src/pages/Pricing.vue",
+      "src/components/marketing/ReliabilitySection.vue"
+    ],
+    "priceRule": "Paid plan names and prices are NOT in the repo; they load at runtime from /payments/public-subscription-plans. Mockups must render them as the tokens {{paidFromMonthly}} and {{plan.amount}}, or as an obviously placeholder value such as $XX, never an invented number. Limit lines for paid plans come from planLimitLines().",
+    "forbidden": [
+      "testimonials, customer quotes, customer logos",
+      "user counts, 'trusted by', ratings, awards",
+      "ranking, traffic or speed-to-index promises or invented percentages",
+      "claims of Google partnership or endorsement"
+    ]
+  },
+  "brand": {
+    "name": "GoogleIndexing.com",
+    "siteUrl": "https://www.googleindexing.com",
+    "tagline": "Get your pages into Google, and see which ones made it",
+    "disclaimer": "GoogleIndexing.com is an independent service that automates Google's publicly documented Indexing API. We are not affiliated with or endorsed by Google LLC. Google is a trademark of Google LLC.",
+    "rebrandNote": "Name styling, logo mark, palette and type may change. The domain name and the disclaimer may not."
+  },
+  "cta": {
+    "primary": { "label": "Start free", "href": "/signup?plan=trial" },
+    "secondary": { "label": "See how it works", "href": "#how-it-works" },
+    "checker": { "label": "Check a page free", "href": "/tools/indexability-checker" },
+    "pricing": { "label": "Pricing", "href": "/pricing" },
+    "reassurance": "No card needed."
+  },
+  "limits": {
+    "trialDays": 14,
+    "trialUrls": 100,
+    "monthlyUrlsAfterTrial": 50,
+    "freeSites": 1,
+    "googleDailyQuotaPerProject": 200,
+    "recheckDays": [1, 3, 7],
+    "checkerRateLimit": "20 checks per 10 minutes per visitor"
+  },
+  "story": [
+    {
+      "id": "pain",
+      "step": 1,
+      "eyebrow": "The problem",
+      "h2": "You published it. Google may not have noticed.",
+      "body": "New and updated pages can sit for a long time without being crawled or indexed, and nothing tells you which ones.",
+      "cta": null
+    },
+    {
+      "id": "reveal",
+      "step": 2,
+      "eyebrow": "Free tool",
+      "h2": "See what can stop a page from being indexed",
+      "body": "Paste any page address to see whether Google can index it. The checker tests the HTTP status and redirects, robots.txt rules for Googlebot, the X-Robots-Tag header, meta robots noindex, the canonical tag and how much content is in the HTML. Each problem comes with a plain-English fix. No sign-up needed.",
+      "note": "The checker shows whether a page can be indexed. It does not show whether it is in Google right now; connect your site to see that.",
+      "cta": { "label": "Check a page free", "href": "/tools/indexability-checker" }
+    },
+    {
+      "id": "mechanism",
+      "step": 3,
+      "eyebrow": "How it works",
+      "h2": "From crawl to confirmed index",
+      "body": "Crawl, submit through Google's official Indexing API, and verify with Google's URL Inspection.",
+      "steps": [
+        {
+          "n": "01",
+          "title": "Connect your site",
+          "body": "Create a Google service account and add it as an Owner in Search Console. Our step-by-step guide takes about 10 minutes."
+        },
+        {
+          "n": "02",
+          "title": "Crawl and submit",
+          "body": "Crawl your site, import a sitemap, or paste URLs. Scheduled crawls find new and changed pages and submit them through Google's Indexing API for you."
+        },
+        {
+          "n": "03",
+          "title": "Watch it index",
+          "body": "Each URL moves from queued to submitted to indexed. Every submitted URL is re-checked with Google's URL Inspection 1, 3 and 7 days later."
+        }
+      ],
+      "pipelineStates": ["Queued", "Submitted", "Indexed"],
+      "cta": null
+    },
+    {
+      "id": "proof",
+      "step": 4,
+      "eyebrow": "Progress you can measure",
+      "h2": "Submitted, then verified",
+      "body": "In your dashboard, status is Google's own URL Inspection result for every URL, re-checked 1, 3 and 7 days after submission, not an estimate.",
+      "chart": {
+        "title": "Coverage over time",
+        "illustrationLabel": "Illustration, not customer data. Timing depends on your site and on Google.",
+        "series": ["Not indexed", "Indexed"],
+        "note": "Pages Google is told about tend to be picked up sooner than pages it has to discover from a sitemap, but there is no guaranteed timing."
+      },
+      "metrics": [
+        { "value": "Days 1, 3, 7", "label": "Automatic re-checks per URL" },
+        { "value": "200/day", "label": "Submissions per Google project" },
+        { "value": "Every URL", "label": "Index status checked with Google" }
+      ],
+      "cta": null
+    },
+    {
+      "id": "trust",
+      "step": 5,
+      "eyebrow": "Built to keep running",
+      "h2": "Official API. Your own Google quota.",
+      "body": "We use Google's publicly documented Indexing API with your own Google Cloud project, so its 200 submissions a day are yours, and we never work around that quota. \"Indexed\" means Google says so.",
+      "points": [
+        {
+          "title": "Automatic retries with backoff",
+          "body": "Page fetches retry three times with exponential backoff, and every background job gets three attempts before it is marked failed with a reason you can read.",
+          "tag": "No silent drops"
+        },
+        {
+          "title": "Locked, non-overlapping runs",
+          "body": "A site that is already crawling cannot be queued twice. Each run holds a lock until it completes, so parallel schedules never collide or double-submit.",
+          "tag": "Safe concurrency"
+        },
+        {
+          "title": "Quota-aware queue",
+          "body": "Google allows 200 Indexing API requests per project per day. We track usage against Google's Pacific-time reset, warn you before you hit it, and hold the rest for the next window.",
+          "tag": "200/day, handled"
+        },
+        {
+          "title": "Live progress streams",
+          "body": "Crawls, bulk submissions and status syncs stream progress to your dashboard as they happen, with automatic reconnect if the connection drops.",
+          "tag": "Real time"
+        },
+        {
+          "title": "Verified against Google",
+          "body": "Status sync pulls coverage and indexing state per URL from Google's URL Inspection, not from a guess.",
+          "tag": "Source of truth"
+        },
+        {
+          "title": "Real-browser, robots-aware crawling",
+          "body": "Pages render in a headless Chromium so JavaScript-driven sites are read correctly. Sitemaps are parsed and robots.txt rules are respected on every crawl.",
+          "tag": "Playwright"
+        }
+      ],
+      "honestLimit": "Google officially supports the Indexing API for pages with JobPosting or BroadcastEvent structured data. For other pages a submission asks Google to crawl sooner but cannot guarantee indexing, and Google screens all submissions for spam.",
+      "platforms": ["WordPress", "WooCommerce", "Shopify", "nopCommerce", "Next.js", "Custom sites"],
+      "platformsLabel": "Works with any website with publicly accessible URLs",
+      "cta": null
+    },
+    {
+      "id": "offer",
+      "step": 6,
+      "eyebrow": "Pricing",
+      "h2": "Start free. Upgrade when you need more.",
+      "body": "A 14-day trial with 100 URL submissions, then 50 a month. No card needed.",
+      "paidTeaser": "Paid plans from {{paidFromMonthly}}/mo, submitting up to 200 URLs a day per Google Cloud project, Google's own limit.",
+      "cta": { "label": "Start free", "href": "/signup?plan=trial" }
+    },
+    {
+      "id": "cta",
+      "step": 7,
+      "h2": "Ready to see what Google indexed?",
+      "body": "Start free: a 14-day trial with 100 URL submissions, then 50 a month. No card needed.",
+      "cta": { "label": "Start free", "href": "/signup?plan=trial" }
+    }
+  ],
+  "ctaPlacement": "Primary CTA 'Start free' repeats at: hero, after checker result, after mechanism, after proof, in the offer, and in the closing section. Never hidden behind or delayed by animation.",
+  "plans": {
+    "free": {
+      "name": "Free",
+      "slug": "trial",
+      "price": "$0",
+      "priceNote": "Free forever, no card needed",
+      "cta": { "label": "Start free", "href": "/signup?plan=trial" },
+      "features": [
+        "14-day trial with 100 URL submissions",
+        "Then 50 URL submissions every month",
+        "1 website",
+        "Site crawl, index status and \"why isn't this indexed?\" explanations"
+      ]
+    },
+    "paid": {
+      "source": "Live from /payments/public-subscription-plans. Render name, amount, currency and duration from the API; slug via planSlug(); CTA to /signup?plan=<slug>.",
+      "placeholderCard": {
+        "name": "{{plan.name}}",
+        "price": "{{plan.amount}}",
+        "period": "/{{plan.duration}}",
+        "sitesLine": "{{n}} website(s) or Unlimited websites",
+        "limitLines": [
+          "Up to {{min(maxUrlsPerDay, 200)}} URL submissions a day",
+          "{{maxUrlsPerMonth}} submissions a month (only if the plan has a monthly cap)",
+          "Scheduled crawls and automatic submission",
+          "Index status verified with Google URL Inspection"
+        ],
+        "hint": "Verify email, then pay securely",
+        "cta": "per planCtaLabel(plan)"
+      },
+      "popularBadge": "Most popular (set by the real plan data, not by the mockup)"
+    },
+    "quotaNote": "Google's Indexing API allows 200 submissions a day per Google Cloud project (your own service account). That limit is Google's, not ours, and every paid plan can use all of it. All the sites in one account share that quota, because they use one Google project.",
+    "annualNote": "Annual billing with two months free is available on request: contact us."
+  },
+  "pricingPage": {
+    "h1": "Simple, transparent pricing",
+    "sub": "Start free, upgrade when you need more. Works with any website: WordPress, Shopify, nopCommerce, Next.js, corporate sites, or fully custom-built."
+  },
+  "checker": {
+    "h1": "Free Google indexability checker",
+    "intro": "Paste any page address to see whether Google can index it. Each problem comes with a plain-English fix. No sign-up needed.",
+    "tests": [
+      { "name": "Status and redirects", "body": "Does the page answer 200 OK? Redirect chains, temporary redirects, 404s, 403s and server errors all stop or delay indexing." },
+      { "name": "robots.txt", "body": "Evaluated the way Googlebot does it. We show the exact line that blocks the page." },
+      { "name": "Noindex", "body": "Both places Google reads it: the meta robots or googlebot tag in the HTML and the X-Robots-Tag HTTP header." },
+      { "name": "Canonical", "body": "If the canonical tag points somewhere else, Google usually indexes that URL instead of this one." },
+      { "name": "Content", "body": "Pages with very little text, or whose text only appears after JavaScript runs, are often left out of the index." },
+      { "name": "HTTPS", "body": "Google prefers the HTTPS version of a page; plain HTTP pages are flagged." }
+    ],
+    "resultStates": {
+      "canIndex": "Nothing here stops Google from indexing this page. That does not mean Google has chosen to index it.",
+      "blocked": "Google is blocked from indexing this page. Fix the issues below.",
+      "nextStep": "Connect your site to check every URL with Google's URL Inspection and ask Google to crawl it through the Indexing API."
+    },
+    "limitNote": "The checker reads the HTML your server sends and does not run JavaScript. Limit: 20 checks per 10 minutes per visitor."
+  },
+  "faq": [
+    {
+      "q": "How does this work?",
+      "a": "We crawl your site, send new and changed pages to Google through its official Indexing API, and then check each URL with Google's URL Inspection so you can see what was actually indexed and, if not, why."
+    },
+    {
+      "q": "Is this affiliated with Google?",
+      "a": "No. GoogleIndexing.com is an independent service that automates Google's publicly documented Indexing API. We are not affiliated with or endorsed by Google LLC. Google is a trademark of Google LLC."
+    },
+    {
+      "q": "Is this allowed for my pages?",
+      "a": "Google officially supports the Indexing API for pages with JobPosting or BroadcastEvent structured data. For other pages a submission asks Google to crawl sooner but cannot guarantee indexing, and Google screens all submissions for spam. You use your own Google project, so its 200 submissions a day are yours, and we never work around that quota. The crawl, the URL Inspection status and the explanations of why a page is not indexed work for every page regardless."
+    },
+    {
+      "q": "Does it work for existing pages?",
+      "a": "Yes. You can submit both new pages and updated existing pages, so Google sees your latest content."
+    },
+    {
+      "q": "What platforms are supported?",
+      "a": "Any website with publicly accessible URLs: WordPress, WooCommerce, Shopify, nopCommerce, Next.js, or fully custom-built sites."
+    },
+    {
+      "q": "The checker says Google can index my page. Why isn't it in Google?",
+      "a": "Being indexable means nothing stops Google; it doesn't mean Google chose to index it. Search Console reports such pages as 'Discovered, currently not indexed' or 'Crawled, currently not indexed'. Usually the fix is more unique content, internal links to the page, and asking Google to crawl it, which GoogleIndexing.com does for you through the Indexing API."
+    },
+    {
+      "q": "Does the checker tell me whether my page is in Google right now?",
+      "a": "No. Only Search Console knows for sure; a site: search is often wrong. Connect your site to GoogleIndexing.com (free plan available) and every URL is checked with Google's URL Inspection, including the date Google last crawled it."
+    }
+  ],
+  "signup": {
+    "h1": "Start free",
+    "sub": "A 14-day trial with 100 URL submissions, then 50 a month. No card needed.",
+    "fields": ["Email", "Password"],
+    "submit": "Start free",
+    "planParam": "?plan=trial must be preserved from every CTA"
+  },
+  "app": {
+    "dashboard": {
+      "title": "Dashboard",
+      "statuses": ["Queued", "Submitted", "Indexed", "Not indexed"],
+      "note": "'Indexed' is Google's URL Inspection result. 'Submitted' means sent to Google, not yet confirmed."
+    },
+    "emptyState": {
+      "h2": "Let's get your first page indexed",
+      "steps": [
+        "Connect Google: create a service account and add it as an Owner in Search Console (about 10 minutes).",
+        "Add your site and crawl it, import a sitemap, or paste URLs.",
+        "Submit, then watch each URL move from queued to submitted to indexed."
+      ],
+      "firstWin": "First win: your first URL shows Google's URL Inspection status in the dashboard.",
+      "cta": "Connect Google"
+    }
+  },
+  "footer": {
+    "links": [
+      { "label": "Pricing", "href": "/pricing" },
+      { "label": "Free indexability checker", "href": "/tools/indexability-checker" },
+      { "label": "Terms of Service", "href": "/terms" },
+      { "label": "Privacy Policy", "href": "/privacy" }
+    ],
+    "disclaimer": "GoogleIndexing.com is an independent service that automates Google's publicly documented Indexing API. We are not affiliated with or endorsed by Google LLC. Google is a trademark of Google LLC."
+  }
+}
