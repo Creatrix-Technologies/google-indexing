@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crawl &amp; index | GoogleIndexing.com</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="shared.css">
+<script src="shared.js"></script>
+</head>
+<body data-layout="app">
+<div id="site-header"></div>
+<main id="main" class="app-main"><div class="wrap">
+  <div class="app-title">
+    <h1>Crawl &amp; index</h1>
+    <div class="cta-row">
+      <button class="btn btn-ghost btn-sm" type="button">Crawl site</button>
+      <button class="btn btn-primary btn-sm" type="button">Submit selected</button>
+    </div>
+  </div>
+  <p class="note" style="margin-top:-8px">Sample data for the mockup. Site: <span class="mono">example.com</span></p>
+
+  <div class="toolbar">
+    <div class="filters" id="filters" role="group" aria-label="Filter by status" style="margin:0">
+      <button class="filter" type="button" data-k="all" aria-pressed="true">All</button>
+      <button class="filter" type="button" data-k="queued" aria-pressed="false">○ Queued</button>
+      <button class="filter" type="button" data-k="submitted" aria-pressed="false">◐ Submitted</button>
+      <button class="filter" type="button" data-k="indexed" aria-pressed="false">● Indexed</button>
+      <button class="filter" type="button" data-k="not" aria-pressed="false">✕ Not indexed</button>
+    </div>
+    <div class="field">
+      <label for="prio">Queue priority</label>
+      <select id="prio">
+        <option>Newest pages first</option>
+        <option>Recently changed first</option>
+        <option>Not indexed first</option>
+      </select>
+    </div>
+  </div>
+  <p class="note" id="filter-count" aria-live="polite">8 URLs shown</p>
+
+  <div class="card" style="padding:12px">
+    <table class="rtable" id="url-table">
+      <thead><tr><th>URL</th><th>Status</th><th>Re-checks (days 1, 3, 7)</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr data-k="indexed"><td data-label="URL"><span class="url">example.com/blog/crawl-budget-guide</span></td><td data-label="Status"><span class="st st-indexed">Indexed</span></td><td data-label="Re-checks"><span class="recheck"><span class="done">1</span><span class="done">3</span><span>7</span></span></td><td data-label="Why" class="note">Google crawled it on its last check</td></tr>
+        <tr data-k="submitted"><td data-label="URL"><span class="url">example.com/products/blue-widget</span></td><td data-label="Status"><span class="st st-submitted">Submitted</span></td><td data-label="Re-checks"><span class="recheck"><span class="done">1</span><span>3</span><span>7</span></span></td><td data-label="Why" class="note">Waiting for Google</td></tr>
+        <tr data-k="indexed"><td data-label="URL"><span class="url">example.com/docs/getting-started</span></td><td data-label="Status"><span class="st st-indexed">Indexed</span></td><td data-label="Re-checks"><span class="recheck"><span class="done">1</span><span class="done">3</span><span class="done">7</span></span></td><td data-label="Why" class="note">Confirmed by URL Inspection</td></tr>
+        <tr data-k="not"><td data-label="URL"><span class="url">example.com/pricing-faq</span></td><td data-label="Status"><span class="st st-not">Not indexed</span></td><td data-label="Re-checks"><span class="recheck"><span class="done">1</span><span class="done">3</span><span class="done">7</span></span></td><td data-label="Why" class="note">Crawled, currently not indexed. Add unique content and internal links.</td></tr>
+        <tr data-k="queued"><td data-label="URL"><span class="url">example.com/blog/new-post</span></td><td data-label="Status"><span class="st st-queued">Queued</span></td><td data-label="Re-checks"><span class="recheck"><span>1</span><span>3</span><span>7</span></span></td><td data-label="Why" class="note">In the quota-aware queue</td></tr>
+        <tr data-k="submitted"><td data-label="URL"><span class="url">example.com/products/red-widget</span></td><td data-label="Status"><span class="st st-submitted">Submitted</span></td><td data-label="Re-checks"><span class="recheck"><span class="done">1</span><span class="done">3</span><span>7</span></span></td><td data-label="Why" class="note">Waiting for Google</td></tr>
+        <tr data-k="not"><td data-label="URL"><span class="url">example.com/blog/canonical-tags</span></td><td data-label="Status"><span class="st st-not">Not indexed</span></td><td data-label="Re-checks"><span class="recheck"><span class="done">1</span><span class="done">3</span><span>7</span></span></td><td data-label="Why" class="note">Discovered, currently not indexed</td></tr>
+        <tr data-k="queued"><td data-label="URL"><span class="url">example.com/case/launch-checklist</span></td><td data-label="Status"><span class="st st-queued">Queued</span></td><td data-label="Re-checks"><span class="recheck"><span>1</span><span>3</span><span>7</span></span></td><td data-label="Why" class="note">In the quota-aware queue</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div></main>
+<div id="site-footer"></div>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sites | GoogleIndexing.com</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="shared.css">
+<script src="shared.js"></script>
+</head>
+<body data-layout="app">
+<div id="site-header"></div>
+<main id="main" class="app-main"><div class="wrap">
+  <div class="app-title"><h1>Sites</h1></div>
+  <p class="note" style="margin-top:-8px">Sample data for the mockup. The free plan includes 1 website.</p>
+
+  <div class="card site-card glow" style="margin-bottom:16px">
+    <div>
+      <h2 style="font-size:1.25rem;margin-bottom:6px"><span class="mono">example.com</span></h2>
+      <div class="kv"><span>Google: <b>connected</b></span><span>Crawl schedule: <b>weekly</b></span><span>Last crawl: <b>2 days ago</b></span><span>URLs: <b>123</b></span></div>
+      <p style="margin:12px 0 0"><span class="st st-indexed">64 indexed</span> <span class="st st-submitted">38 submitted</span> <span class="st st-queued">12 queued</span> <span class="st st-not">9 not indexed</span></p>
+    </div>
+    <div class="cta-row"><a class="btn btn-primary btn-sm" href="crawl-index.html">Open</a><button class="btn btn-ghost btn-sm" type="button">Crawl now</button></div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <h2 style="font-size:1.2rem">Add a site</h2>
+      <form onsubmit="return false">
+        <div class="field"><label for="s">Website address</label><input id="s" class="mono-in" type="url" placeholder="https://example.com"></div>
+        <button class="btn btn-ghost" type="submit">Add site</button>
+        <p class="note" style="margin:12px 0 0">Upgrade to add more websites.</p>
+      </form>
+    </div>
+    <div class="card">
+      <h2 style="font-size:1.2rem">Google connection</h2>
+      <p class="muted">Create a Google service account and add it as an Owner in Search Console. Our step-by-step guide takes about 10 minutes.</p>
+      <p class="note">All the sites in one account share Google's 200 submissions a day, because they use one Google project.</p>
+    </div>
+  </div>
+</div></main>
+<div id="site-footer"></div>
+</body>
+</html>

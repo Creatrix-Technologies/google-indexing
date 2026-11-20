@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard | GoogleIndexing.com</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="shared.css">
+<script src="shared.js"></script>
+</head>
+<body data-layout="app">
+<div id="site-header"></div>
+<main id="main" class="app-main"><div class="wrap">
+  <div class="app-title">
+    <h1>Dashboard</h1>
+    <a class="btn btn-primary btn-sm" href="crawl-index.html">Submit URLs</a>
+  </div>
+  <p class="note" style="margin-top:-8px">Sample data for the mockup. Site: <span class="mono">example.com</span></p>
+
+  <div class="grid g4" style="margin-bottom:16px">
+    <div class="card stat"><span class="st st-queued">Queued</span><span class="n">12</span><span class="note">waiting for quota or schedule</span></div>
+    <div class="card stat"><span class="st st-submitted">Submitted</span><span class="n">38</span><span class="note">sent to Google, not yet confirmed</span></div>
+    <div class="card stat"><span class="st st-indexed">Indexed</span><span class="n">64</span><span class="note">confirmed by URL Inspection</span></div>
+    <div class="card stat"><span class="st st-not">Not indexed</span><span class="n">9</span><span class="note">Google says no, see why</span></div>
+  </div>
+  <p class="note">"Indexed" is Google's URL Inspection result. "Submitted" means sent to Google, not yet confirmed.</p>
+
+  <div class="dash-grid" style="margin-top:16px">
+    <div class="card">
+      <h2 style="font-size:1.2rem">Recent activity</h2>
+      <table class="rtable">
+        <thead><tr><th>URL</th><th>Status</th><th>Last check</th></tr></thead>
+        <tbody>
+          <tr><td data-label="URL"><span class="url">example.com/blog/crawl-budget-guide</span></td><td data-label="Status"><span class="st st-indexed">Indexed</span></td><td data-label="Last check" class="mono">Day 3</td></tr>
+          <tr><td data-label="URL"><span class="url">example.com/products/blue-widget</span></td><td data-label="Status"><span class="st st-submitted">Submitted</span></td><td data-label="Last check" class="mono">Day 1</td></tr>
+          <tr><td data-label="URL"><span class="url">example.com/docs/getting-started</span></td><td data-label="Status"><span class="st st-indexed">Indexed</span></td><td data-label="Last check" class="mono">Day 7</td></tr>
+          <tr><td data-label="URL"><span class="url">example.com/pricing-faq</span></td><td data-label="Status"><span class="st st-not">Not indexed</span></td><td data-label="Last check" class="mono">Day 7</td></tr>
+          <tr><td data-label="URL"><span class="url">example.com/blog/new-post</span></td><td data-label="Status"><span class="st st-queued">Queued</span></td><td data-label="Last check" class="mono">not yet</td></tr>
+        </tbody>
+      </table>
+      <p style="margin:14px 0 0"><a href="crawl-index.html">Open crawl &amp; index</a></p>
+    </div>
+    <div class="grid" style="align-content:start">
+      <div class="card" style="text-align:center">
+        <h2 style="font-size:1.2rem">Coverage</h2>
+        <div class="ring-box" style="border:0" role="img" aria-label="Coverage ring, sample data: 64 of 123 URLs indexed, 52 percent">
+          <svg class="ring" viewBox="0 0 112 112" aria-hidden="true"><circle class="track" cx="56" cy="56" r="46" fill="none" stroke-width="10"/><circle class="val" cx="56" cy="56" r="46" fill="none" stroke-width="10" stroke-linecap="round" stroke-dasharray="289" stroke-dashoffset="139"/></svg>
+          <div class="ring-label">52%</div><div class="ring-sub">64 of 123 URLs indexed</div>
+        </div>
+      </div>
+      <div class="card">
+        <h2 style="font-size:1.2rem">Today's quota</h2>
+        <p class="mono" style="margin:0"><b>141</b> / 200 submissions</p>
+        <div class="meter" role="img" aria-label="141 of 200 submissions used"><span style="width:70.5%"></span></div>
+        <p class="note">Google's limit per Google Cloud project, resets on Google's Pacific-time day. Yours alone.</p>
+      </div>
+    </div>
+  </div>
+</div></main>
+<div id="site-footer"></div>
+</body>
+</html>

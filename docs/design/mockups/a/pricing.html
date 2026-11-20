@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pricing | GoogleIndexing.com</title>
+<meta name="description" content="Start free with 50 URL submissions a month. Paid plans submit up to 200 URLs a day per Google project, with scheduled crawls and per-URL index status.">
+<link rel="stylesheet" href="shared.css">
+<script src="shared.js"></script>
+</head>
+<body>
+<div id="site-header"></div>
+<main id="main">
+<section style="padding-bottom:24px">
+  <div class="wrap">
+    <span class="eyebrow">Pricing</span>
+    <h1>Simple, transparent pricing</h1>
+    <p class="lead">Start free, upgrade when you need more. Works with any website: WordPress, Shopify, nopCommerce, Next.js, corporate sites, or fully custom-built.</p>
+  </div>
+</section>
+
+<section style="padding-top:12px">
+  <div class="wrap">
+    <p class="callout" style="margin-bottom:24px">Google's Indexing API allows 200 submissions a day per Google Cloud project (your own service account). That limit is Google's, not ours, and every paid plan can use all of it. All the sites in one account share that quota, because they use one Google project.</p>
+
+    <div class="grid g3">
+      <article class="card plan glow">
+        <span class="badge">Free</span>
+        <div class="price" style="margin-top:14px">$0</div>
+        <p class="note">Free forever, no card needed</p>
+        <ul>
+          <li>14-day trial with 100 URL submissions</li>
+          <li>Then 50 URL submissions every month</li>
+          <li>1 website</li>
+          <li>Site crawl, index status and "why isn't this indexed?" explanations</li>
+        </ul>
+        <a class="btn btn-primary" href="signup.html?plan=trial">Start free</a>
+      </article>
+
+      <article class="card plan">
+        <h3><span class="token">{{plan.name}}</span></h3>
+        <div class="price"><span class="token">{{plan.amount}}</span><small>/<span class="token">{{plan.duration}}</span></small></div>
+        <ul>
+          <li><span class="token">{{n}}</span> website(s), or Unlimited websites</li>
+          <li>Up to <span class="token">{{min(maxUrlsPerDay, 200)}}</span> URL submissions a day</li>
+          <li><span class="token">{{maxUrlsPerMonth}}</span> submissions a month (only if the plan has a monthly cap)</li>
+          <li>Scheduled crawls and automatic submission</li>
+          <li>Index status verified with Google URL Inspection</li>
+        </ul>
+        <p class="note">Verify email, then pay securely</p>
+        <a class="btn btn-ghost" href="signup.html?plan=paid">Choose plan</a>
+      </article>
+
+      <article class="card plan">
+        <h3><span class="token">{{plan.name}}</span></h3>
+        <div class="price"><span class="token">{{plan.amount}}</span><small>/<span class="token">{{plan.duration}}</span></small></div>
+        <ul>
+          <li><span class="token">{{n}}</span> website(s), or Unlimited websites</li>
+          <li>Up to <span class="token">{{min(maxUrlsPerDay, 200)}}</span> URL submissions a day</li>
+          <li>Scheduled crawls and automatic submission</li>
+          <li>Index status verified with Google URL Inspection</li>
+        </ul>
+        <p class="note">Verify email, then pay securely</p>
+        <a class="btn btn-ghost" href="signup.html?plan=paid">Choose plan</a>
+      </article>
+    </div>
+    <p class="note" style="margin-top:14px">Paid plan names, prices and limits load live from the API; the cards above are placeholders, not real prices. Annual billing with two months free is available on request: contact us.</p>
+  </div>
+</section>
+
+<section style="padding-top:12px">
+  <div class="wrap" style="max-width:860px">
+    <div class="section-head"><span class="eyebrow">FAQ</span><h2>Questions about plans</h2></div>
+    <details class="faq"><summary>Is this allowed for my pages?</summary><p>Google officially supports the Indexing API for pages with JobPosting or BroadcastEvent structured data. For other pages a submission asks Google to crawl sooner but cannot guarantee indexing, and Google screens all submissions for spam. You use your own Google project, so its 200 submissions a day are yours, and we never work around that quota. The crawl, the URL Inspection status and the explanations of why a page is not indexed work for every page regardless.</p></details>
+    <details class="faq"><summary>What platforms are supported?</summary><p>Any website with publicly accessible URLs: WordPress, WooCommerce, Shopify, nopCommerce, Next.js, or fully custom-built sites.</p></details>
+    <details class="faq"><summary>Does it work for existing pages?</summary><p>Yes. You can submit both new pages and updated existing pages, so Google sees your latest content.</p></details>
+    <details class="faq"><summary>Is this affiliated with Google?</summary><p>No. GoogleIndexing.com is an independent service that automates Google's publicly documented Indexing API. We are not affiliated with or endorsed by Google LLC. Google is a trademark of Google LLC.</p></details>
+  </div>
+</section>
+
+<section>
+  <div class="wrap"><div class="card glow cta-band">
+    <h2>Ready to see what Google indexed?</h2>
+    <p class="lead" style="margin:0 auto 22px">Start free: a 14-day trial with 100 URL submissions, then 50 a month. No card needed.</p>
+    <div class="cta-row"><a class="btn btn-primary" href="signup.html?plan=trial">Start free</a></div>
+  </div></div>
+</section>
+</main>
+<div id="site-footer"></div>
+</body>
+</html>

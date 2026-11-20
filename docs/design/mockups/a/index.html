@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GoogleIndexing.com | Get your pages into Google, and see which ones made it</title>
+<meta name="description" content="Crawl your site, submit new pages through Google's official Indexing API on a schedule, and see URL by URL what Google actually indexed. Free plan available.">
+<link rel="stylesheet" href="shared.css">
+<script src="shared.js"></script>
+</head>
+<body>
+<div id="site-header"></div>
+<main id="main">
+
+<!-- 1 Hero (pain headline + pipeline) -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="badge"><span class="dot" aria-hidden="true"></span>Indexing API automation</span>
+      <h1 style="margin-top:18px">Get your pages into Google, <span class="hl">and see which ones made it</span></h1>
+      <p class="lead">GoogleIndexing.com crawls your site, submits new and changed pages through Google's official Indexing API on a schedule, and follows every page from queued to indexed, with Google's own URL Inspection status to confirm it.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="signup.html?plan=trial">Start free</a>
+        <a class="btn btn-ghost" href="#how-it-works">See how it works</a>
+      </div>
+      <p class="reassure">Start free: a 14-day trial with 100 URL submissions, then 50 a month. No card needed.<br>
+        <a href="checker-result.html">Free tool: check if Google can index any page</a></p>
+    </div>
+
+    <div class="card pipe glow" role="img" aria-label="Illustration: example URLs moving from Queued to Submitted to Indexed, with a coverage ring. Not customer data.">
+      <div class="pipe-head"><span>indexing pipeline</span><span><span class="dot" aria-hidden="true"></span> live demo</span></div>
+      <div class="pipe-body">
+        <div class="pipe-rows" id="pipe-rows" aria-hidden="true"></div>
+        <div class="ring-box" aria-hidden="true">
+          <svg class="ring" viewBox="0 0 112 112"><circle class="track" cx="56" cy="56" r="46" fill="none" stroke-width="10"/><circle class="val" id="ring-val" cx="56" cy="56" r="46" fill="none" stroke-width="10" stroke-linecap="round" stroke-dasharray="289" stroke-dashoffset="289"/></svg>
+          <div class="ring-label" id="ring-num">0%</div>
+          <div class="ring-sub" id="ring-sub">coverage</div>
+        </div>
+      </div>
+      <div class="pipe-foot">Illustration with example URLs, not customer data.</div>
+    </div>
+  </div>
+</section>
+
+<section style="padding:0 0 8px">
+  <div class="wrap">
+    <p class="note" style="margin-bottom:10px">Works with any website with publicly accessible URLs</p>
+    <div class="strip"><span class="chip">WordPress</span><span class="chip">WooCommerce</span><span class="chip">Shopify</span><span class="chip">nopCommerce</span><span class="chip">Next.js</span><span class="chip">Custom sites</span></div>
+  </div>
+</section>
+
+<!-- 1 Pain -->
+<section id="problem">
+  <div class="wrap grid g2" style="align-items:center">
+    <div>
+      <span class="eyebrow">The problem</span>
+      <h2>You published it. Google may not have noticed.</h2>
+      <p class="lead">New and updated pages can sit for a long time without being crawled or indexed, and nothing tells you which ones.</p>
+    </div>
+    <div class="card" role="img" aria-label="Illustration: a list of example URLs, most marked Not indexed, with no way to tell which">
+      <div class="prow"><span class="url">example.com/blog/new-post</span><span class="st st-not">Not indexed</span></div>
+      <div class="prow"><span class="url">example.com/products/blue-widget</span><span class="st st-not">Not indexed</span></div>
+      <div class="prow"><span class="url">example.com/docs/getting-started</span><span class="st st-indexed">Indexed</span></div>
+      <div class="prow"><span class="url">example.com/pricing-faq</span><span class="st st-not">Not indexed</span></div>
+      <p class="note" style="margin:10px 0 0">Illustration with example URLs.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 2 Reveal -->
+<section id="checker">
+  <div class="wrap">
+    <div class="card glow" style="padding:clamp(22px,4vw,44px)">
+      <span class="eyebrow">Free tool</span>
+      <h2>See what can stop a page from being indexed</h2>
+      <p class="lead">Paste any page address to see whether Google can index it. The checker tests the HTTP status and redirects, robots.txt rules for Googlebot, the X-Robots-Tag header, meta robots noindex, the canonical tag and how much content is in the HTML. Each problem comes with a plain-English fix. No sign-up needed.</p>
+      <form action="checker-result.html" class="input-row" style="margin:22px 0 12px">
+        <label class="sr-only" for="u">Page address</label>
+        <input id="u" class="mono-in" type="url" name="url" placeholder="https://example.com/your-page" value="https://example.com/your-page">
+        <button class="btn btn-primary" type="submit">Check a page free</button>
+      </form>
+      <p class="note">The checker shows whether a page can be indexed. It does not show whether it is in Google right now; connect your site to see that.</p>
+      <p style="margin:18px 0 0"><a class="btn btn-ghost btn-sm" href="signup.html?plan=trial">Start free</a> <span class="note">&nbsp;No card needed.</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- 3 Mechanism -->
+<section id="how-it-works">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">How it works</span>
+      <h2>From crawl to confirmed index</h2>
+      <p class="lead">Crawl, submit through Google's official Indexing API, and verify with Google's URL Inspection.</p>
+    </div>
+    <div class="grid g3">
+      <article class="card"><div class="step-n">01</div><h3>Connect your site</h3><p class="muted">Create a Google service account and add it as an Owner in Search Console. Our step-by-step guide takes about 10 minutes.</p></article>
+      <article class="card"><div class="step-n">02</div><h3>Crawl and submit</h3><p class="muted">Crawl your site, import a sitemap, or paste URLs. Scheduled crawls find new and changed pages and submit them through Google's Indexing API for you.</p></article>
+      <article class="card"><div class="step-n">03</div><h3>Watch it index</h3><p class="muted">Each URL moves from queued to submitted to indexed. Every submitted URL is re-checked with Google's URL Inspection 1, 3 and 7 days later.</p></article>
+    </div>
+    <div class="flow" aria-label="Pipeline states"><span class="st st-queued">Queued</span><span class="arrow" aria-hidden="true">→</span><span class="st st-submitted">Submitted</span><span class="arrow" aria-hidden="true">→</span><span class="st st-indexed">Indexed</span></div>
+    <p style="margin-top:28px"><a class="btn btn-primary" href="signup.html?plan=trial">Start free</a></p>
+  </div>
+</section>
+
+<!-- 4 Proof -->
+<section id="results">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Progress you can measure</span>
+      <h2>Submitted, then verified</h2>
+      <p class="lead">In your dashboard, status is Google's own URL Inspection result for every URL, re-checked 1, 3 and 7 days after submission, not an estimate.</p>
+    </div>
+    <div class="card">
+      <h3>Coverage over time</h3>
+      <div class="legend"><span><i style="background:var(--st-not)"></i>Not indexed</span><span><i style="background:var(--accent)"></i>Indexed</span></div>
+      <svg class="chart" viewBox="0 0 640 260" role="img" aria-label="Illustration: share of example URLs not indexed falls and share indexed rises over seven days after submission. Not customer data.">
+        <line class="gridl" x1="48" y1="20" x2="624" y2="20"/><line class="gridl" x1="48" y1="80" x2="624" y2="80"/><line class="gridl" x1="48" y1="140" x2="624" y2="140"/><line class="gridl" x1="48" y1="200" x2="624" y2="200"/>
+        <text x="40" y="24" text-anchor="end">100%</text><text x="40" y="144" text-anchor="end">50%</text><text x="40" y="204" text-anchor="end">0%</text>
+        <path d="M48 52 C200 60 300 110 624 176 L624 200 L48 200 Z" fill="var(--st-not)" opacity=".13"/>
+        <path d="M48 52 C200 60 300 110 624 176" fill="none" stroke="var(--st-not)" stroke-width="3" stroke-dasharray="7 5"/>
+        <path d="M48 196 C200 190 300 140 624 36 L624 200 L48 200 Z" fill="var(--accent)" opacity=".13"/>
+        <path d="M48 196 C200 190 300 140 624 36" fill="none" stroke="var(--accent)" stroke-width="3.5"/>
+        <text x="48" y="226" text-anchor="middle">Submit</text><text x="205" y="226" text-anchor="middle">Day 1</text><text x="400" y="226" text-anchor="middle">Day 3</text><text x="624" y="226" text-anchor="end">Day 7</text>
+      </svg>
+      <p class="note" style="margin-top:6px">Illustration, not customer data. Timing depends on your site and on Google. Pages Google is told about tend to be picked up sooner than pages it has to discover from a sitemap, but there is no guaranteed timing.</p>
+    </div>
+    <div class="grid g3" style="margin-top:16px">
+      <div class="card metric"><strong>Days 1, 3, 7</strong><span>Automatic re-checks per URL</span></div>
+      <div class="card metric"><strong>200/day</strong><span>Submissions per Google project</span></div>
+      <div class="card metric"><strong>Every URL</strong><span>Index status checked with Google</span></div>
+    </div>
+    <p style="margin-top:28px"><a class="btn btn-primary" href="signup.html?plan=trial">Start free</a></p>
+  </div>
+</section>
+
+<!-- 5 Trust -->
+<section id="trust">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Built to keep running</span>
+      <h2>Official API. Your own Google quota.</h2>
+      <p class="lead">We use Google's publicly documented Indexing API with your own Google Cloud project, so its 200 submissions a day are yours, and we never work around that quota. "Indexed" means Google says so.</p>
+    </div>
+    <div class="grid g3">
+      <article class="card"><span class="badge">No silent drops</span><h3 style="margin-top:14px">Automatic retries with backoff</h3><p class="muted">Page fetches retry three times with exponential backoff, and every background job gets three attempts before it is marked failed with a reason you can read.</p></article>
+      <article class="card"><span class="badge">Safe concurrency</span><h3 style="margin-top:14px">Locked, non-overlapping runs</h3><p class="muted">A site that is already crawling cannot be queued twice. Each run holds a lock until it completes, so parallel schedules never collide or double-submit.</p></article>
+      <article class="card"><span class="badge">200/day, handled</span><h3 style="margin-top:14px">Quota-aware queue</h3><p class="muted">Google allows 200 Indexing API requests per project per day. We track usage against Google's Pacific-time reset, warn you before you hit it, and hold the rest for the next window.</p></article>
+      <article class="card"><span class="badge">Real time</span><h3 style="margin-top:14px">Live progress streams</h3><p class="muted">Crawls, bulk submissions and status syncs stream progress to your dashboard as they happen, with automatic reconnect if the connection drops.</p></article>
+      <article class="card"><span class="badge">Source of truth</span><h3 style="margin-top:14px">Verified against Google</h3><p class="muted">Status sync pulls coverage and indexing state per URL from Google's URL Inspection, not from a guess.</p></article>
+      <article class="card"><span class="badge">Playwright</span><h3 style="margin-top:14px">Real-browser, robots-aware crawling</h3><p class="muted">Pages render in a headless Chromium so JavaScript-driven sites are read correctly. Sitemaps are parsed and robots.txt rules are respected on every crawl.</p></article>
+    </div>
+    <p class="callout" style="margin-top:20px">Google officially supports the Indexing API for pages with JobPosting or BroadcastEvent structured data. For other pages a submission asks Google to crawl sooner but cannot guarantee indexing, and Google screens all submissions for spam.</p>
+  </div>
+</section>
+
+<!-- 6 Offer -->
+<section id="offer">
+  <div class="wrap">
+    <div class="card glow plan" style="padding:clamp(22px,4vw,44px)">
+      <span class="eyebrow">Pricing</span>
+      <h2>Start free. Upgrade when you need more.</h2>
+      <p class="lead">A 14-day trial with 100 URL submissions, then 50 a month. No card needed.</p>
+      <p class="muted">Paid plans from <span class="token">{{paidFromMonthly}}</span>/mo, submitting up to 200 URLs a day per Google Cloud project, Google's own limit.</p>
+      <div class="cta-row" style="margin-top:20px"><a class="btn btn-primary" href="signup.html?plan=trial" style="width:auto">Start free</a><a class="btn btn-ghost" href="pricing.html" style="width:auto">Pricing</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="wrap" style="max-width:860px">
+    <div class="section-head"><span class="eyebrow">FAQ</span><h2>Frequently asked questions</h2></div>
+    <details class="faq"><summary>How does this work?</summary><p>We crawl your site, send new and changed pages to Google through its official Indexing API, and then check each URL with Google's URL Inspection so you can see what was actually indexed and, if not, why.</p></details>
+    <details class="faq"><summary>Is this affiliated with Google?</summary><p>No. GoogleIndexing.com is an independent service that automates Google's publicly documented Indexing API. We are not affiliated with or endorsed by Google LLC. Google is a trademark of Google LLC.</p></details>
+    <details class="faq"><summary>Is this allowed for my pages?</summary><p>Google officially supports the Indexing API for pages with JobPosting or BroadcastEvent structured data. For other pages a submission asks Google to crawl sooner but cannot guarantee indexing, and Google screens all submissions for spam. You use your own Google project, so its 200 submissions a day are yours, and we never work around that quota. The crawl, the URL Inspection status and the explanations of why a page is not indexed work for every page regardless.</p></details>
+    <details class="faq"><summary>Does it work for existing pages?</summary><p>Yes. You can submit both new pages and updated existing pages, so Google sees your latest content.</p></details>
+    <details class="faq"><summary>What platforms are supported?</summary><p>Any website with publicly accessible URLs: WordPress, WooCommerce, Shopify, nopCommerce, Next.js, or fully custom-built sites.</p></details>
+    <details class="faq"><summary>The checker says Google can index my page. Why isn't it in Google?</summary><p>Being indexable means nothing stops Google; it doesn't mean Google chose to index it. Search Console reports such pages as 'Discovered, currently not indexed' or 'Crawled, currently not indexed'. Usually the fix is more unique content, internal links to the page, and asking Google to crawl it, which GoogleIndexing.com does for you through the Indexing API.</p></details>
+    <details class="faq"><summary>Does the checker tell me whether my page is in Google right now?</summary><p>No. Only Search Console knows for sure; a site: search is often wrong. Connect your site to GoogleIndexing.com (free plan available) and every URL is checked with Google's URL Inspection, including the date Google last crawled it.</p></details>
+  </div>
+</section>
+
+<!-- 7 CTA -->
+<section>
+  <div class="wrap">
+    <div class="card glow cta-band">
+      <h2>Ready to see what Google indexed?</h2>
+      <p class="lead" style="margin:0 auto 22px">Start free: a 14-day trial with 100 URL submissions, then 50 a month. No card needed.</p>
+      <div class="cta-row"><a class="btn btn-primary" href="signup.html?plan=trial">Start free</a></div>
+    </div>
+  </div>
+</section>
+
+</main>
+<div id="site-footer"></div>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Free Google indexability checker | GoogleIndexing.com</title>
+<meta name="description" content="Free tool: check if Google can index any page, with a plain-English fix for each issue.">
+<link rel="stylesheet" href="shared.css">
+<script src="shared.js"></script>
+</head>
+<body>
+<div id="site-header"></div>
+<main id="main">
+<section style="padding-bottom:20px">
+  <div class="wrap">
+    <span class="eyebrow">Free tool</span>
+    <h1>Free Google indexability checker</h1>
+    <p class="lead">Paste any page address to see whether Google can index it. Each problem comes with a plain-English fix. No sign-up needed.</p>
+    <form class="input-row" action="checker-result.html" style="max-width:760px;margin-top:20px">
+      <label class="sr-only" for="u">Page address</label>
+      <input id="u" class="mono-in" type="url" name="url" value="https://example.com/your-page">
+      <button class="btn btn-primary" type="submit">Check a page free</button>
+    </form>
+    <p class="note" style="margin-top:10px">Two example results are shown below. Example pages, not real checks.</p>
+  </div>
+</section>
+
+<section style="padding-top:20px">
+  <div class="wrap grid g2" style="align-items:start">
+
+    <!-- Result: can be indexed -->
+    <article class="card" aria-labelledby="r1">
+      <span class="st st-indexed">Can be indexed</span>
+      <h2 id="r1" style="font-size:1.3rem;margin-top:14px">example.com/blog/new-post</h2>
+      <p class="muted">Nothing here stops Google from indexing this page. That does not mean Google has chosen to index it.</p>
+      <ul class="checks">
+        <li><span class="ck pass">Pass</span><div><b>Status and redirects</b><span>Answers 200 OK with no redirects.</span></div></li>
+        <li><span class="ck pass">Pass</span><div><b>robots.txt</b><span>No rule blocks Googlebot.</span></div></li>
+        <li><span class="ck pass">Pass</span><div><b>Noindex</b><span>No meta robots tag or X-Robots-Tag header says noindex.</span></div></li>
+        <li><span class="ck pass">Pass</span><div><b>Canonical</b><span>Points to this page.</span></div></li>
+        <li><span class="ck pass">Pass</span><div><b>Content</b><span>Enough text in the HTML.</span></div></li>
+        <li><span class="ck pass">Pass</span><div><b>HTTPS</b><span>Served over HTTPS.</span></div></li>
+      </ul>
+      <p class="callout" style="margin-top:18px">Connect your site to check every URL with Google's URL Inspection and ask Google to crawl it through the Indexing API.</p>
+      <p style="margin:18px 0 0"><a class="btn btn-primary" href="signup.html?plan=trial">Start free</a> <span class="note">&nbsp;No card needed.</span></p>
+    </article>
+
+    <!-- Result: blocked -->
+    <article class="card" aria-labelledby="r2">
+      <span class="st st-not">Blocked</span>
+      <h2 id="r2" style="font-size:1.3rem;margin-top:14px">example.com/products/old-widget</h2>
+      <p class="muted">Google is blocked from indexing this page. Fix the issues below.</p>
+      <ul class="checks">
+        <li><span class="ck pass">Pass</span><div><b>Status and redirects</b><span>Answers 200 OK with no redirects.</span></div></li>
+        <li><span class="ck fail">Fail</span><div><b>robots.txt</b><span class="mono">Disallow: /products/old-</span><br><span>This line blocks Googlebot. Remove it or narrow it so this page is allowed.</span></div></li>
+        <li><span class="ck fail">Fail</span><div><b>Noindex</b><span>The meta robots tag says noindex. Remove the tag if you want this page in Google.</span></div></li>
+        <li><span class="ck fail">Fail</span><div><b>Canonical</b><span>Points to another URL, so Google usually indexes that one instead. Point it at this page.</span></div></li>
+        <li><span class="ck pass">Pass</span><div><b>Content</b><span>Enough text in the HTML.</span></div></li>
+        <li><span class="ck pass">Pass</span><div><b>HTTPS</b><span>Served over HTTPS.</span></div></li>
+      </ul>
+      <p class="callout" style="margin-top:18px">Once fixed, connect your site to check every URL with Google's URL Inspection and ask Google to crawl it through the Indexing API.</p>
+      <p style="margin:18px 0 0"><a class="btn btn-primary" href="signup.html?plan=trial">Start free</a> <span class="note">&nbsp;No card needed.</span></p>
+    </article>
+  </div>
+  <div class="wrap"><p class="note" style="margin-top:20px">The checker reads the HTML your server sends and does not run JavaScript. Limit: 20 checks per 10 minutes per visitor.</p></div>
+</section>
+</main>
+<div id="site-footer"></div>
+</body>
+</html>
