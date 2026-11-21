@@ -24,6 +24,10 @@ import { useMenuStore } from './Store/menu';
 import { buildRoutes } from './Router/dynamicRoutes';
 
 import { enhanceSalesMailtoLinks } from './utils/enhanceSalesMailto'
+
+// Product analytics (PostHog): before mount so the first $pageview is captured.
+import { initAnalytics, trackException } from './analytics'
+initAnalytics()
 /* ---------------- ROUTES ---------------- */
 
 import seo from './seo/publicPages.json'
@@ -222,6 +226,10 @@ pinia.use(piniaPluginPersistedstate);
 const app = createApp(App);
 app.use(pinia);
 app.use(Toast, { position: POSITION.BOTTOM_RIGHT, timeout: 3000 });
+app.config.errorHandler = (err, _instance, info) => {
+  console.error(err, info);
+  trackException(err);
+};
 
 function registerDynamicRoutesFromMenus(menus: Parameters<typeof buildRoutes>[0]) {
   const dynamicRoutes = buildRoutes(menus);

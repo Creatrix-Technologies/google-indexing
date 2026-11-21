@@ -20,7 +20,7 @@
                 schedule, and follow every page from queued to indexed, with Google's own status to confirm it.
               </p>
               <div class="hero-actions fade-in-motion delay-2">
-                <router-link to="/signup?plan=trial" class="btn-hero-primary">Start free</router-link>
+                <router-link to="/signup?plan=trial" class="btn-hero-primary" @click="track('home_cta_click', { cta: 'start_free', location: 'hero' })">Start free</router-link>
                 <a href="#how-it-works" class="btn-hero-secondary">See how it works</a>
               </div>
               <ul class="hero-proof fade-in-motion delay-3" aria-label="Highlights">
@@ -38,7 +38,7 @@
                 </li>
               </ul>
               <p class="pricing-teaser fade-in-motion delay-3">
-                <router-link to="/tools/indexability-checker">Free tool: check if Google can index any page</router-link>
+                <router-link to="/tools/indexability-checker" @click="track('home_cta_click', { cta: 'checker', location: 'hero' })">Free tool: check if Google can index any page</router-link>
               </p>
               <p class="pricing-teaser fade-in-motion delay-3">
                 <router-link to="/pricing">Pricing</router-link>
@@ -224,7 +224,7 @@
             <div class="card-glow"></div>
             <h2>Ready to see what Google indexed?</h2>
             <p>Start free: a 14-day trial with 100 URL submissions, then 50 a month. No card needed.</p>
-            <router-link to="/signup?plan=trial" class="btn-hero-primary">Start free</router-link>
+            <router-link to="/signup?plan=trial" class="btn-hero-primary" @click="track('home_cta_click', { cta: 'start_free', location: 'footer_cta' })">Start free</router-link>
           </div>
         </section>
 
@@ -382,6 +382,7 @@ import IndexingPipelineDemo from '../components/marketing/IndexingPipelineDemo.v
 import CoverageChart from '../components/marketing/CoverageChart.vue'
 import ReliabilitySection from '../components/marketing/ReliabilitySection.vue'
 import { refreshApi } from '../api'
+import { track } from '../analytics'
 import {
   fetchPublicSubscriptionPlans,
   formatPublicPlanAmount,

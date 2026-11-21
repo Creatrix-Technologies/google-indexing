@@ -107,6 +107,7 @@ import { useRouter, useRoute } from "vue-router";
 import { register as apiRegister, redirectToGoogleLogin } from "../Store/auth";
 import { trackGoogleAdsSignupConversion } from "../utils/googleAdsConversion";
 import { refreshApi } from "../api";
+import { track } from "../analytics";
 import { FREE_PLAN, fetchPublicSubscriptionPlans, planSlug, type PublicPlan } from "../Shared/publicPlans";
 
 const router = useRouter();
@@ -157,7 +158,14 @@ const benefitLine = computed(() =>
 const submitLabel = computed(() => (isPaidPlan.value ? 'Create account & verify email' : 'Create free account'));
 
 // Store plan in localStorage
+// Funnel context only: plan slug and whether the visitor came from the checker. Never the email or checked URL.
+const funnelProps = () => ({
+  plan: selectedPlan.value || 'none',
+  from_checker: typeof route.query.url === 'string' && route.query.url.length > 0,
+});
+
 onMounted(() => {
+  track('signup_view', funnelProps());
   fetchPublicSubscriptionPlans(refreshApi).then((p) => { publicPlans.value = p; }).catch(() => {});
   if (selectedPlan.value) {
     localStorage.setItem('selectedPlan', selectedPlan.value);
@@ -202,13 +210,16 @@ const handleRegister = async () => {
   touched.value = { email: true, password: true };
   validateEmail();
   validatePassword();
-  if (emailError.value || passwordError.value || loading.value) {
+  if (loading.value) return;
+  if (emailError.value || passwordError.value) {
+    track('signup_error', { ...funnelProps(), method: 'email', reason: emailError.value ? 'invalid_email' : 'weak_password' });
     document.getElementById(emailError.value ? 'signup-email' : 'signup-password')?.focus();
     return;
   }
 
   loading.value = true;
   errorMessage.value = "";
+  track('signup_submit', { ...funnelProps(), method: 'email' });
 
   try {
     const payload = {
@@ -221,6 +232,7 @@ const handleRegister = async () => {
 
     if (success) {
       trackGoogleAdsSignupConversion();
+      track('signup_success', { ...funnelProps(), method: 'email' });
       const pendingPlan = localStorage.getItem('selectedPlan');
       localStorage.removeItem('selectedPlan');
 
@@ -228,8 +240,17 @@ const handleRegister = async () => {
       router.push(`/verify-required?plan=${pendingPlan || 'trial'}&email=${encodeURIComponent(email.value.trim())}`);
     } else {
       errorMessage.value = "Registration failed. Please try again.";
+      track('signup_error', { ...funnelProps(), method: 'email', reason: 'rejected' });
     }
   } catch (err: any) {
+    const status: number | undefined = err?.response?.status;
+    // Reason is a category plus HTTP status; the server message may echo the email, so it is not sent.
+    track('signup_error', {
+      ...funnelProps(),
+      method: 'email',
+      reason: !status ? 'network' : status === 409 ? 'conflict' : status < 500 ? 'rejected' : 'server',
+      http_status: status ?? null,
+    });
     errorMessage.value = err?.response?.data?.message || "Something went wrong. Please try again.";
   } finally {
     loading.value = false;
@@ -241,6 +262,7 @@ const handleGoogleSignup = () => {
   if (selectedPlan.value) {
     localStorage.setItem('selectedPlan', selectedPlan.value);
   }
+  track('signup_submit', { ...funnelProps(), method: 'google' });
   redirectToGoogleLogin();
 };
 </script>

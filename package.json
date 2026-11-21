@@ -18,6 +18,7 @@
     "highcharts-vue": "^2.0.1",
     "pinia": "^3.0.4",
     "pinia-plugin-persistedstate": "^4.7.1",
+    "posthog-js": "^1.453.2",
     "sweetalert2": "^11.26.17",
     "vue": "^3.5.24",
     "vue-loading-overlay": "^6.0.6",
