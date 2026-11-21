@@ -67,7 +67,7 @@
               </p>
             </div>
             <div class="cta__actions">
-              <router-link :to="signupLink" class="btn btn--primary">Start free</router-link>
+              <router-link :to="signupLink" class="btn btn--primary" @click="track('checker_cta_click', { verdict: report?.verdict ?? 'unknown' })">Start free</router-link>
             </div>
           </div>
         </section>
@@ -102,6 +102,7 @@ import { useRoute, useRouter } from 'vue-router'
 import MarketingHeader from '../components/marketing/MarketingHeader.vue'
 import MarketingSiteFooter from '../components/MarketingSiteFooter.vue'
 import { refreshApi } from '../api'
+import { track } from '../analytics'
 import seo from '../seo/publicPages.json'
 
 type Status = 'pass' | 'info' | 'warn' | 'fail'
@@ -159,7 +160,9 @@ async function runCheck(fromQuery = false) {
       const gtag = (window as Window & { gtag?: (...args: unknown[]) => void }).gtag
       if (typeof gtag === 'function') gtag('event', 'indexability_check', { verdict: report.value?.verdict ?? 'unknown' })
     } catch { /* non-fatal */ }
+    track('checker_run', { status: 'ok', verdict: report.value?.verdict ?? 'unknown', from_link: fromQuery })
   } catch (e: any) {
+    track('checker_run', { status: 'error', http_status: e?.response?.status ?? null, from_link: fromQuery })
     error.value = e?.response?.data?.error?.description || 'The check could not be completed. Please try again.'
   } finally {
     loading.value = false
