@@ -4,11 +4,19 @@
 
   var page = (location.pathname.split('/').pop() || 'index.html');
 
+  // Logo mark: same drawing as logo.svg (favicon). Two colours: accent and white.
+  var MARK = '<svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">' +
+    '<rect width="32" height="32" rx="8" fill="#1f5fbf"/>' +
+    '<path d="M9 6h10l5 5v15H9z" fill="#fff"/>' +
+    '<path d="M19 6v5h5" fill="none" stroke="#1f5fbf" stroke-width="2" stroke-linejoin="round"/>' +
+    '<path d="M12.5 18l3 3 5-6" fill="none" stroke="#1f5fbf" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var LOGO = function (href) { return '<a class="logo" href="' + href + '">' + MARK + 'GoogleIndexing.com</a>'; };
+
   function marketingHeader(showStart) {
     var cur = function (f) { return page === f ? ' aria-current="page"' : ''; };
     return '<a class="skip" href="#main">Skip to content</a>' +
       '<header class="site-header"><div class="wrap">' +
-      '<a class="logo" href="index.html">GoogleIndexing.com</a>' +
+      LOGO('index.html') +
       '<button class="btn btn-secondary menu-btn" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>' +
       '<nav class="nav" id="site-nav" aria-label="Main">' +
       '<a href="index.html#how-it-works">How it works</a>' +
@@ -21,7 +29,7 @@
   function appHeader() {
     return '<a class="skip" href="#main">Skip to content</a>' +
       '<header class="site-header"><div class="wrap" style="max-width:none">' +
-      '<a class="logo" href="dashboard.html">GoogleIndexing.com</a>' +
+      LOGO('dashboard.html') +
       '<nav class="nav" style="display:flex;position:static;flex-direction:row;padding:0;border:0" aria-label="Account">' +
       '<a href="index.html">Sign out</a></nav>' +
       '</div></header>';
@@ -35,7 +43,7 @@
   }
 
   var FOOTER =
-    '<footer class="site-footer"><div class="wrap">' +
+    '<footer class="site-footer"><div class="wrap">' + LOGO('index.html') +
     '<nav aria-label="Footer"><a href="pricing.html">Pricing</a><a href="checker-result.html">Free indexability checker</a><a href="#">Terms of Service</a><a href="#">Privacy Policy</a></nav>' +
     '<p>Google officially supports the Indexing API only for pages with JobPosting or BroadcastEvent structured data. For other pages a submission asks Google to crawl sooner but cannot guarantee indexing.</p>' +
     '<p>GoogleIndexing.com is an independent service that automates Google\'s publicly documented Indexing API. We are not affiliated with or endorsed by Google LLC. Google is a trademark of Google LLC.</p>' +

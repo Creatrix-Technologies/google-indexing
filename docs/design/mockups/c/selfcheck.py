@@ -60,6 +60,19 @@ with sync_playwright() as p:
                 print(f"     checker above fold: input bottom {ib['y']+ib['height']:.0f}, button bottom {bb['y']+bb['height']:.0f} of {h}")
                 if bb['y'] + bb['height'] > h: fails.append(f"{vk} fold")
                 pg.screenshot(path=str(SHOTS / f"index-{vk}-fold.png"))
+                geo = pg.evaluate("""() => {
+                  const L = s => document.querySelector(s).getBoundingClientRect();
+                  return { hero: L('.hero h1').left, next: L('#how-it-works h2').left,
+                           form: L('.hero form'), card: L('.mini-result'),
+                           headerLogo: !!document.querySelector('.site-header .logo svg'), footerLogo: !!document.querySelector('.site-footer .logo svg'),
+                           skel: document.querySelectorAll('.skel').length };
+                }""")
+                beside = geo['card']['left'] >= geo['form']['right'] - 1
+                below = geo['card']['top'] >= geo['form']['bottom'] - 1
+                print(f"     hero left {geo['hero']:.0f} vs sections {geo['next']:.0f}; sample card {'beside' if beside else 'below' if below else 'OVERLAP'} the form; logo header={geo['headerLogo']} footer={geo['footerLogo']}; skeleton bars={geo['skel']}")
+                if abs(geo['hero'] - geo['next']) > 0.5: fails.append(f"{vk} hero edge")
+                if (vk == "1440" and not beside) or (vk == "390" and not below): fails.append(f"{vk} sample card placement")
+                if not (geo['headerLogo'] and geo['footerLogo']) or geo['skel']: fails.append(f"{vk} logo/skeleton")
             if vk in ("1440", "390"):
                 if name == "first-run":
                     for _ in range(3): pg.click(".stepper li.active [data-next]")
@@ -80,6 +93,9 @@ with sync_playwright() as p:
     print("homepage: trial line x", body_open.count("14-day trial"))
     print("homepage: caveat (JobPosting) x", body_open.count("JobPosting"), "(FAQ + footer)")
     print("homepage: main sections", pg.evaluate("document.querySelectorAll('main > section').length"))
+    for fact in ["No card", "own Google project", "URL Inspection", "200 submissions a day"]:
+        print(f"homepage: '{fact}' x", body_open.count(fact))
+    print("homepage: trust row items", pg.evaluate("document.querySelectorAll('.trust li').length"))
     print("homepage: FAQ items", pg.evaluate("document.querySelectorAll('.faq details').length"))
     h1 = pg.inner_text("h1"); print("homepage: h1 words", len(h1.split()), repr(h1))
     print("homepage: primary buttons per section", pg.evaluate("[...document.querySelectorAll('main > section')].map(s=>s.querySelectorAll('.btn-primary').length)"))
