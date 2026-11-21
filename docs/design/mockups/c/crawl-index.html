@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crawl &amp; index | GoogleIndexing.com</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="shared.css">
+<script src="shared.js"></script>
+</head>
+<body>
+<div id="site-header" data-kind="app"></div>
+<div class="app">
+  <nav class="app-nav" id="app-nav" aria-label="App"></nav>
+  <main id="main" class="app-main">
+    <div class="app-title">
+      <h1>Crawl &amp; index</h1>
+      <button class="btn btn-secondary" type="button">Crawl site</button>
+    </div>
+    <p class="app-sub"><span class="url">example.com</span> · Sample data</p>
+
+    <div class="toolbar">
+      <div>
+        <p id="filter-label" class="muted" style="margin-bottom:var(--s1)">Status</p>
+        <div class="seg" id="filters" role="group" aria-labelledby="filter-label">
+          <button type="button" data-k="all" aria-pressed="true">All</button>
+          <button type="button" data-k="queued" aria-pressed="false">Queued</button>
+          <button type="button" data-k="submitted" aria-pressed="false">Submitted</button>
+          <button type="button" data-k="indexed" aria-pressed="false">Indexed</button>
+          <button type="button" data-k="not" aria-pressed="false">Not indexed</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="prio">Submit first</label>
+        <select id="prio">
+          <option>Newest pages</option>
+          <option>Recently changed</option>
+          <option>Not indexed</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row between" style="margin-bottom:var(--s2)">
+      <p class="muted" aria-live="polite"><span id="filter-count">8 URLs</span> · <span id="sel-count">None selected</span></p>
+      <button class="btn" id="submit-selected" type="button" disabled>Submit selected</button>
+    </div>
+
+    <div class="panel" style="padding:0">
+      <table class="table" id="url-table">
+        <thead><tr><th class="sel"><span class="sr-only">Select</span></th><th>Page</th><th>Status</th><th>Re-checks</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr data-k="indexed"><td class="sel"><label class="cb-hit"><input type="checkbox" aria-label="Select /blog/crawl-budget-guide"></label></td><td data-label="Page"><span class="url">/blog/crawl-budget-guide</span></td><td data-label="Status"><span class="st st-indexed">Indexed</span></td><td data-label="Re-checks">Day 1 ✓ · Day 3 ✓ · Day 7</td><td data-label="Why" class="muted">Confirmed by URL Inspection</td></tr>
+          <tr data-k="submitted"><td class="sel"><label class="cb-hit"><input type="checkbox" aria-label="Select /products/blue-widget"></label></td><td data-label="Page"><span class="url">/products/blue-widget</span></td><td data-label="Status"><span class="st st-submitted">Submitted</span></td><td data-label="Re-checks">Day 1 ✓ · Day 3 · Day 7</td><td data-label="Why" class="muted">Waiting for Google</td></tr>
+          <tr data-k="indexed"><td class="sel"><label class="cb-hit"><input type="checkbox" aria-label="Select /docs/getting-started"></label></td><td data-label="Page"><span class="url">/docs/getting-started</span></td><td data-label="Status"><span class="st st-indexed">Indexed</span></td><td data-label="Re-checks">Day 1 ✓ · Day 3 ✓ · Day 7 ✓</td><td data-label="Why" class="muted">Confirmed by URL Inspection</td></tr>
+          <tr data-k="not"><td class="sel"><label class="cb-hit"><input type="checkbox" aria-label="Select /pricing-faq"></label></td><td data-label="Page"><span class="url">/pricing-faq</span></td><td data-label="Status"><span class="st st-not">Not indexed</span></td><td data-label="Re-checks">Day 1 ✓ · Day 3 ✓ · Day 7 ✓</td><td data-label="Why" class="muted">Crawled, not indexed. Add unique content and internal links.</td></tr>
+          <tr data-k="queued"><td class="sel"><label class="cb-hit"><input type="checkbox" aria-label="Select /blog/new-post"></label></td><td data-label="Page"><span class="url">/blog/new-post</span></td><td data-label="Status"><span class="st st-queued">Queued</span></td><td data-label="Re-checks">Not started</td><td data-label="Why" class="muted">Waiting for today's quota</td></tr>
+          <tr data-k="submitted"><td class="sel"><label class="cb-hit"><input type="checkbox" aria-label="Select /products/red-widget"></label></td><td data-label="Page"><span class="url">/products/red-widget</span></td><td data-label="Status"><span class="st st-submitted">Submitted</span></td><td data-label="Re-checks">Day 1 ✓ · Day 3 ✓ · Day 7</td><td data-label="Why" class="muted">Waiting for Google</td></tr>
+          <tr data-k="not"><td class="sel"><label class="cb-hit"><input type="checkbox" aria-label="Select /blog/canonical-tags"></label></td><td data-label="Page"><span class="url">/blog/canonical-tags</span></td><td data-label="Status"><span class="st st-not">Not indexed</span></td><td data-label="Re-checks">Day 1 ✓ · Day 3 ✓ · Day 7</td><td data-label="Why" class="muted">Discovered, not yet crawled</td></tr>
+          <tr data-k="queued"><td class="sel"><label class="cb-hit"><input type="checkbox" aria-label="Select /case/launch-checklist"></label></td><td data-label="Page"><span class="url">/case/launch-checklist</span></td><td data-label="Status"><span class="st st-queued">Queued</span></td><td data-label="Re-checks">Not started</td><td data-label="Why" class="muted">Waiting for today's quota</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+</body>
+</html>
