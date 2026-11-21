@@ -152,11 +152,31 @@ export function redirectToGoogleLogin(): void {
 
 // In auth.ts
 
-export async function loginWithGoogle(code: string, router: any): Promise<boolean> {
+export interface GoogleLoginResult {
+  /** The whole flow finished and the user was sent to the dashboard. */
+  ok: boolean;
+  /** /google-login answered successfully (the account exists, even if a later step failed). */
+  loginSucceeded: boolean;
+  /** /google-login created a new account rather than signing in an existing one. */
+  isNewRegistration: boolean;
+  /** HTTP status of a failed /google-login call; undefined on success or a network error. */
+  status?: number;
+}
+
+export async function loginWithGoogle(code: string, router: any): Promise<GoogleLoginResult> {
   const toast = useToast();
+  const result: GoogleLoginResult = { ok: false, loginSucceeded: false, isNewRegistration: false };
   try {
     // Send the code to your backend
-    const response = await api.post('/google-login', null, { params: { code }, withCredentials: true });
+    let response;
+    try {
+      response = await api.post('/google-login', null, { params: { code }, withCredentials: true });
+    } catch (err: any) {
+      result.status = err?.response?.status;
+      throw err;
+    }
+    result.loginSucceeded = true;
+    result.isNewRegistration = response.data?.data?.isNewRegistration === true;
 
     const userData = response.data.data as {
       name: string
@@ -188,12 +208,13 @@ export async function loginWithGoogle(code: string, router: any): Promise<boolea
     });
 
     await router.push('/dashboard');
-    return true;
+    result.ok = true;
+    return result;
   } catch (err) {
     console.error(err);
     toast.error('Google login failed! Please try again.');
     await router.push('/login');
-    return false;
+    return result;
   }
 }
 
