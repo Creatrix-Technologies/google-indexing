@@ -58,17 +58,16 @@
 
           <div class="cta glass-card">
             <div>
-              <h2>Is it actually in Google?</h2>
-              <p>
-                This checks what your server tells Google. Whether Google has really indexed the page is only visible in
-                Search Console. GoogleIndexing.com connects to it, checks every URL with Google's URL Inspection, and
-                submits new pages for you on a schedule.
+              <h2>Monitor this URL and submit fixes to Google: free account</h2>
+              <p class="cta__lead">{{ ctaLead }}</p>
+              <p class="cta__small">
+                A free account checks this URL with Google's URL Inspection and, once you connect Google, submits it
+                through Google's Indexing API. A submission asks Google to crawl sooner; nothing can guarantee indexing.
+                Free plan: a 14-day trial with 100 URL submissions, then 50 a month. No card needed.
               </p>
-              <p class="cta__small">Free plan: a 14-day trial with 100 URL submissions, then 50 a month. No card needed.</p>
             </div>
             <div class="cta__actions">
-              <router-link to="/signup?plan=trial" class="btn btn--primary">Start free</router-link>
-              <router-link to="/pricing" class="btn btn--ghost">See pricing</router-link>
+              <router-link :to="signupLink" class="btn btn--primary">Start free</router-link>
             </div>
           </div>
         </section>
@@ -133,6 +132,17 @@ const sortedChecks = computed(() =>
   [...(report.value?.checks ?? [])].sort((a, b) => STATUS_ORDER.indexOf(statusName(b.status)) - STATUS_ORDER.indexOf(statusName(a.status)))
 )
 const verdictIcon = computed(() => ({ indexable: '✓', issues: '!', blocked: '✕' })[report.value?.verdict ?? 'issues'])
+
+// One next step after a result. The checked URL travels in ?url= alongside the existing ?plan=trial.
+const ctaLead = computed(() => {
+  if (report.value?.verdict === 'indexable')
+    return "Nothing here blocks Google, but that doesn't mean Google has indexed the page. Only Search Console shows that."
+  return 'Fix the issues above first. Then check whether Google has indexed the page, which only Search Console shows.'
+})
+const signupLink = computed(() => {
+  const checked = report.value?.url || url.value.trim()
+  return checked ? `/signup?plan=trial&url=${encodeURIComponent(checked)}` : '/signup?plan=trial'
+})
 
 async function runCheck(fromQuery = false) {
   const value = url.value.trim()
@@ -265,11 +275,12 @@ main { padding: 2rem 0 3rem; }
 .cta { display: flex; gap: 1.5rem; align-items: center; justify-content: space-between; padding: 1.5rem; margin-top: 0.75rem; }
 .cta h2 { margin: 0 0 0.4rem; font-size: 1.2rem; }
 .cta p { margin: 0 0 0.4rem; color: #3c4043; line-height: 1.5; }
-.cta__small { color: #5f6368 !important; font-size: 0.9rem; }
+.cta__lead { font-size: 1rem; }
+.cta__small { color: #5f6368 !important; font-size: 0.88rem; }
 .cta__actions { display: flex; flex-direction: column; gap: 0.5rem; flex: 0 0 auto; }
-.btn { text-decoration: none; text-align: center; font-weight: 600; border-radius: 100px; padding: 0.7rem 1.4rem; white-space: nowrap; }
+.cta h2, .cta p { overflow-wrap: anywhere; }
+.btn { text-decoration: none; text-align: center; font-weight: 600; border-radius: 100px; padding: 0.7rem 1.4rem; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; }
 .btn--primary { background: #0a0a0c; color: #fff; }
-.btn--ghost { border: 1px solid rgba(10, 10, 12, 0.15); color: #0a0a0c; }
 
 .explainer { max-width: 960px; margin: 0 auto; }
 .explainer h2 { font-family: 'Syne', 'Inter', sans-serif; font-size: 1.6rem; letter-spacing: -0.5px; margin: 2.5rem 0 1rem; }
