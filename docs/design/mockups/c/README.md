@@ -9,7 +9,7 @@ Static HTML plus `shared.css` and `shared.js`. It makes no external requests: no
 | `index.html` | Five sections: checker hero, how it works, product screenshot, pricing summary, FAQ. Then the footer. |
 | `checker-result.html` | A blocked result with a fix for each check, then one "Start free" carrying `?url=` |
 | `signup.html` | Continue with Google first, then email and password |
-| `pricing.html` | The Free plan in full; paid plans as "Loaded live" skeleton cards |
+| `pricing.html` | Free, Solo, Pro and Enterprise, using example prices (see below) |
 | `dashboard.html` | Status totals, recent pages, today's submissions out of 200 |
 | `crawl-index.html` | Status filter, priority select, row selection (cleared whenever the filter changes), Submit selected |
 | `sites.html` | Site summary, add a site (limited by the plan), Google connection |
@@ -56,7 +56,7 @@ Every status label is a dot or square plus a text label, so meaning never depend
 | Each fact once: trial line once, Indexing API caveat only in FAQ + footer | ✅ "14-day trial" ×1 (pricing summary). "JobPosting" ×2 (FAQ and footer). |
 | One primary CTA per section, "Start free" ≤ 3 on the homepage | ✅ Primary buttons per section: `[1, 0, 0, 1, 0]`. "Start free" ×3: header (secondary), hero link, Free plan. |
 | No engineering-feature cards; benefits only | ✅ No retries, locks, Playwright or streams |
-| Pricing: real structure, no `{{tokens}}` in view | ✅ The Free plan is real. Paid cards are skeletons labelled "Loaded live" with `aria-busy`. No `{{` anywhere in the markup. |
+| Pricing: real structure, no `{{tokens}}` in view | ✅ Real plan cards with example prices (below). No `{{` anywhere in the markup. |
 | Copy cut by at least half vs A | ✅ Homepage `main` text: A 1,126 words, C 312 words (28%). Facts come from `docs/design/content.json`. |
 | AA contrast | ✅ Every visible text node is computed against its effective background: 0 failures |
 | 44px targets | ✅ Every button, input, select, summary and non-inline link is at least 44×44. Inline links in sentences fall under the WCAG 2.5.8 inline exception. Checkboxes sit in a 48px label hit area. |
@@ -70,6 +70,6 @@ Every status label is a dot or square plus a text label, so meaning never depend
 
 ## Notes for implementation
 
-- The paid plan cards render from `/payments/public-subscription-plans`, as today. The skeleton is the loading state, not a design for missing data.
+- **Prices are example values.** Solo $5, Pro $20 and Enterprise $69 a month come from `docs/launch/launch-kit.md`. The real build loads plan names, prices and limits live from `/payments/public-subscription-plans`, as today, and never hardcodes them. The homepage's "From $5" is the lowest live monthly price. The pricing page also says the prices are examples.
 - The checker CTA keeps `?plan=trial&url=…` (R3M-T07).
 - Signup matches R3M-T06: Google first, email and password only.
