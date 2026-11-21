@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sites | GoogleIndexing.com</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="shared.css">
+<script src="shared.js"></script>
+</head>
+<body>
+<div id="site-header" data-kind="app"></div>
+<div class="app">
+  <nav class="app-nav" id="app-nav" aria-label="App"></nav>
+  <main id="main" class="app-main">
+    <div class="app-title"><h1>Sites</h1></div>
+    <p class="app-sub">Sample data · Free plan: 1 website</p>
+
+    <section class="panel" aria-labelledby="site-h">
+      <div class="row between">
+        <div>
+          <h2 id="site-h" class="url">example.com</h2>
+          <p class="muted mt1">Google connected · Weekly crawl · Last crawl 2 days ago · 123 pages</p>
+        </div>
+        <a class="btn btn-primary" href="crawl-index.html">Open</a>
+      </div>
+      <p class="row mt2" style="gap:var(--s3)"><span class="st st-indexed">64 indexed</span><span class="st st-submitted">38 submitted</span><span class="st st-queued">12 queued</span><span class="st st-not">9 not indexed</span></p>
+    </section>
+
+    <div class="grid2 mt3">
+      <section class="panel" aria-labelledby="add-h">
+        <h2 id="add-h">Add a site</h2>
+        <form class="mt2" onsubmit="return false">
+          <div class="field"><label for="s">Website address</label><input id="s" type="url" placeholder="https://example.com"></div>
+          <button class="btn btn-secondary mt2" type="submit" disabled>Add site</button>
+          <p class="hint">Your plan includes 1 website. <a href="pricing.html">Upgrade</a> to add more.</p>
+        </form>
+      </section>
+      <section class="panel" aria-labelledby="g-h">
+        <h2 id="g-h">Google connection</h2>
+        <p class="mt2"><span class="st st-indexed">Connected</span></p>
+        <p class="muted mt1">All sites in this account share your Google project's 200 submissions a day.</p>
+        <a class="link-arrow" href="first-run.html">Setup guide</a>
+      </section>
+    </div>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Indexability check: example.com/products/old-widget | GoogleIndexing.com</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="shared.css">
+<script src="shared.js"></script>
+</head>
+<body>
+<div id="site-header"></div>
+<main id="main">
+
+<section class="hero" aria-labelledby="res-h" style="padding-bottom:var(--s6)">
+  <div class="wrap">
+    <form class="check-form" action="checker-result.html">
+      <label class="sr-only" for="u">Page address</label>
+      <input id="u" type="url" name="url" value="https://example.com/products/old-widget" required>
+      <button class="btn btn-secondary" type="submit">Check again</button>
+    </form>
+
+    <div class="mt4">
+      <p class="fail">Blocked: 3 issues</p>
+      <h1 id="res-h" class="mt1">Google can't index this page</h1>
+      <p class="muted mt1"><span class="url">example.com/products/old-widget</span> · 200 OK · 180 ms</p>
+    </div>
+
+    <ul class="checks" aria-label="Checks">
+      <li><span class="fail">✕ Fail</span><div><h3>robots.txt</h3><p><code>Disallow: /products/old-</code> blocks Googlebot.</p><p class="fix">Fix: remove this line or narrow it.</p></div></li>
+      <li><span class="fail">✕ Fail</span><div><h3>Noindex</h3><p>The meta robots tag says noindex.</p><p class="fix">Fix: remove the tag.</p></div></li>
+      <li><span class="fail">✕ Fail</span><div><h3>Canonical</h3><p>Points to <span class="url">/products/widget</span>, so Google indexes that page instead.</p><p class="fix">Fix: point it at this page.</p></div></li>
+      <li><span class="pass">✓ Pass</span><div><h3>Status and redirects</h3><p>200 OK, no redirects.</p></div></li>
+      <li><span class="pass">✓ Pass</span><div><h3>Content</h3><p>Enough text in the HTML.</p></div></li>
+      <li><span class="pass">✓ Pass</span><div><h3>HTTPS</h3><p>Served over HTTPS.</p></div></li>
+    </ul>
+    <p class="muted mt2">Reads the HTML your server sends; JavaScript is not run. Sample result.</p>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="next-h">
+  <div class="wrap" style="max-width:760px">
+    <h2 id="next-h">After you fix it, see if Google indexes it</h2>
+    <p class="muted mt1">Connect your site and we ask Google to crawl this page, then show Google's own status.</p>
+    <a class="btn btn-primary mt3" href="signup.html?plan=trial&amp;url=https%3A%2F%2Fexample.com%2Fproducts%2Fold-widget">Start free</a>
+  </div>
+</section>
+
+</main>
+<div id="site-footer"></div>
+</body>
+</html>

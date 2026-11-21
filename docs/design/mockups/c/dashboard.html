@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard | GoogleIndexing.com</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="shared.css">
+<script src="shared.js"></script>
+</head>
+<body>
+<div id="site-header" data-kind="app"></div>
+<div class="app">
+  <nav class="app-nav" id="app-nav" aria-label="App"></nav>
+  <main id="main" class="app-main">
+    <div class="app-title">
+      <h1>Dashboard</h1>
+      <a class="btn btn-primary" href="crawl-index.html">Submit pages</a>
+    </div>
+    <p class="app-sub"><span class="url">example.com</span> · Sample data</p>
+
+    <div class="grid4">
+      <div class="stat"><span class="st st-indexed">Indexed</span><span class="n">64</span><span class="muted">Confirmed by Google</span></div>
+      <div class="stat"><span class="st st-submitted">Submitted</span><span class="n">38</span><span class="muted">Sent, not yet confirmed</span></div>
+      <div class="stat"><span class="st st-queued">Queued</span><span class="n">12</span><span class="muted">Waiting for quota</span></div>
+      <div class="stat"><span class="st st-not">Not indexed</span><span class="n">9</span><span class="muted">See why</span></div>
+    </div>
+
+    <div class="grid-main mt3">
+      <section class="panel" aria-labelledby="recent-h">
+        <div class="row between"><h2 id="recent-h">Recent pages</h2><a class="link-arrow" href="crawl-index.html">View all</a></div>
+        <table class="table mt1">
+          <thead><tr><th>Page</th><th>Status</th><th>Last check</th></tr></thead>
+          <tbody>
+            <tr><td data-label="Page"><span class="url">/blog/crawl-budget-guide</span></td><td data-label="Status"><span class="st st-indexed">Indexed</span></td><td data-label="Last check">Day 3</td></tr>
+            <tr><td data-label="Page"><span class="url">/products/blue-widget</span></td><td data-label="Status"><span class="st st-submitted">Submitted</span></td><td data-label="Last check">Day 1</td></tr>
+            <tr><td data-label="Page"><span class="url">/docs/getting-started</span></td><td data-label="Status"><span class="st st-indexed">Indexed</span></td><td data-label="Last check">Day 7</td></tr>
+            <tr><td data-label="Page"><span class="url">/pricing-faq</span></td><td data-label="Status"><span class="st st-not">Not indexed</span></td><td data-label="Last check">Day 7</td></tr>
+            <tr><td data-label="Page"><span class="url">/blog/new-post</span></td><td data-label="Status"><span class="st st-queued">Queued</span></td><td data-label="Last check">Not yet</td></tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="panel" aria-labelledby="quota-h">
+        <h2 id="quota-h">Today's submissions</h2>
+        <p class="mt2"><strong>141</strong> of 200</p>
+        <div class="meter" role="img" aria-label="141 of 200 submissions used"><span style="width:70.5%"></span></div>
+        <p class="muted">Google's daily limit for your Google project. Resets at midnight Pacific time.</p>
+      </section>
+    </div>
+  </main>
+</div>
+</body>
+</html>
