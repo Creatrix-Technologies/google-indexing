@@ -77,13 +77,13 @@ const routes = [
   {
     path: "/login",
     component: () => import("./layout/AuthLayout.vue"),
-    children: [{ path: "", component: () => import("./pages/Login.vue"), meta: { public: true, robots: 'noindex,nofollow' } }],
+    children: [{ path: "", component: () => import("./pages/Login.vue"), meta: { public: true, title: 'Sign in | GoogleIndexing.com', robots: 'noindex,nofollow' } }],
   },
 
   {
     path: "/signup",
     component: () => import("./pages/Signup.vue"),
-    meta: { public: true, robots: 'noindex,nofollow' }
+    meta: { public: true, title: 'Create your free account | GoogleIndexing.com', robots: 'noindex,nofollow' }
   },
   {
     path: "/verify-required",

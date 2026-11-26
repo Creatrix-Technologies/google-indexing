@@ -14,18 +14,6 @@
           </p>
         </section>
 
-        <div class="api-limit-note fade-in-motion delay-1">
-          <span class="api-limit-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          </span>
-          <span>
-            Google's Indexing API allows <strong>200 submissions a day per Google Cloud project</strong> (your own service account). That limit is Google's, not ours, and every paid plan can use all of it.
-            Google officially supports the API for job-posting and livestream pages; for other pages a submission asks Google to crawl sooner but cannot guarantee indexing.
-            All the sites in one account share that quota, because they use one Google project.
-            That's why every plan shows you, URL by URL, what Google actually indexed.
-          </span>
-        </div>
-
         <div class="pricing-grid fade-in-motion delay-1">
           <article
             v-if="showDefaultTrial"
@@ -93,6 +81,18 @@
           </article>
 
           <p v-if="plansError" class="pricing-load-error">{{ plansError }}</p>
+        </div>
+
+        <div class="api-limit-note fade-in-motion delay-2">
+          <span class="api-limit-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </span>
+          <span>
+            Google's Indexing API allows <strong>200 submissions a day per Google Cloud project</strong> (your own service account). That limit is Google's, not ours, and every paid plan can use all of it.
+            Google officially supports the API for job-posting and livestream pages; for other pages a submission asks Google to crawl sooner but cannot guarantee indexing.
+            All the sites in one account share that quota, because they use one Google project.
+            That's why every plan shows you, URL by URL, what Google actually indexed.
+          </span>
         </div>
 
         <div class="compat-strip fade-in-motion delay-2">
