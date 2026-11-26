@@ -15,7 +15,8 @@
       </router-link>
       <router-link to="/tools/indexability-checker" class="mk-nav__link">Free checker</router-link>
       <router-link to="/pricing" class="mk-nav__link">Pricing</router-link>
-      <router-link to="/login" class="mk-nav__cta">Sign In</router-link>
+      <router-link to="/login" class="mk-nav__link mk-nav__link--signin">Sign in</router-link>
+      <router-link to="/signup?plan=trial" class="mk-nav__cta">Start free</router-link>
 
       <button
         type="button"
@@ -59,7 +60,7 @@
         </router-link>
         <div class="mk-mobile__actions">
           <router-link to="/login" class="mk-mobile__secondary" @click="closeMenu">Sign in</router-link>
-          <router-link to="/signup" class="mk-mobile__primary" @click="closeMenu">Start free</router-link>
+          <router-link to="/signup?plan=trial" class="mk-mobile__primary" @click="closeMenu">Start free</router-link>
         </div>
       </div>
     </transition>
@@ -91,7 +92,7 @@ const onKeydown = (e: KeyboardEvent) => {
   if (e.key === 'Escape') closeMenu()
 }
 
-const mq = window.matchMedia('(min-width: 901px)')
+const mq = window.matchMedia('(min-width: 1121px)')
 const onMediaChange = () => {
   if (mq.matches) closeMenu()
 }
@@ -276,9 +277,10 @@ onBeforeUnmount(() => {
   transform: translateY(-6px);
 }
 
-@media (max-width: 900px) {
+/* The full anchor row needs ~1100px; below that it collapsed onto the logo. */
+@media (max-width: 1120px) {
   .mk-nav {
-    gap: 0.6rem;
+    gap: 1.1rem;
     flex: 0 0 auto;
   }
 
@@ -314,8 +316,16 @@ onBeforeUnmount(() => {
   }
 
   /* Pricing lives in the menu on phones; keep only Sign In + menu in the bar. */
+  .mk-nav {
+    gap: 0.4rem;
+  }
+
   .mk-nav__link {
     display: none;
+  }
+
+  .mk-nav__cta {
+    padding: 0.5rem 0.9rem;
   }
 }
 

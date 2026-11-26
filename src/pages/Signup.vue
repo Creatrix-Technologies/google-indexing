@@ -39,91 +39,88 @@
           <span class="signup-card__accent" aria-hidden="true"></span>
 
           <header class="signup-card__head">
-            <h2 class="title">Create your account</h2>
-            <p class="subtitle">Fill in your details to get started</p>
+            <h2 class="title">Start for free</h2>
+            <p class="subtitle">No card needed · Takes 30 seconds</p>
           </header>
 
-          <!-- Email -->
-          <div class="form-group">
-            <label for="signup-email">Email</label>
-            <input
-              id="signup-email"
-              v-model="email"
-              type="email"
-              placeholder="you@example.com"
-              :disabled="loading"
-              :class="{ 'has-error': emailError }"
-              @input="validateEmail"
-              @keyup.enter="handleRegister"
-            />
-            <small v-if="emailError" class="field-error">{{ emailError }}</small>
-          </div>
-
-          <!-- Username -->
-          <div class="form-group">
-            <label for="signup-username">Username</label>
-            <input
-              id="signup-username"
-              v-model="username"
-              type="text"
-              placeholder="Choose a username"
-              :disabled="loading"
-              :class="{ 'has-error': usernameError }"
-              @input="validateUsername"
-              @keyup.enter="handleRegister"
-            />
-            <small v-if="usernameError" class="field-error">{{ usernameError }}</small>
-          </div>
-
-          <!-- Password -->
-          <div class="form-group">
-            <label for="signup-password">Password</label>
-            <div class="password-wrapper">
-              <input
-                id="signup-password"
-                v-model="password"
-                :type="showPassword ? 'text' : 'password'"
-                placeholder="Create a password"
-                :disabled="loading"
-                :class="{ 'has-error': passwordError }"
-                @input="validatePassword"
-                @keyup.enter="handleRegister"
-              />
-              <button
-                type="button"
-                class="toggle"
-                @click="showPassword = !showPassword"
-              >
-                {{ showPassword ? 'HIDE' : 'SHOW' }}
-              </button>
-            </div>
-            <small v-if="passwordError" class="field-error">{{ passwordError }}</small>
-          </div>
-
-          <!-- Confirm Password -->
-          <div class="form-group">
-            <label for="signup-confirm">Confirm Password</label>
-            <input
-              id="signup-confirm"
-              v-model="confirmPassword"
-              :type="showPassword ? 'text' : 'password'"
-              placeholder="Confirm your password"
-              :disabled="loading"
-              :class="{ 'has-error': confirmPasswordError }"
-              @input="validateConfirmPassword"
-              @keyup.enter="handleRegister"
-            />
-            <small v-if="confirmPasswordError" class="field-error">{{ confirmPasswordError }}</small>
-          </div>
-
-          <!-- Email verification notice -->
-          <div class="verification-notice" v-if="hasSelectedPlan && selectedPlan !== 'trial'">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-              <polyline points="22,6 12,13 2,6"/>
+          <button type="button" class="btn-google" @click="handleGoogleSignup" :disabled="loading">
+            <svg class="google-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" aria-hidden="true">
+              <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/>
+              <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/>
+              <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/>
+              <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571.001-.001.002-.001.003-.002l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/>
             </svg>
-            <span>You'll receive an email to verify your address before completing payment</span>
-          </div>
+            <span>Continue with Google</span>
+          </button>
+
+          <div class="divider"><span>or sign up with email</span></div>
+
+          <form @submit.prevent="handleRegister" novalidate>
+            <!-- Email -->
+            <div class="form-group">
+              <label for="signup-email">Work email</label>
+              <input
+                id="signup-email"
+                v-model="email"
+                type="email"
+                autocomplete="email"
+                inputmode="email"
+                placeholder="you@company.com"
+                :disabled="loading"
+                :class="{ 'has-error': emailError }"
+                @blur="validateEmail"
+              />
+              <small v-if="emailError" class="field-error">{{ emailError }}</small>
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+              <label for="signup-password">Password</label>
+              <div class="password-wrapper">
+                <input
+                  id="signup-password"
+                  v-model="password"
+                  :type="showPassword ? 'text' : 'password'"
+                  autocomplete="new-password"
+                  placeholder="Create a password"
+                  :disabled="loading"
+                  :class="{ 'has-error': submitted && passwordError }"
+                />
+                <button
+                  type="button"
+                  class="toggle"
+                  :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                  @click="showPassword = !showPassword"
+                >
+                  {{ showPassword ? 'HIDE' : 'SHOW' }}
+                </button>
+              </div>
+              <ul v-if="password" class="pw-rules" aria-live="polite">
+                <li v-for="r in passwordRules" :key="r.label" :class="{ ok: r.ok }">
+                  <span aria-hidden="true">{{ r.ok ? '✓' : '•' }}</span> {{ r.label }}
+                </li>
+              </ul>
+            </div>
+
+            <!-- Email verification notice -->
+            <div class="verification-notice" v-if="hasSelectedPlan && selectedPlan !== 'trial'">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+              <span>You'll receive an email to verify your address before completing payment</span>
+            </div>
+
+            <button
+              type="submit"
+              class="btn-primary"
+              :disabled="!isFormValid || loading"
+            >
+              <span v-if="loading" class="spinner"></span>
+              <span v-else-if="hasSelectedPlan && selectedPlan !== 'trial'">Create account & verify email →</span>
+              <span v-else>Create free account</span>
+            </button>
+          </form>
 
           <!-- Terms -->
           <div class="terms">
@@ -131,28 +128,6 @@
             <router-link to="/terms">Terms of Service</router-link> and
             <router-link to="/privacy">Privacy Policy</router-link>.
           </div>
-
-          <button
-            class="btn-primary"
-            @click="handleRegister"
-            :disabled="!isFormValid || loading"
-          >
-            <span v-if="loading" class="spinner"></span>
-            <span v-else-if="hasSelectedPlan && selectedPlan !== 'trial'">Create account & verify email →</span>
-            <span v-else>Create account & continue</span>
-          </button>
-
-          <div class="divider"><span>OR</span></div>
-
-          <button class="btn-google" @click="handleGoogleSignup" :disabled="loading">
-            <svg class="google-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" aria-hidden="true">
-              <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/>
-              <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/>
-              <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/>
-              <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571.001-.001.002-.001.003-.002l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/>
-            </svg>
-            <span>Sign up with Google</span>
-          </button>
 
           <p class="login-text">
             Already have an account?
@@ -174,11 +149,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { register as apiRegister, redirectToGoogleLogin } from "../Store/auth";
+import { redirectToGoogleLogin } from "../Store/auth";
 import { trackGoogleAdsSignupConversion } from "../utils/googleAdsConversion";
-import { refreshApi } from "../api";
+import api, { refreshApi } from "../api";
 import { FREE_PLAN, fetchPublicSubscriptionPlans, planLimitLines, planSlug, type PublicPlan } from "../Shared/publicPlans";
 
 const router = useRouter();
@@ -199,17 +174,14 @@ const matchedPlan = computed(() => publicPlans.value.find((p) => planSlug(p.name
 // State
 const loading = ref(false);
 const email = ref("");
-const username = ref("");
 const password = ref("");
-const confirmPassword = ref("");
 const showPassword = ref(false);
 const errorMessage = ref("");
+const submitted = ref(false);
 
 // Errors
 const emailError = ref("");
-const usernameError = ref("");
 const passwordError = ref("");
-const confirmPasswordError = ref("");
 
 // Get plan from query
 const selectedPlan = computed(() => route.query.plan as string | undefined);
@@ -240,48 +212,46 @@ const validateEmail = () => {
   else emailError.value = "";
 };
 
-const validateUsername = () => {
-  if (!username.value.trim()) usernameError.value = "Username is required.";
-  else if (username.value.length < 3) usernameError.value = "Username must be at least 3 characters.";
-  else if (!/^[a-zA-Z0-9._-]+$/.test(username.value.trim()))
-    usernameError.value = "Use letters, numbers, dot, underscore, or hyphen only.";
-  else usernameError.value = "";
-};
+// Mirrors ASP.NET Identity's password rules on the API, shown as a live checklist.
+const passwordRules = computed(() => [
+  { label: '8+ characters', ok: password.value.length >= 8 },
+  { label: 'Upper & lower case', ok: /[a-z]/.test(password.value) && /[A-Z]/.test(password.value) },
+  { label: 'A number', ok: /[0-9]/.test(password.value) },
+  { label: 'A symbol', ok: /[^a-zA-Z0-9]/.test(password.value) },
+]);
 
 const validatePassword = () => {
   if (!password.value) passwordError.value = "Password is required.";
-  else {
-    const hasLower = /[a-z]/.test(password.value);
-    const hasUpper = /[A-Z]/.test(password.value);
-    const hasDigit = /[0-9]/.test(password.value);
-    const hasSpecial = /[^a-zA-Z0-9]/.test(password.value);
-    if (password.value.length < 8 || !hasLower || !hasUpper || !hasDigit || !hasSpecial) {
-      passwordError.value =
-        "Password must be 8+ chars and include upper, lower, number, and special character.";
-    } else {
-      passwordError.value = "";
-    }
-  }
-  if (confirmPassword.value) validateConfirmPassword();
+  else if (passwordRules.value.some((r) => !r.ok)) passwordError.value = "Password doesn't meet all the rules yet.";
+  else passwordError.value = "";
 };
 
-const validateConfirmPassword = () => {
-  if (!confirmPassword.value) confirmPasswordError.value = "Please confirm your password.";
-  else if (password.value !== confirmPassword.value) confirmPasswordError.value = "Passwords do not match.";
-  else confirmPasswordError.value = "";
-};
+// Watchers run after v-model has written the new value (an @input handler ran before it).
+watch(password, () => validatePassword());
+watch(email, () => { if (emailError.value) validateEmail(); });
 
-const isFormValid = computed(() => {
-  return email.value.trim() && username.value.trim() && password.value && confirmPassword.value &&
-    !emailError.value && !usernameError.value && !passwordError.value && !confirmPasswordError.value;
-});
+const isFormValid = computed(() =>
+  !!email.value.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim()) &&
+  passwordRules.value.every((r) => r.ok)
+);
+
+/** Username is no longer asked for: derive it from the email (login also accepts the email). */
+const usernameFromEmail = (addr: string, suffix = "") => {
+  const local = (addr.split("@")[0] ?? "").replace(/[^a-zA-Z0-9._-]/g, "").slice(0, 24) || "user";
+  return (local.length < 3 ? `${local}user` : local) + suffix;
+};
 
 // Submit
+const serverError = (err: any): string =>
+  err?.response?.data?.error?.validationErrors?.[0] ||
+  err?.response?.data?.error?.description ||
+  err?.response?.data?.message ||
+  "Something went wrong. Please try again.";
+
 const handleRegister = async () => {
+  submitted.value = true;
   validateEmail();
-  validateUsername();
   validatePassword();
-  validateConfirmPassword();
 
   if (!isFormValid.value || loading.value) return;
 
@@ -289,27 +259,33 @@ const handleRegister = async () => {
   errorMessage.value = "";
 
   try {
-    const payload = {
-      email: email.value,
-      userName: username.value,
-      password: password.value,
-    };
-
-    const success = await apiRegister(payload);
-
-    if (success) {
-      trackGoogleAdsSignupConversion();
-      const pendingPlan = localStorage.getItem('selectedPlan');
-      localStorage.removeItem('selectedPlan');
-
-      // Show verification required page after signup (for all plans)
-      // Trial users also benefit from email verification
-      router.push(`/verify-required?plan=${pendingPlan || 'trial'}&email=${encodeURIComponent(email.value)}`);
-    } else {
-      errorMessage.value = "Registration failed. Please try again.";
+    // The derived username can collide with an existing one; retry with a short random suffix.
+    let created = false;
+    for (let attempt = 0; attempt < 3 && !created; attempt++) {
+      const suffix = attempt === 0 ? "" : String(Math.floor(1000 + Math.random() * 9000));
+      try {
+        await api.post('/register', {
+          email: email.value.trim(),
+          userName: usernameFromEmail(email.value.trim(), suffix),
+          password: password.value,
+        }, { withCredentials: true });
+        created = true;
+      } catch (err: any) {
+        const msg = serverError(err);
+        if (/user\s*name already exists/i.test(msg) && attempt < 2) continue;
+        if (/email already exists/i.test(msg)) {
+          errorMessage.value = "An account with this email already exists. Sign in instead, or reset your password.";
+        } else {
+          errorMessage.value = msg;
+        }
+        return;
+      }
     }
-  } catch (err: any) {
-    errorMessage.value = err?.response?.data?.message || "Something went wrong. Please try again.";
+
+    trackGoogleAdsSignupConversion();
+    const pendingPlan = localStorage.getItem('selectedPlan');
+    localStorage.removeItem('selectedPlan');
+    router.push(`/verify-required?plan=${pendingPlan || 'trial'}&email=${encodeURIComponent(email.value.trim())}`);
   } finally {
     loading.value = false;
   }
@@ -742,11 +718,35 @@ const handleGoogleSignup = () => {
 }
 
 /* ===== Responsive ===== */
+/* ===== Live password rules ===== */
+.pw-rules {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+  font-size: 0.76rem;
+  color: #80868b;
+}
+.pw-rules li { display: flex; gap: 6px; align-items: center; transition: color 150ms ease; }
+.pw-rules li.ok { color: #188038; }
+
+.btn-google + .divider { margin-top: 1.1rem; }
+form .btn-primary { margin-top: 0.25rem; }
+form + .terms { margin: 1rem 0 0; text-align: center; }
+
 @media (max-width: 900px) {
-  .content-wrapper { flex-direction: column; gap: 2rem; }
+  /* Form first on small screens: the plan summary follows it. */
+  .content-wrapper { flex-direction: column; gap: 1.5rem; padding: 1.25rem; }
+  .signup-card { order: -1; }
   .plan-info { max-width: 420px; text-align: center; }
   .plan-features { align-items: center; }
-  .back-link { align-self: flex-start; }
+  .back-link { display: none; }
+  /* Below the form the card is a "what you get" summary: drop the repeated headline. */
+  .plan-name, .plan-desc { display: none; }
+  .plan-info { text-align: left; }
+  .plan-features { align-items: flex-start; }
 }
 
 @media (max-width: 480px) {
